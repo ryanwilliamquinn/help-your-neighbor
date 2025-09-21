@@ -16,12 +16,18 @@ Community item pickup application for trusted groups. Users can request items fr
 
 ### Technical Architecture
 
-- **Frontend**: Web application (React/Vue), mobile-responsive, hosted on Netlify/Vercel
-- **Backend**: Supabase free tier (authentication, database, real-time subscriptions)
+- **Frontend**: React + TypeScript web application, mobile-responsive
+- **Backend**: Dual-mode architecture
+  - **Development**: Mock API service with file based storage
+  - **Production**: Supabase (authentication, database, real-time subscriptions)
 - **Authentication**: Email/password only for MVP
-- **Database**: PostgreSQL via Supabase
-- **Real-time**: Supabase real-time for live updates
-- **Hosting**: Static site deployment (free tier)
+- **Database**:
+  - **Development**: File with structured data
+  - **Production**: PostgreSQL via Supabase
+- **Real-time**:
+  - **Development**: Simulated with React state updates
+  - **Production**: Supabase real-time for live updates
+- **Hosting**: Static site deployment (Netlify/Vercel free tier)
 
 ### Database Schema (Conceptual)
 
@@ -183,6 +189,59 @@ Invites: id, group_id, email, token, expires_at, used_at
 - Basic error handling and validation
 - Gradual rollout to additional groups
 
+## Local Development Setup
+
+### Running the Application Offline
+
+The application is designed to work completely offline for development:
+
+1. **Install dependencies**: `npm install`
+2. **Start development server**: `npm run dev`
+3. **Run tests**: `npm test`
+4. **Build for production**: `npm run build`
+
+### Environment Configuration
+
+Copy `.env.example` to `.env` and configure:
+
+```bash
+# Use mock API for offline development
+VITE_USE_MOCK_API=true
+
+# For production deployment, set to false and add Supabase credentials
+# VITE_USE_MOCK_API=false
+# VITE_SUPABASE_URL=your_project_url
+# VITE_SUPABASE_ANON_KEY=your_anon_key
+```
+
+### Mock Data
+
+The mock API service provides:
+
+- Sample users for testing login flows
+- File-based persistence across browser sessions
+- Full CRUD operations for all entities
+- Realistic API delays for testing loading states
+- Input validation and error handling
+
+### Switching to Production
+
+When ready for production:
+
+1. Set `VITE_USE_MOCK_API=false`
+2. Add Supabase credentials to environment variables
+3. Run database migration scripts in `/database/schema.sql`
+4. Implement Supabase service layer (currently planned)
+
 ## Current Status
 
-Planning phase complete. Ready for initial development.
+**Phase 1 Complete**: Project foundation with offline development capability
+
+- ✅ React + TypeScript + Vite setup
+- ✅ ESLint, Prettier, pre-commit hooks
+- ✅ Jest + React Testing Library
+- ✅ Clean architecture with types, services, contexts
+- ✅ Mock API service with file based storage
+- ✅ Environment configuration for dev/prod modes
+
+**Next Phase**: UI components and user authentication flows

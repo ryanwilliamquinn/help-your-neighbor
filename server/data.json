@@ -1,0 +1,116 @@
+{
+  "users": [
+    {
+      "id": "alice-001",
+      "email": "alice@example.com",
+      "name": "Alice Johnson",
+      "phone": "555-0101",
+      "generalArea": "Downtown",
+      "createdAt": "2024-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "bob-002",
+      "email": "bob@example.com",
+      "name": "Bob Smith",
+      "phone": "555-0102",
+      "generalArea": "Midtown",
+      "createdAt": "2024-01-01T00:00:00.000Z"
+    }
+  ],
+  "groups": [
+    {
+      "id": "group-001",
+      "name": "Downtown Neighbors",
+      "createdBy": "alice-001",
+      "createdAt": "2024-01-01T01:00:00.000Z"
+    }
+  ],
+  "groupMembers": [
+    {
+      "groupId": "group-001",
+      "userId": "alice-001",
+      "joinedAt": "2024-01-01T01:00:00.000Z"
+    },
+    {
+      "groupId": "group-001",
+      "userId": "bob-002",
+      "joinedAt": "2025-09-21T17:37:41.268Z"
+    }
+  ],
+  "requests": [
+    {
+      "id": "4a1eb3ed-43cc-4b31-9224-11206a98ecbc",
+      "title": "bananas",
+      "description": "Store: pcc\nNeeded by: 2025-09-23T12:19",
+      "requesterId": "bob-002",
+      "groupId": "group-001",
+      "status": "open",
+      "createdAt": "2025-09-21T19:19:38.675Z"
+    },
+    {
+      "id": "b77f36c1-41b7-461d-a166-8f01ee1831f4",
+      "title": "asdfas",
+      "description": "Store: pcc\nNeeded by: 2025-09-23T15:30",
+      "requesterId": "bob-002",
+      "groupId": "group-001",
+      "status": "open",
+      "createdAt": "2025-09-21T22:30:33.909Z"
+    },
+    {
+      "id": "f4a182eb-47aa-43db-818e-610316fb9447",
+      "title": "asdf",
+      "description": "Needed by: 2025-09-23T15:34",
+      "requesterId": "bob-002",
+      "groupId": "group-001",
+      "status": "open",
+      "createdAt": "2025-09-21T22:35:25.418Z"
+    },
+    {
+      "id": "3339c76f-5eaf-4702-bb8d-d0dc1a574269",
+      "title": "asdfasdf",
+      "description": "Store: asdf\nNeeded by: 2025-09-24T15:35",
+      "requesterId": "bob-002",
+      "groupId": "group-001",
+      "status": "open",
+      "createdAt": "2025-09-21T22:36:16.182Z"
+    },
+    {
+      "id": "b062c369-bded-404e-b812-e1e8cca6acfd",
+      "title": "adsfasdf",
+      "description": "Needed by: 2025-09-23T15:41",
+      "requesterId": "bob-002",
+      "groupId": "group-001",
+      "status": "open",
+      "createdAt": "2025-09-21T22:41:29.254Z"
+    }
+  ],
+  "invites": [
+    {
+      "id": "invite-001",
+      "token": "sample-invite-token-123",
+      "groupId": "group-001",
+      "email": "newuser@example.com",
+      "createdAt": "2024-01-01T02:00:00.000Z",
+      "expiresAt": "2026-01-01T02:00:00.000Z"
+    },
+    {
+      "id": "4aa1f3e6-9f5a-4d65-97d0-a6d80cba8118",
+      "groupId": "group-001",
+      "email": "bob@example.com",
+      "token": "fbbivkwwygo",
+      "expiresAt": "2025-09-28T17:37:31.944Z",
+      "createdAt": "2025-09-21T17:37:31.944Z",
+      "usedAt": "2025-09-21T17:37:41.268Z"
+    }
+  ],
+  "sessions": [
+    {
+      "token": "session-kv7a6ac56tk",
+      "userId": "bob-002",
+      "createdAt": "2025-09-21T22:43:12.939Z",
+      "expiresAt": "2025-10-21T22:43:12.939Z"
+    }
+  ],
+  "currentUser": null,
+  "lastUpdated": "2025-09-21T22:57:32.896Z"
+}

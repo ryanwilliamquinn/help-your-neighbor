@@ -1,38 +1,89 @@
-import React, { createContext } from 'react';
+import React from 'react';
 import type { ReactNode } from 'react';
-import type { User } from '../types';
-
-interface AuthContextType {
-  user: User | null;
-  loading: boolean;
-  signIn: (email: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string) => Promise<void>;
-  signOut: () => Promise<void>;
-}
-
-export const AuthContext = createContext<AuthContextType | undefined>(
-  undefined
-);
+import type { User, UserProfileForm } from '../types';
+import { AuthContext, type AuthContextType } from './AuthContextDefinition';
 
 interface AuthProviderProps {
   children: ReactNode;
 }
 
-export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  // This will be implemented when we set up Supabase
+const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
+  const [user, setUser] = React.useState<User | null>(null);
+  const [loading, setLoading] = React.useState(true);
+
+  // Check for existing session on mount
+  React.useEffect(() => {
+    const checkSession = async (): Promise<void> => {
+      try {
+        const { apiService } = await import('../services');
+        const currentUser = await apiService.getCurrentUser();
+        setUser(currentUser);
+      } catch {
+        // No current user or error - that's fine
+        setUser(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    checkSession();
+  }, []);
+
+  const signIn = async (email: string, password: string): Promise<void> => {
+    setLoading(true);
+    try {
+      const { apiService } = await import('../services');
+      const response = await apiService.signIn(email, password);
+      setUser(response.user);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const signUp = async (email: string, password: string): Promise<void> => {
+    setLoading(true);
+    try {
+      const { apiService } = await import('../services');
+      const response = await apiService.signUp(email, password);
+      setUser(response.user);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const signOut = async (): Promise<void> => {
+    setLoading(true);
+    try {
+      const { apiService } = await import('../services');
+      await apiService.signOut();
+      setUser(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const updateUserProfile = async (profile: UserProfileForm): Promise<User> => {
+    setLoading(true);
+    try {
+      const { apiService } = await import('../services');
+      const updatedUser = await apiService.updateUserProfile(profile);
+      setUser(updatedUser);
+      return updatedUser;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const value: AuthContextType = {
-    user: null,
-    loading: false,
-    signIn: async () => {
-      throw new Error('Not implemented');
-    },
-    signUp: async () => {
-      throw new Error('Not implemented');
-    },
-    signOut: async () => {
-      throw new Error('Not implemented');
-    },
+    user,
+    loading,
+    signIn,
+    signUp,
+    signOut,
+    updateUserProfile,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
+
+export default AuthProvider;

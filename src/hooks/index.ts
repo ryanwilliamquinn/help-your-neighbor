@@ -6,5 +6,4 @@ export { useAuth } from './useAuth';
 // Examples:
 // - useRequests: for managing request state
 // - useGroups: for managing group state
-// - useLocalStorage: for persisting user preferences
 // - useDebounce: for search functionality

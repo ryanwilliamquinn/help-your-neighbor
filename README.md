@@ -54,6 +54,46 @@ Help Your Neighbor lets people in trusted groups (friends, family, coworkers, ne
 - Mobile apps for iOS and Android
 - Integration with payment platforms
 
+## Development
+
+The application is designed to work completely offline for development using a mock API service that persists data to the file system.
+
+### Local Setup
+
+1.  **Install dependencies**:
+
+    ```bash
+    npm install
+    ```
+
+2.  **Configure environment**:
+    Copy `.env.example` to `.env` and set the variables. For local development, ensure `VITE_USE_MOCK_API` is set to `true`.
+
+    ```bash
+    VITE_USE_MOCK_API=true
+    ```
+
+3.  **Start the development server**:
+    ```bash
+    npm run dev
+    ```
+    This will start a local server. Open the URL it provides (usually `http://localhost:5173`) in your web browser. You should see the application's login page.
+
+### Available Scripts
+
+The project includes several scripts to help with development:
+
+- `npm run dev`: Starts the Vite development server with Hot Module Replacement (HMR).
+- `npm test`: Runs the full test suite using Jest.
+- `npm run test:watch`: Runs Jest in watch mode to re-run tests on file changes.
+- `npm run test:coverage`: Runs Jest and generates a test coverage report.
+- `npm run lint`: Lints all source files using ESLint.
+- `npm run lint:fix`: Attempts to automatically fix linting issues.
+- `npm run format`: Formats all source files using Prettier.
+- `npm run format:check`: Checks for formatting issues without modifying files.
+- `npm run build`: Compiles the TypeScript code and builds the application for production.
+- `npm run preview`: Serves the production build locally to preview it.
+
 ## Contributing
 
 This is currently a personal project, but feedback and suggestions are welcome!

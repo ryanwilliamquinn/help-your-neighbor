@@ -1,8 +1,13 @@
 export default {
   preset: 'ts-jest',
-  testEnvironment: 'jest-environment-jsdom',
+  testEnvironment: 'jsdom',
+  testEnvironmentOptions: {
+    url: 'http://localhost/',
+  },
   setupFilesAfterEnv: ['<rootDir>/src/test/setup.ts'],
   moduleNameMapper: {
+    '^@/(.*\\.svg)$': '<rootDir>/src/test/__mocks__/fileMock.ts',
+    '^@/(.*)$': '<rootDir>/src/$1',
     '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
     '\\.(svg|png|jpg|jpeg|gif)$': '<rootDir>/src/test/__mocks__/fileMock.ts',
   },

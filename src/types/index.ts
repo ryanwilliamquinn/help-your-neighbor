@@ -43,6 +43,7 @@ export interface Invite {
   token: string;
   expiresAt: Date;
   usedAt?: Date;
+  createdAt: Date;
 }
 
 export const RequestStatus = {
@@ -71,6 +72,7 @@ export interface CreateRequestForm {
   storePreference?: string;
   neededBy: string;
   pickupNotes?: string;
+  groupId: string;
 }
 
 export interface CreateGroupForm {

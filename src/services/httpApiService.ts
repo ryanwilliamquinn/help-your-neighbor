@@ -1,0 +1,214 @@
+// HTTP API service for real backend communication
+import type {
+  User,
+  Group,
+  Request,
+  Invite,
+  AuthResponse,
+  CreateRequestForm,
+  UserProfileForm,
+} from '../types';
+import type { ApiService } from './index';
+
+const API_BASE_URL = 'http://localhost:3002/api';
+
+class HttpError extends Error {
+  public status: number;
+
+  constructor(status: number, message: string) {
+    super(message);
+    this.status = status;
+    this.name = 'HttpError';
+  }
+}
+
+export class HttpApiService implements ApiService {
+  private sessionToken: string | null = null;
+
+  constructor() {
+    // Try to restore session from localStorage
+    this.sessionToken = localStorage.getItem('session-token');
+  }
+
+  private async request<T>(
+    endpoint: string,
+    options: RequestInit = {}
+  ): Promise<T> {
+    const url = `${API_BASE_URL}${endpoint}`;
+
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      ...((options.headers as Record<string, string>) || {}),
+    };
+
+    // Add authorization header if we have a session token
+    if (this.sessionToken) {
+      headers.Authorization = `Bearer ${this.sessionToken}`;
+    }
+
+    const response = await fetch(url, {
+      ...options,
+      headers,
+    });
+
+    if (!response.ok) {
+      let errorMessage = 'Request failed';
+      try {
+        const errorData = await response.json();
+        errorMessage = errorData.error || errorData.message || errorMessage;
+      } catch {
+        // If JSON parsing fails, use default message
+      }
+      throw new HttpError(response.status, errorMessage);
+    }
+
+    return response.json();
+  }
+
+  private setSessionToken(token: string | null): void {
+    this.sessionToken = token;
+    if (token) {
+      localStorage.setItem('session-token', token);
+    } else {
+      localStorage.removeItem('session-token');
+    }
+  }
+
+  // Auth services
+  async signUp(email: string, password: string): Promise<AuthResponse> {
+    const response = await this.request<AuthResponse>('/auth/signup', {
+      method: 'POST',
+      body: JSON.stringify({ email, password }),
+    });
+
+    this.setSessionToken(response.session);
+    return response;
+  }
+
+  async signIn(email: string, password: string): Promise<AuthResponse> {
+    const response = await this.request<AuthResponse>('/auth/signin', {
+      method: 'POST',
+      body: JSON.stringify({ email, password }),
+    });
+
+    this.setSessionToken(response.session);
+    return response;
+  }
+
+  async signOut(): Promise<void> {
+    try {
+      await this.request('/auth/signout', { method: 'POST' });
+    } finally {
+      // Always clear the session token, even if the request fails
+      this.setSessionToken(null);
+    }
+  }
+
+  // User services
+  async getCurrentUser(): Promise<User> {
+    return this.request<User>('/user/current');
+  }
+
+  async getUserById(userId: string): Promise<User> {
+    return this.request<User>(`/user/${userId}`);
+  }
+
+  async updateUserProfile(profile: UserProfileForm): Promise<User> {
+    return this.request<User>('/user/profile', {
+      method: 'PUT',
+      body: JSON.stringify(profile),
+    });
+  }
+
+  // Group services
+  async createGroup(name: string): Promise<Group> {
+    return this.request<Group>('/groups', {
+      method: 'POST',
+      body: JSON.stringify({ name }),
+    });
+  }
+
+  async getUserGroups(): Promise<Group[]> {
+    return this.request<Group[]>('/groups');
+  }
+
+  async joinGroup(token: string): Promise<Group> {
+    return this.request<Group>(`/invites/${token}/join`, {
+      method: 'POST',
+    });
+  }
+
+  async leaveGroup(groupId: string): Promise<void> {
+    return this.request(`/groups/${groupId}/leave`, {
+      method: 'POST',
+    });
+  }
+
+  async getGroupMembers(groupId: string): Promise<User[]> {
+    return this.request<User[]>(`/groups/${groupId}/members`);
+  }
+
+  async removeGroupMember(groupId: string, userId: string): Promise<void> {
+    return this.request(`/groups/${groupId}/members/${userId}`, {
+      method: 'DELETE',
+    });
+  }
+
+  // Request services
+  async createRequest(request: CreateRequestForm): Promise<Request> {
+    // Map frontend field names to server field names
+    const serverRequest = {
+      title: request.itemDescription,
+      description:
+        `${request.storePreference ? `Store: ${request.storePreference}\n` : ''}${request.pickupNotes ? `Notes: ${request.pickupNotes}\n` : ''}Needed by: ${request.neededBy}`.trim(),
+      groupId: request.groupId,
+    };
+
+    return this.request<Request>('/requests', {
+      method: 'POST',
+      body: JSON.stringify(serverRequest),
+    });
+  }
+
+  async getUserRequests(): Promise<Request[]> {
+    return this.request<Request[]>('/user/requests');
+  }
+
+  async getGroupRequests(groupId: string): Promise<Request[]> {
+    return this.request<Request[]>(`/groups/${groupId}/requests`);
+  }
+
+  async claimRequest(requestId: string): Promise<Request> {
+    return this.request<Request>(`/requests/${requestId}/claim`, {
+      method: 'POST',
+    });
+  }
+
+  async fulfillRequest(requestId: string): Promise<Request> {
+    return this.request<Request>(`/requests/${requestId}/fulfill`, {
+      method: 'POST',
+    });
+  }
+
+  async deleteRequest(requestId: string): Promise<void> {
+    return this.request(`/requests/${requestId}`, {
+      method: 'DELETE',
+    });
+  }
+
+  // Invite services
+  async createInvite(groupId: string, email: string): Promise<Invite> {
+    return this.request<Invite>('/invites', {
+      method: 'POST',
+      body: JSON.stringify({ groupId, email }),
+    });
+  }
+
+  async validateInvite(
+    token: string
+  ): Promise<{ group: Group; invite: Invite }> {
+    return this.request<{ group: Group; invite: Invite }>(
+      `/invites/validate/${token}`
+    );
+  }
+}

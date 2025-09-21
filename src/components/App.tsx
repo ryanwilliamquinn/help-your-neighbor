@@ -1,34 +1,88 @@
-import React, { useState } from 'react';
-import reactLogo from '../assets/react.svg';
-import viteLogo from '/vite.svg';
+import React from 'react';
 import './App.css';
+import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
+import { useAuth } from '@/hooks';
+import LoginPage from '@/pages/Login/LoginPage';
+import SignUpPage from '@/pages/Login/SignUpPage';
+import ProfilePage from '@/pages/Profile/ProfilePage';
+import DashboardPage from '@/pages/Dashboard/DashboardPage';
+import GroupsPage from '@/pages/Groups/GroupsPage';
+import InvitePage from '@/pages/Invite/InvitePage';
+import ProtectedRoute from './ProtectedRoute';
 
 function App(): React.JSX.Element {
-  const [count, setCount] = useState(0);
+  const { user, signOut } = useAuth();
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+    <BrowserRouter>
+      <div className="App">
+        <header className="App-header">
+          <nav>
+            <ul>
+              <li>
+                <Link to="/">Home</Link>
+              </li>
+              {!user && (
+                <li>
+                  <Link to="/login">Login</Link>
+                </li>
+              )}
+              {!user && (
+                <li>
+                  <Link to="/signup">Sign Up</Link>
+                </li>
+              )}
+              {user && (
+                <li>
+                  <Link to="/groups">Groups</Link>
+                </li>
+              )}
+              {user && (
+                <li>
+                  <Link to="/profile">Profile</Link>
+                </li>
+              )}
+              {user && (
+                <li>
+                  <button onClick={signOut}>Logout</button>
+                </li>
+              )}
+            </ul>
+          </nav>
+        </header>
+        <main>
+          <Routes>
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/signup" element={<SignUpPage />} />
+            <Route path="/invite" element={<InvitePage />} />
+            <Route
+              path="/"
+              element={
+                <ProtectedRoute>
+                  <DashboardPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/groups"
+              element={
+                <ProtectedRoute>
+                  <GroupsPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/profile"
+              element={
+                <ProtectedRoute>
+                  <ProfilePage />
+                </ProtectedRoute>
+              }
+            />
+          </Routes>
+        </main>
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+    </BrowserRouter>
   );
 }
 

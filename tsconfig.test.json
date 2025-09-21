@@ -5,7 +5,7 @@
     "verbatimModuleSyntax": false,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
-    "types": ["jest", "@testing-library/jest-dom", "@types/jest"]
+    "types": ["jest", "@testing-library/jest-dom", "@types/jest", "node"]
   },
   "include": [
     "src/**/*.test.ts",

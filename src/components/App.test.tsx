@@ -1,21 +1,65 @@
 import { render, screen } from '@testing-library/react';
-import { describe, it, expect } from '@jest/globals';
 import App from './App';
+import { useAuth } from '@/hooks';
+
+// Mock the useAuth hook
+jest.mock('@/hooks', () => ({
+  useAuth: jest.fn(),
+}));
+
+// Cast the mock to the correct type
+const useAuthMock = useAuth as jest.Mock;
 
 describe('App', () => {
-  it('should render the app with Vite and React logos', () => {
-    render(<App />);
+  it('should render the loading indicator when loading', () => {
+    useAuthMock.mockReturnValue({
+      loading: true,
+      user: null,
+      signIn: jest.fn(),
+      signUp: jest.fn(),
+      signOut: jest.fn(),
+      updateUserProfile: jest.fn(),
+    });
 
-    // Check if the main content is rendered
-    const element = screen.getByText(/Vite \+ React/i);
-    expect(element).toBeTruthy();
+    render(<App />);
+    expect(screen.getByText(/loading.../i)).toBeInTheDocument();
   });
 
-  it('should render the counter button', () => {
+  it('should render the LoginPage when not authenticated', () => {
+    useAuthMock.mockReturnValue({
+      loading: false,
+      user: null,
+      signIn: jest.fn(),
+      signUp: jest.fn(),
+      signOut: jest.fn(),
+      updateUserProfile: jest.fn(),
+    });
+
+    render(<App />);
+    expect(
+      screen.getByRole('heading', { name: /login/i, level: 1 })
+    ).toBeInTheDocument();
+  });
+
+  it('should render authenticated navigation when authenticated', () => {
+    useAuthMock.mockReturnValue({
+      loading: false,
+      user: { name: 'Test User', email: 'test@example.com' },
+      signIn: jest.fn(),
+      signUp: jest.fn(),
+      signOut: jest.fn(),
+      updateUserProfile: jest.fn(),
+    });
+
     render(<App />);
 
-    // Check if the counter button is present
-    const button = screen.getByRole('button', { name: /count is/i });
-    expect(button).toBeTruthy();
+    // The navigation should show the logout button when authenticated
+    expect(screen.getByRole('button', { name: /logout/i })).toBeInTheDocument();
+
+    // The navigation should show Profile link
+    expect(screen.getByRole('link', { name: /profile/i })).toBeInTheDocument();
+
+    // The navigation should show Home link
+    expect(screen.getByRole('link', { name: /home/i })).toBeInTheDocument();
   });
 });
