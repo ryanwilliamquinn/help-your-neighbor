@@ -344,11 +344,12 @@ app.delete(
 // Request endpoints
 app.post('/api/requests', requireAuth, async (req, res) => {
   try {
-    const { title, description, groupId } = req.body;
+    const { itemDescription, storePreference, neededBy, pickupNotes, groupId } =
+      req.body;
     const user = (req as AuthenticatedRequest).user;
 
-    if (!title?.trim()) {
-      return res.status(400).json({ error: 'Title is required' });
+    if (!itemDescription?.trim()) {
+      return res.status(400).json({ error: 'Item description is required' });
     }
 
     if (!groupId) {
@@ -374,9 +375,11 @@ app.post('/api/requests', requireAuth, async (req, res) => {
 
     const newRequest: RequestType = {
       id: storage.generateId(),
-      title: title.trim(),
-      description: description?.trim() || '',
-      requesterId: user.id,
+      userId: user.id,
+      itemDescription: itemDescription.trim(),
+      pickupNotes: pickupNotes.trim() || '',
+      storePreference: storePreference?.trim() || '',
+      neededBy: neededBy,
       groupId,
       status: 'open',
       createdAt: new Date().toISOString(),
@@ -514,7 +517,7 @@ app.delete('/api/requests/:requestId', requireAuth, async (req, res) => {
 
     const request = data.requests[requestIndex];
 
-    if (request.requesterId !== user.id) {
+    if (request.userId !== user.id) {
       return res
         .status(403)
         .json({ error: 'You can only delete your own requests' });

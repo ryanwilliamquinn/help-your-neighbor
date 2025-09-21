@@ -158,9 +158,10 @@ export class HttpApiService implements ApiService {
   async createRequest(request: CreateRequestForm): Promise<Request> {
     // Map frontend field names to server field names
     const serverRequest = {
-      title: request.itemDescription,
-      description:
-        `${request.storePreference ? `Store: ${request.storePreference}\n` : ''}${request.pickupNotes ? `Notes: ${request.pickupNotes}\n` : ''}Needed by: ${request.neededBy}`.trim(),
+      itemDescription: request.itemDescription,
+      storePreference: request.storePreference,
+      neededBy: request.neededBy,
+      pickupNotes: request.pickupNotes,
       groupId: request.groupId,
     };
 

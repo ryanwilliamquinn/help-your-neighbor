@@ -55,48 +55,10 @@ describe('HttpApiService', () => {
             'Content-Type': 'application/json',
           }),
           body: JSON.stringify({
-            title: 'Test Item',
-            description:
-              'Store: Test Store\nNotes: Test notes\nNeeded by: 2024-01-15T10:00',
-            groupId: 'group-123',
-          }),
-        })
-      );
-
-      expect(result).toEqual(mockResponse);
-    });
-
-    it('should handle optional fields correctly', async () => {
-      const mockResponse = {
-        id: 'request-123',
-        title: 'Test Item',
-        description: 'Needed by: 2024-01-15T10:00',
-        requesterId: 'user-123',
-        groupId: 'group-123',
-        status: 'open',
-        createdAt: '2024-01-01T00:00:00.000Z',
-      };
-
-      (fetch as jest.Mock).mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve(mockResponse),
-      });
-
-      const formData: CreateRequestForm = {
-        itemDescription: 'Test Item',
-        neededBy: '2024-01-15T10:00',
-        groupId: 'group-123',
-      };
-
-      const result = await httpApiService.createRequest(formData);
-
-      // Verify the request body only includes needed by for description
-      expect(fetch).toHaveBeenCalledWith(
-        'http://localhost:3002/api/requests',
-        expect.objectContaining({
-          body: JSON.stringify({
-            title: 'Test Item',
-            description: 'Needed by: 2024-01-15T10:00',
+            itemDescription: 'Test Item',
+            storePreference: 'Test Store',
+            neededBy: '2024-01-15T10:00',
+            pickupNotes: 'Test notes',
             groupId: 'group-123',
           }),
         })

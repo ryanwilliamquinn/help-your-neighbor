@@ -39,49 +39,15 @@
   ],
   "requests": [
     {
-      "id": "4a1eb3ed-43cc-4b31-9224-11206a98ecbc",
-      "title": "bananas",
-      "description": "Store: pcc\nNeeded by: 2025-09-23T12:19",
-      "requesterId": "bob-002",
+      "id": "e5362faa-e289-467f-8198-6035cd580146",
+      "userId": "bob-002",
+      "itemDescription": "bananas",
+      "pickupNotes": "",
+      "storePreference": "PCC",
+      "neededBy": "2025-09-22T16:23",
       "groupId": "group-001",
       "status": "open",
-      "createdAt": "2025-09-21T19:19:38.675Z"
-    },
-    {
-      "id": "b77f36c1-41b7-461d-a166-8f01ee1831f4",
-      "title": "asdfas",
-      "description": "Store: pcc\nNeeded by: 2025-09-23T15:30",
-      "requesterId": "bob-002",
-      "groupId": "group-001",
-      "status": "open",
-      "createdAt": "2025-09-21T22:30:33.909Z"
-    },
-    {
-      "id": "f4a182eb-47aa-43db-818e-610316fb9447",
-      "title": "asdf",
-      "description": "Needed by: 2025-09-23T15:34",
-      "requesterId": "bob-002",
-      "groupId": "group-001",
-      "status": "open",
-      "createdAt": "2025-09-21T22:35:25.418Z"
-    },
-    {
-      "id": "3339c76f-5eaf-4702-bb8d-d0dc1a574269",
-      "title": "asdfasdf",
-      "description": "Store: asdf\nNeeded by: 2025-09-24T15:35",
-      "requesterId": "bob-002",
-      "groupId": "group-001",
-      "status": "open",
-      "createdAt": "2025-09-21T22:36:16.182Z"
-    },
-    {
-      "id": "b062c369-bded-404e-b812-e1e8cca6acfd",
-      "title": "adsfasdf",
-      "description": "Needed by: 2025-09-23T15:41",
-      "requesterId": "bob-002",
-      "groupId": "group-001",
-      "status": "open",
-      "createdAt": "2025-09-21T22:41:29.254Z"
+      "createdAt": "2025-09-21T23:23:32.824Z"
     }
   ],
   "invites": [
@@ -109,8 +75,14 @@
       "userId": "bob-002",
       "createdAt": "2025-09-21T22:43:12.939Z",
       "expiresAt": "2025-10-21T22:43:12.939Z"
+    },
+    {
+      "token": "session-5omtxa24kxp",
+      "userId": "alice-001",
+      "createdAt": "2025-09-21T23:23:58.568Z",
+      "expiresAt": "2025-10-21T23:23:58.568Z"
     }
   ],
   "currentUser": null,
-  "lastUpdated": "2025-09-21T22:57:32.896Z"
+  "lastUpdated": "2025-09-21T23:24:45.538Z"
 }
