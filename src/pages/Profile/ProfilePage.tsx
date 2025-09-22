@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '@/hooks';
+import { useAuth, useToast } from '@/hooks';
 import type { UserProfileForm } from '@/types';
 import './ProfilePage.css';
 
 const ProfilePage = (): React.JSX.Element => {
   const { user, loading, updateUserProfile } = useAuth();
+  const toast = useToast();
   const [profile, setProfile] = useState<UserProfileForm>({
     name: '',
     phone: '',
@@ -16,10 +17,6 @@ const ProfilePage = (): React.JSX.Element => {
     generalArea: '',
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [message, setMessage] = useState<string | null>(null);
-  const [messageType, setMessageType] = useState<'success' | 'error' | null>(
-    null
-  );
   const [errors, setErrors] = useState<Partial<UserProfileForm>>({});
 
   useEffect(() => {
@@ -48,12 +45,6 @@ const ProfilePage = (): React.JSX.Element => {
         [id]: undefined,
       }));
     }
-
-    // Clear messages when user makes changes
-    if (message) {
-      setMessage(null);
-      setMessageType(null);
-    }
   };
 
   const validateForm = (): boolean => {
@@ -78,8 +69,6 @@ const ProfilePage = (): React.JSX.Element => {
   const handleCancel = (): void => {
     setProfile(originalProfile);
     setErrors({});
-    setMessage(null);
-    setMessageType(null);
   };
 
   const handleSubmit = async (
@@ -92,27 +81,23 @@ const ProfilePage = (): React.JSX.Element => {
     }
 
     if (!hasChanges()) {
-      setMessage('No changes to save');
-      setMessageType('error');
+      toast.error('No changes to save');
       return;
     }
 
     setIsSubmitting(true);
-    setMessage(null);
-    setMessageType(null);
 
     try {
       if (updateUserProfile) {
         await updateUserProfile(profile);
         setOriginalProfile(profile); // Update the original to reflect the new saved state
-        setMessage('Profile updated successfully!');
-        setMessageType('success');
+        toast.success('Profile updated successfully!');
       }
     } catch (error) {
-      setMessage(
+      console.error('Failed to update profile:', error);
+      toast.error(
         error instanceof Error ? error.message : 'Failed to update profile.'
       );
-      setMessageType('error');
     } finally {
       setIsSubmitting(false);
     }
@@ -136,16 +121,6 @@ const ProfilePage = (): React.JSX.Element => {
       </header>
 
       <div className="profile-form">
-        {message && (
-          <div
-            className={
-              messageType === 'success' ? 'success-message' : 'error-message'
-            }
-          >
-            {message}
-          </div>
-        )}
-
         <form onSubmit={handleSubmit}>
           <div className="form-group">
             <label htmlFor="name">Full Name *</label>

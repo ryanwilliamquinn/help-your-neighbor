@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '@/hooks';
+import { useAuth, useToast } from '@/hooks';
 import { apiService } from '@/services';
 import type { Group, User } from '@/types';
 import './GroupsPage.css';
 
 const GroupsPage = (): React.JSX.Element => {
   const { user, loading } = useAuth();
+  const toast = useToast();
   const [groups, setGroups] = useState<Group[]>([]);
   const [loadingGroups, setLoadingGroups] = useState(true);
   const [showCreateForm, setShowCreateForm] = useState(false);
@@ -56,19 +57,20 @@ const GroupsPage = (): React.JSX.Element => {
     e.preventDefault();
 
     if (!groupName.trim()) {
-      setError('Group name is required');
+      toast.error('Group name is required');
       return;
     }
 
     try {
       setCreating(true);
-      setError(null);
       const newGroup = await apiService.createGroup(groupName.trim());
       setGroups((prev) => [...prev, newGroup]);
       setGroupName('');
       setShowCreateForm(false);
+      toast.success('Group created successfully!');
     } catch (error) {
-      setError(
+      console.error('Failed to create group:', error);
+      toast.error(
         error instanceof Error ? error.message : 'Failed to create group'
       );
     } finally {
@@ -84,19 +86,19 @@ const GroupsPage = (): React.JSX.Element => {
 
   const handleInviteMember = async (groupId: string): Promise<void> => {
     if (!inviteEmail.trim()) {
-      setInviteError('Email address is required');
+      toast.error('Email address is required');
       return;
     }
 
     try {
-      setInviteError(null);
       const invite = await apiService.createInvite(groupId, inviteEmail.trim());
       const inviteUrl = `${window.location.origin}/invite?token=${invite.token}`;
-      setInviteSuccess(`Invitation created! Share this link: ${inviteUrl}`);
+      toast.success(`Invitation created! Share this link: ${inviteUrl}`);
       setInviteEmail('');
       setInvitingGroupId(null);
     } catch (error) {
-      setInviteError(
+      console.error('Failed to create invitation:', error);
+      toast.error(
         error instanceof Error ? error.message : 'Failed to create invitation'
       );
     }
@@ -170,9 +172,10 @@ const GroupsPage = (): React.JSX.Element => {
         setViewingMembersGroupId(null);
       }
 
-      setInviteSuccess('Successfully left the group');
+      toast.success('Successfully left the group');
     } catch (error) {
-      setError(
+      console.error('Failed to leave group:', error);
+      toast.error(
         error instanceof Error ? error.message : 'Failed to leave group'
       );
     } finally {
@@ -203,9 +206,10 @@ const GroupsPage = (): React.JSX.Element => {
           prev[groupId]?.filter((member) => member.id !== userId) || [],
       }));
 
-      setInviteSuccess(`Successfully removed ${memberName} from the group`);
+      toast.success(`Successfully removed ${memberName} from the group`);
     } catch (error) {
-      setError(
+      console.error('Failed to remove member:', error);
+      toast.error(
         error instanceof Error ? error.message : 'Failed to remove member'
       );
     } finally {
