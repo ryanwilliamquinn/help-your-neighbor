@@ -1,0 +1,126 @@
+/* Toast container positioning and layout styles */
+
+.toast-container {
+  position: fixed;
+  z-index: 9999;
+  pointer-events: none;
+  padding: 20px;
+  max-height: calc(100vh - 40px);
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* All toasts inside the container should have pointer events */
+.toast-container .toast {
+  pointer-events: auto;
+}
+
+/* Position variants */
+.toast-container--top-right {
+  top: 0;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.toast-container--top-left {
+  top: 0;
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.toast-container--bottom-right {
+  bottom: 0;
+  right: 0;
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: flex-end;
+}
+
+.toast-container--bottom-left {
+  bottom: 0;
+  left: 0;
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: flex-start;
+}
+
+.toast-container--top-center {
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.toast-container--bottom-center {
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: center;
+}
+
+/* Scrollbar styling for when there are many toasts */
+.toast-container::-webkit-scrollbar {
+  width: 4px;
+}
+
+.toast-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.toast-container::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 2px;
+}
+
+.toast-container::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 768px) {
+  .toast-container {
+    padding: 16px;
+    max-height: calc(100vh - 32px);
+  }
+
+  /* On mobile, center all positions for better UX */
+  .toast-container--top-right,
+  .toast-container--top-left {
+    top: 0;
+    left: 0;
+    right: 0;
+    transform: none;
+    align-items: center;
+  }
+
+  .toast-container--bottom-right,
+  .toast-container--bottom-left {
+    bottom: 0;
+    left: 0;
+    right: 0;
+    transform: none;
+    align-items: center;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .toast-container {
+    backdrop-filter: none;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .toast-container .toast {
+    animation-duration: 0.1s;
+  }
+}
