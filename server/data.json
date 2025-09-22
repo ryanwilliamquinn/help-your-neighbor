@@ -64,6 +64,17 @@
       "claimedBy": "alice-001",
       "claimedAt": "2025-09-22T02:35:50.575Z",
       "fulfilledAt": "2025-09-22T02:35:57.600Z"
+    },
+    {
+      "id": "3adec28a-641d-4384-be93-b755f8547eb5",
+      "userId": "alice-001",
+      "itemDescription": "apples",
+      "pickupNotes": "",
+      "storePreference": "",
+      "neededBy": "2025-09-24T10:05",
+      "groupId": "group-001",
+      "status": "open",
+      "createdAt": "2025-09-22T17:05:23.178Z"
     }
   ],
   "invites": [
@@ -97,8 +108,20 @@
       "userId": "alice-001",
       "createdAt": "2025-09-21T23:23:58.568Z",
       "expiresAt": "2025-10-21T23:23:58.568Z"
+    },
+    {
+      "token": "session-bgfurdnpfu",
+      "userId": "bob-002",
+      "createdAt": "2025-09-22T17:04:39.028Z",
+      "expiresAt": "2025-10-22T17:04:39.028Z"
+    },
+    {
+      "token": "session-vzcv47lk10q",
+      "userId": "bob-002",
+      "createdAt": "2025-09-22T17:04:44.215Z",
+      "expiresAt": "2025-10-22T17:04:44.215Z"
     }
   ],
   "currentUser": null,
-  "lastUpdated": "2025-09-22T02:35:57.600Z"
+  "lastUpdated": "2025-09-22T17:07:46.752Z"
 }

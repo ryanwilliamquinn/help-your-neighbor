@@ -164,6 +164,28 @@ const DashboardPage = (): React.JSX.Element => {
     }
   };
 
+  const handleUnclaimRequest = async (requestId: string): Promise<void> => {
+    try {
+      setIsClaimingRequest(true);
+      const updatedRequest = await apiService.unclaimRequest(requestId);
+      // Update both user and group requests lists
+      setGroupRequests((prev) =>
+        prev.map((req) => (req.id === requestId ? updatedRequest : req))
+      );
+      setUserRequests((prev) =>
+        prev.map((req) => (req.id === requestId ? updatedRequest : req))
+      );
+      toast.success('Request unclaimed successfully!');
+    } catch (error) {
+      console.error('Failed to unclaim request:', error);
+      toast.error(
+        error instanceof Error ? error.message : 'Failed to unclaim request'
+      );
+    } finally {
+      setIsClaimingRequest(false);
+    }
+  };
+
   const handleFulfillRequest = async (requestId: string): Promise<void> => {
     try {
       setIsFulfillingRequest(true);
@@ -281,6 +303,7 @@ const DashboardPage = (): React.JSX.Element => {
                 requests={groupRequests}
                 isOwnRequests={false}
                 onClaim={handleClaimRequest}
+                onUnclaim={handleUnclaimRequest}
                 onFulfill={handleFulfillRequest}
                 currentUserId={user?.id}
                 isProcessing={isClaimingRequest || isFulfillingRequest}

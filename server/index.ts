@@ -490,6 +490,43 @@ app.post('/api/requests/:requestId/claim', requireAuth, async (req, res) => {
   }
 });
 
+app.post('/api/requests/:requestId/unclaim', requireAuth, async (req, res) => {
+  try {
+    const { requestId } = req.params;
+    const user = (req as AuthenticatedRequest).user;
+    const data = storage.getData();
+
+    const requestIndex = data.requests.findIndex((r) => r.id === requestId);
+    if (requestIndex === -1) {
+      return res.status(404).json({ error: 'Request not found' });
+    }
+
+    const request = data.requests[requestIndex];
+
+    if (request.status !== 'claimed') {
+      return res.status(400).json({ error: 'Request is not claimed' });
+    }
+
+    if (request.claimedBy !== user.id) {
+      return res
+        .status(403)
+        .json({ error: 'You can only unclaim requests that you have claimed' });
+    }
+
+    data.requests[requestIndex] = {
+      ...request,
+      status: 'open',
+      claimedBy: undefined,
+      claimedAt: undefined,
+    };
+
+    await storage.save();
+    res.json(data.requests[requestIndex]);
+  } catch {
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 app.post('/api/requests/:requestId/fulfill', requireAuth, async (req, res) => {
   try {
     const { requestId } = req.params;

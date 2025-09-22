@@ -7,6 +7,7 @@ interface RequestListProps {
   requests: Request[];
   isOwnRequests?: boolean;
   onClaim?: (requestId: string) => Promise<void>;
+  onUnclaim?: (requestId: string) => Promise<void>;
   onFulfill?: (requestId: string) => Promise<void>;
   onDelete?: (requestId: string) => Promise<void>;
   currentUserId?: string;
@@ -20,6 +21,7 @@ const RequestList = ({
   requests,
   isOwnRequests = false,
   onClaim,
+  onUnclaim,
   onFulfill,
   onDelete,
   currentUserId,
@@ -69,6 +71,7 @@ const RequestList = ({
             request={request}
             isOwnRequest={isOwnRequests}
             onClaim={onClaim}
+            onUnclaim={onUnclaim}
             onFulfill={onFulfill}
             onDelete={onDelete}
             currentUserId={currentUserId}

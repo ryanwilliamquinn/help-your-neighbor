@@ -6,6 +6,7 @@ interface RequestCardProps {
   request: Request;
   isOwnRequest?: boolean;
   onClaim?: (requestId: string) => Promise<void>;
+  onUnclaim?: (requestId: string) => Promise<void>;
   onFulfill?: (requestId: string) => Promise<void>;
   onDelete?: (requestId: string) => Promise<void>;
   currentUserId?: string;
@@ -16,6 +17,7 @@ const RequestCard = ({
   request,
   isOwnRequest = false,
   onClaim,
+  onUnclaim,
   onFulfill,
   onDelete,
   currentUserId,
@@ -56,6 +58,15 @@ const RequestCard = ({
     );
   };
 
+  const canUnclaim = (): boolean => {
+    return (
+      !isOwnRequest &&
+      request.status === 'claimed' &&
+      request.claimedBy === currentUserId &&
+      !!onUnclaim
+    );
+  };
+
   const canFulfill = (): boolean => {
     return (
       request.status === 'claimed' &&
@@ -71,6 +82,12 @@ const RequestCard = ({
   const handleClaim = async (): Promise<void> => {
     if (onClaim && canClaim()) {
       await onClaim(request.id);
+    }
+  };
+
+  const handleUnclaim = async (): Promise<void> => {
+    if (onUnclaim && canUnclaim()) {
+      await onUnclaim(request.id);
     }
   };
 
@@ -158,6 +175,16 @@ const RequestCard = ({
             disabled={isProcessing}
           >
             {isProcessing ? 'Claiming...' : 'I can help!'}
+          </button>
+        )}
+
+        {canUnclaim() && (
+          <button
+            className="btn-secondary btn-small"
+            onClick={handleUnclaim}
+            disabled={isProcessing}
+          >
+            {isProcessing ? 'Unclaiming...' : 'Cannot help anymore'}
           </button>
         )}
 

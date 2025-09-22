@@ -397,5 +397,99 @@ describe('MockApiService', () => {
       const fulfilledRequest = await apiService.fulfillRequest(request.id);
       expect(fulfilledRequest.status).toBe('fulfilled');
     });
+
+    it('should allow unclaiming a claimed request', async () => {
+      // Create request as original user
+      const requestForm = {
+        itemDescription: 'Test item for unclaiming',
+        neededBy: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+        groupId,
+      };
+
+      const request = await apiService.createRequest(requestForm);
+
+      // Create helper user and join group
+      await apiService.signOut();
+      await apiService.signUp('helper2@example.com', 'password123');
+
+      // Add helper to group
+      const groupMembers = storage.getGroupMembers();
+      const users = storage.getUsers();
+      const helperUser = users.find((u) => u.email === 'helper2@example.com');
+
+      if (helperUser) {
+        groupMembers.push({
+          groupId,
+          userId: helperUser.id,
+          joinedAt: new Date(),
+        });
+        storage.setGroupMembers(groupMembers);
+      }
+
+      const claimedRequest = await apiService.claimRequest(request.id);
+      expect(claimedRequest.status).toBe('claimed');
+      expect(claimedRequest.claimedBy).toBeDefined();
+
+      // Unclaim the request
+      const unclaimedRequest = await apiService.unclaimRequest(request.id);
+      expect(unclaimedRequest.status).toBe('open');
+      expect(unclaimedRequest.claimedBy).toBeUndefined();
+      expect(unclaimedRequest.claimedAt).toBeUndefined();
+    });
+
+    it('should not allow unclaiming a request not claimed by the user', async () => {
+      // Create request as original user
+      const requestForm = {
+        itemDescription: 'Test item for unclaim error',
+        neededBy: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+        groupId,
+      };
+
+      const request = await apiService.createRequest(requestForm);
+
+      // Create helper user and join group
+      await apiService.signOut();
+      await apiService.signUp('helper3@example.com', 'password123');
+
+      // Add helper to group
+      const groupMembers = storage.getGroupMembers();
+      const users = storage.getUsers();
+      const helperUser = users.find((u) => u.email === 'helper3@example.com');
+
+      if (helperUser) {
+        groupMembers.push({
+          groupId,
+          userId: helperUser.id,
+          joinedAt: new Date(),
+        });
+        storage.setGroupMembers(groupMembers);
+      }
+
+      await apiService.claimRequest(request.id);
+
+      // Switch back to original user and try to unclaim (should fail)
+      await apiService.signOut();
+      await apiService.signIn('requester@example.com', 'password123');
+
+      await expect(apiService.unclaimRequest(request.id)).rejects.toThrow(
+        'You can only unclaim requests that you have claimed'
+      );
+    });
+
+    it('should not allow unclaiming an open request', async () => {
+      // Create request
+      const requestForm = {
+        itemDescription: 'Test item for unclaim open error',
+        neededBy: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+        groupId,
+      };
+
+      const request = await apiService.createRequest(requestForm);
+
+      // Try to unclaim an open request (should fail)
+      await expect(apiService.unclaimRequest(request.id)).rejects.toThrow(
+        'Request is not claimed'
+      );
+    });
   });
 });

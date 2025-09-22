@@ -192,6 +192,12 @@ export class HttpApiService implements ApiService {
     });
   }
 
+  async unclaimRequest(requestId: string): Promise<Request> {
+    return this.request<Request>(`/requests/${requestId}/unclaim`, {
+      method: 'POST',
+    });
+  }
+
   async fulfillRequest(requestId: string): Promise<Request> {
     return this.request<Request>(`/requests/${requestId}/fulfill`, {
       method: 'POST',

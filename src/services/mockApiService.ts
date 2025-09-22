@@ -608,6 +608,43 @@ export class MockApiService implements ApiService {
     return updatedRequest;
   }
 
+  async unclaimRequest(requestId: string): Promise<Request> {
+    await this.delay();
+
+    if (!this.currentUser) {
+      throw new Error('No authenticated user');
+    }
+
+    const requests = this.db.getRequests();
+    const requestIndex = requests.findIndex((r) => r.id === requestId);
+
+    if (requestIndex === -1) {
+      throw new Error('Request not found');
+    }
+
+    const request = requests[requestIndex];
+
+    if (request.status !== 'claimed') {
+      throw new Error('Request is not claimed');
+    }
+
+    if (request.claimedBy !== this.currentUser.id) {
+      throw new Error('You can only unclaim requests that you have claimed');
+    }
+
+    const updatedRequest: Request = {
+      ...request,
+      status: 'open' as RequestStatus,
+      claimedBy: undefined,
+      claimedAt: undefined,
+    };
+
+    requests[requestIndex] = updatedRequest;
+    this.db.setRequests(requests);
+
+    return updatedRequest;
+  }
+
   async fulfillRequest(requestId: string): Promise<Request> {
     await this.delay();
 

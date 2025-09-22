@@ -36,6 +36,7 @@ export interface ApiService {
   getUserRequests: () => Promise<Request[]>;
   getGroupRequests: (groupId: string) => Promise<Request[]>;
   claimRequest: (requestId: string) => Promise<Request>;
+  unclaimRequest: (requestId: string) => Promise<Request>;
   fulfillRequest: (requestId: string) => Promise<Request>;
   deleteRequest: (requestId: string) => Promise<void>;
 
