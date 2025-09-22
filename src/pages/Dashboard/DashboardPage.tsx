@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from '@/hooks';
 import { apiService } from '@/services';
 import type {
@@ -22,7 +22,18 @@ const DashboardPage = (): React.JSX.Element => {
   const [isClaimingRequest, setIsClaimingRequest] = useState(false);
   const [isFulfillingRequest, setIsFulfillingRequest] = useState(false);
   const [isDeletingRequest, setIsDeletingRequest] = useState(false);
+  const loadingRef = useRef(false);
+  const hasLoadedRef = useRef<string | null>(null);
+
   const loadDashboardData = useCallback(async (): Promise<void> => {
+    if (!user || loadingRef.current) return;
+
+    const userId = user.id || user.email; // Fallback to email for tests
+    if (hasLoadedRef.current === userId) return;
+
+    loadingRef.current = true;
+    hasLoadedRef.current = userId;
+
     try {
       setLoadingData(true);
 
@@ -36,7 +47,7 @@ const DashboardPage = (): React.JSX.Element => {
       for (const group of groups) {
         const groupRequests = await apiService.getGroupRequests(group.id);
         const otherMemberRequests = groupRequests.filter(
-          (req) => req.userId !== user?.id
+          (req) => req.userId !== (user.id || user.email)
         );
         allGroupRequests.push(...otherMemberRequests);
       }
@@ -89,6 +100,7 @@ const DashboardPage = (): React.JSX.Element => {
       // TODO: Show user-friendly error message
     } finally {
       setLoadingData(false);
+      loadingRef.current = false;
     }
   }, [user?.id]);
 
@@ -100,6 +112,8 @@ const DashboardPage = (): React.JSX.Element => {
       const newRequest = await apiService.createRequest(requestData);
       setUserRequests((prev) => [newRequest, ...prev]);
       setShowCreateForm(false);
+      // Reset the loaded flag so data can be refreshed
+      hasLoadedRef.current = null;
     } catch (error) {
       console.error('Failed to create request:', error);
       // TODO: Show user-friendly error message
@@ -112,9 +126,15 @@ const DashboardPage = (): React.JSX.Element => {
   };
   useEffect(() => {
     if (user) {
+      // Reset loading state when user changes
+      const userId = user.id || user.email;
+      if (hasLoadedRef.current !== userId) {
+        loadingRef.current = false;
+      }
       loadDashboardData();
     }
-  }, [user, loadDashboardData]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id, user?.email]); // Only depend on user ID to prevent infinite loops
 
   const handleCancelCreate = (): void => {
     setShowCreateForm(false);
