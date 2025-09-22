@@ -7,7 +7,6 @@ import { AuthProvider } from './contexts';
 function validateAppEnvironment(): void {
   const requiredVars = {
     VITE_USE_MOCK_API: import.meta.env.VITE_USE_MOCK_API,
-    VITE_APP_NAME: import.meta.env.VITE_APP_NAME,
   };
 
   for (const [key, value] of Object.entries(requiredVars)) {

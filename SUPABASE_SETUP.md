@@ -123,7 +123,6 @@ npm run dev
 Set the following environment variables in your production deployment platform:
 
 ```bash
-VITE_APP_NAME="A Cup of Sugar"
 VITE_USE_MOCK_API=false
 VITE_SUPABASE_URL=https://your-project-id.supabase.co
 VITE_SUPABASE_ANON_KEY=your_anon_key_here
