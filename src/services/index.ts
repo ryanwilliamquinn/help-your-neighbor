@@ -61,14 +61,18 @@ function createApiService(): ApiService {
   if (typeof window !== 'undefined') {
     // Access environment variables safely for browser environment
     try {
-      const useMockApi = import.meta.env?.VITE_USE_MOCK_API === 'true';
+      // Use a more compatible way to access Vite env vars
+      const env = (globalThis as any)?.import?.meta?.env ||
+                  (window as any)?.import?.meta?.env ||
+                  {};
+
+      const useMockApi = env.VITE_USE_MOCK_API === 'true';
       if (useMockApi) {
         return new MockApiService();
       }
 
       // Browser environment - check if Supabase is configured
-      const hasSupabaseConfig = import.meta.env?.VITE_SUPABASE_URL &&
-                               import.meta.env?.VITE_SUPABASE_ANON_KEY;
+      const hasSupabaseConfig = env.VITE_SUPABASE_URL && env.VITE_SUPABASE_ANON_KEY;
 
       if (hasSupabaseConfig) {
         // Use Supabase for production
@@ -78,7 +82,7 @@ function createApiService(): ApiService {
         return new HttpApiService();
       }
     } catch {
-      // If import.meta is not available, fall back to HTTP API
+      // If environment variables are not available, fall back to HTTP API
       return new HttpApiService();
     }
   } else {

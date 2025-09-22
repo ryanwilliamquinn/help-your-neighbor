@@ -1,6 +1,6 @@
 # Supabase Production Setup Guide
 
-This guide will help you set up Supabase for production deployment of the Help Your Neighbor application.
+This guide will help you set up Supabase for production deployment of the A Cup of Sugar application.
 
 ## Prerequisites
 
@@ -91,7 +91,7 @@ supabase db push
 2. Configure the following settings:
 
 ### Site URL
-- Set **Site URL** to your production domain (e.g., `https://your-app.com`)
+- Set **Site URL** to `https://acupofsugar.org`
 - For development, add `http://localhost:5173`
 
 ### Email Templates (Optional)
@@ -123,7 +123,7 @@ npm run dev
 Set the following environment variables in your production deployment platform:
 
 ```bash
-VITE_APP_NAME="Help Your Neighbor"
+VITE_APP_NAME="A Cup of Sugar"
 VITE_USE_MOCK_API=false
 VITE_SUPABASE_URL=https://your-project-id.supabase.co
 VITE_SUPABASE_ANON_KEY=your_anon_key_here

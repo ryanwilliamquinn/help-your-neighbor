@@ -27,7 +27,7 @@ function validateAppEnvironment(): void {
 
   // eslint-disable-next-line no-console
   console.log(
-    `Help Your Neighbor starting in ${requiredVars.VITE_USE_MOCK_API === 'true' ? 'mock' : 'production'} mode`
+    `A Cup of Sugar starting in ${requiredVars.VITE_USE_MOCK_API === 'true' ? 'mock' : 'production'} mode`
   );
 }
 
