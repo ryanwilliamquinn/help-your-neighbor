@@ -1,5 +1,5 @@
 import React from 'react';
-import type { Request, User } from '@/types';
+import type { Request } from '@/types';
 import RequestCard from '@/components/RequestCard/RequestCard';
 import './RequestList.css';
 
@@ -14,7 +14,6 @@ interface RequestListProps {
   emptyMessage?: string;
   emptySubMessage?: string;
   className?: string;
-  helperUsers?: Record<string, User>;
 }
 
 const RequestList = ({
@@ -28,7 +27,6 @@ const RequestList = ({
   emptyMessage = 'No requests yet',
   emptySubMessage,
   className = '',
-  helperUsers = {},
 }: RequestListProps): React.JSX.Element => {
   if (requests.length === 0) {
     return (
@@ -75,9 +73,6 @@ const RequestList = ({
             onDelete={onDelete}
             currentUserId={currentUserId}
             isProcessing={isProcessing}
-            helperUser={
-              request.claimedBy ? helperUsers[request.claimedBy] || null : null
-            }
           />
         ))}
       </div>

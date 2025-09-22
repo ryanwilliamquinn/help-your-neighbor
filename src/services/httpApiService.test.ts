@@ -86,6 +86,67 @@ describe('HttpApiService', () => {
     });
   });
 
+  describe('getUsersByIds', () => {
+    it('should make POST request to batch users endpoint', async () => {
+      const mockUsers = [
+        { id: 'user-1', name: 'User One', email: 'user1@example.com' },
+        { id: 'user-2', name: 'User Two', email: 'user2@example.com' },
+      ];
+
+      (fetch as jest.Mock).mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve(mockUsers),
+      });
+
+      const userIds = ['user-1', 'user-2'];
+      const result = await httpApiService.getUsersByIds(userIds);
+
+      expect(fetch).toHaveBeenCalledWith(
+        'http://localhost:3002/api/users/batch',
+        expect.objectContaining({
+          method: 'POST',
+          headers: expect.objectContaining({
+            'Content-Type': 'application/json',
+          }),
+          body: JSON.stringify({ userIds }),
+        })
+      );
+
+      expect(result).toEqual(mockUsers);
+    });
+
+    it('should handle empty userIds array', async () => {
+      (fetch as jest.Mock).mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve([]),
+      });
+
+      const result = await httpApiService.getUsersByIds([]);
+
+      expect(fetch).toHaveBeenCalledWith(
+        'http://localhost:3002/api/users/batch',
+        expect.objectContaining({
+          method: 'POST',
+          body: JSON.stringify({ userIds: [] }),
+        })
+      );
+
+      expect(result).toEqual([]);
+    });
+
+    it('should throw error when server returns error', async () => {
+      (fetch as jest.Mock).mockResolvedValueOnce({
+        ok: false,
+        status: 500,
+        json: () => Promise.resolve({ error: 'Server error' }),
+      });
+
+      await expect(httpApiService.getUsersByIds(['user-1'])).rejects.toThrow(
+        'Server error'
+      );
+    });
+  });
+
   describe('authentication', () => {
     it('should include Authorization header when session token exists', async () => {
       // Set up a session token

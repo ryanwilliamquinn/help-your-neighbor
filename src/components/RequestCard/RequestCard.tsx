@@ -1,5 +1,5 @@
 import React from 'react';
-import type { Request, User } from '@/types';
+import type { Request } from '@/types';
 import './RequestCard.css';
 
 interface RequestCardProps {
@@ -10,7 +10,6 @@ interface RequestCardProps {
   onDelete?: (requestId: string) => Promise<void>;
   currentUserId?: string;
   isProcessing?: boolean;
-  helperUser?: User | null;
 }
 
 const RequestCard = ({
@@ -21,7 +20,6 @@ const RequestCard = ({
   onDelete,
   currentUserId,
   isProcessing = false,
-  helperUser,
 }: RequestCardProps): React.JSX.Element => {
   const formatDate = (date: Date): string => {
     return new Date(date).toLocaleDateString('en-US', {
@@ -131,7 +129,7 @@ const RequestCard = ({
             <div className="claimed-info">
               <span className="claimed-badge">
                 {isOwnRequest
-                  ? `${request.status === 'fulfilled' ? 'Fulfilled by' : 'Being helped by'} ${helperUser?.name || 'someone'}`
+                  ? `${request.status === 'fulfilled' ? 'Fulfilled by' : 'Being helped by'} ${request.helper?.name || 'someone'}`
                   : `${request.status === 'fulfilled' ? 'Fulfilled by you' : 'Claimed by you'}`}
               </span>
               {request.claimedAt && (
@@ -141,6 +139,15 @@ const RequestCard = ({
               )}
             </div>
           )}
+
+        {/* Show creator information for group requests */}
+        {!isOwnRequest && request.creator && (
+          <div className="creator-info">
+            <span className="creator-name">
+              Posted by {request.creator.name}
+            </span>
+          </div>
+        )}
       </div>
 
       <div className="request-actions">

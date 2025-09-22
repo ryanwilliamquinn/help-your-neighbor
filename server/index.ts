@@ -130,11 +130,29 @@ app.get('/api/user/requests', requireAuth, async (req, res) => {
     console.log('🚀 user:', user);
     const data = storage.getData();
 
-    const userRequests = data.requests.filter((r) => r.requesterId === user.id);
+    const userRequests = data.requests.filter((r) => r.userId === user.id);
     console.log('🚀 Found user requests:', userRequests.length);
     res.json(userRequests);
   } catch (error) {
     console.log('🚀 ERROR in /api/user/requests:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Batch user lookup endpoint
+app.post('/api/users/batch', requireAuth, async (req, res) => {
+  try {
+    const { userIds } = req.body;
+
+    if (!Array.isArray(userIds)) {
+      return res.status(400).json({ error: 'userIds must be an array' });
+    }
+
+    const data = storage.getData();
+    const users = data.users.filter((user) => userIds.includes(user.id));
+    res.json(users);
+  } catch (error) {
+    console.log('🚀 ERROR in /api/users/batch:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });

@@ -20,7 +20,7 @@ function App(): React.JSX.Element {
           <nav>
             <ul>
               <li>
-                <Link to="/">Home</Link>
+                <Link to="/">Help Your Neighbor</Link>
               </li>
               {!user && (
                 <li>

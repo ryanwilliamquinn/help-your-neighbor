@@ -22,8 +22,6 @@ const DashboardPage = (): React.JSX.Element => {
   const [isClaimingRequest, setIsClaimingRequest] = useState(false);
   const [isFulfillingRequest, setIsFulfillingRequest] = useState(false);
   const [isDeletingRequest, setIsDeletingRequest] = useState(false);
-  const [helperUsers, setHelperUsers] = useState<Record<string, User>>({});
-
   const loadDashboardData = useCallback(async (): Promise<void> => {
     try {
       setLoadingData(true);
@@ -32,35 +30,63 @@ const DashboardPage = (): React.JSX.Element => {
       const groups = await apiService.getUserGroups();
       setUserGroups(groups);
 
-      // Load user's own requests
+      // Load all requests
       const userRequests = await apiService.getUserRequests();
-      setUserRequests(userRequests);
-
-      // Load requests from all groups the user belongs to (excluding their own)
       const allGroupRequests: Request[] = [];
       for (const group of groups) {
         const groupRequests = await apiService.getGroupRequests(group.id);
-        // Filter out the current user's own requests to avoid duplicates
         const otherMemberRequests = groupRequests.filter(
           (req) => req.userId !== user?.id
         );
         allGroupRequests.push(...otherMemberRequests);
       }
-      setGroupRequests(allGroupRequests);
 
-      // Load helper user information for all requests that have been claimed
+      // Batch load all user data
       const allRequests = [...userRequests, ...allGroupRequests];
-      const claimedByUserIds = allRequests
-        .filter((req) => req.claimedBy)
-        .map((req) => req.claimedBy!)
-        .filter((id, index, array) => array.indexOf(id) === index); // Remove duplicates
+      const allUserIds = [
+        ...allRequests.map((req) => req.userId), // creators
+        ...allRequests
+          .filter((req) => req.claimedBy)
+          .map((req) => req.claimedBy!), // helpers
+      ].filter((id, index, array) => array.indexOf(id) === index); // remove duplicates
 
-      const helperUsersMap: Record<string, User> = {};
-      for (const userId of claimedByUserIds) {
-        const helperUser = await apiService.getUserById(userId);
-        helperUsersMap[userId] = helperUser;
+      try {
+        const allUsers = await apiService.getUsersByIds(allUserIds);
+        const usersMap = allUsers.reduce(
+          (map, user) => {
+            map[user.id] = user;
+            return map;
+          },
+          {} as Record<string, User>
+        );
+
+        // Attach user data to requests
+        const enhancedUserRequests = userRequests.map((req) => ({
+          ...req,
+          creator: usersMap[req.userId],
+          helper: req.claimedBy ? usersMap[req.claimedBy] : undefined,
+        }));
+
+        const enhancedGroupRequests = allGroupRequests.map((req) => ({
+          ...req,
+          creator: usersMap[req.userId],
+          helper: req.claimedBy ? usersMap[req.claimedBy] : undefined,
+        }));
+
+        setUserRequests(enhancedUserRequests);
+        setGroupRequests(enhancedGroupRequests);
+      } catch (userLoadError) {
+        console.error(
+          'Failed to load user data for requests, continuing without user info:',
+          userLoadError
+        );
+        // Set requests without user data enhancement
+        setUserRequests(userRequests);
+        setGroupRequests(allGroupRequests);
       }
-      setHelperUsers(helperUsersMap);
+    } catch (error) {
+      console.error('Failed to load dashboard data:', error);
+      // TODO: Show user-friendly error message
     } finally {
       setLoadingData(false);
     }
@@ -198,7 +224,6 @@ const DashboardPage = (): React.JSX.Element => {
                   onDelete={handleDeleteRequest}
                   currentUserId={user?.id}
                   isProcessing={isFulfillingRequest || isDeletingRequest}
-                  helperUsers={helperUsers}
                 />
               )}
             </div>
@@ -222,7 +247,6 @@ const DashboardPage = (): React.JSX.Element => {
                 isProcessing={isClaimingRequest || isFulfillingRequest}
                 emptyMessage="No requests from your group members right now."
                 emptySubMessage="Check back later!"
-                helperUsers={helperUsers}
               />
             </div>
           </section>

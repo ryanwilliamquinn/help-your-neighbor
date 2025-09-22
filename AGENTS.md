@@ -233,7 +233,9 @@ When ready for production:
 3. Run database migration scripts in `/database/schema.sql`
 4. Implement Supabase service layer (currently planned)
 
-## Current Status
+## Development Status
+
+**Current Status**: Pre-alpha development - No real users yet
 
 **Phase 1 Complete**: Project foundation with offline development capability
 
@@ -245,3 +247,15 @@ When ready for production:
 - ✅ Environment configuration for dev/prod modes
 
 **Next Phase**: UI components and user authentication flows
+
+### Pre-Alpha Development Guidelines
+
+Since we have no real users yet:
+
+- **No Backward Compatibility Required**: Make breaking changes freely to improve architecture
+- **Rapid Iteration**: Prioritize speed of development over migration concerns
+- **Schema Changes**: Database schema can be modified without migration scripts
+- **API Breaking Changes**: API interfaces can be redesigned as needed
+- **UI/UX Experimentation**: Feel free to completely redesign user interfaces
+- **Performance Over Polish**: Focus on core functionality before optimization
+- **Testing Strategy**: Focus on critical paths, comprehensive testing comes later

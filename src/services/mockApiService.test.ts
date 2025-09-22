@@ -46,6 +46,65 @@ describe('MockApiService', () => {
       );
     });
 
+    it('should get multiple users by IDs', async () => {
+      // Create multiple users
+      const user1Response = await apiService.signUp(
+        'user1@example.com',
+        'password123'
+      );
+      await apiService.signOut();
+      const user2Response = await apiService.signUp(
+        'user2@example.com',
+        'password123'
+      );
+      await apiService.signOut();
+      const user3Response = await apiService.signUp(
+        'user3@example.com',
+        'password123'
+      );
+
+      const userIds = [user1Response.user.id, user2Response.user.id];
+      const users = await apiService.getUsersByIds(userIds);
+
+      expect(users).toHaveLength(2);
+      expect(users.find((u) => u.id === user1Response.user.id)).toBeDefined();
+      expect(users.find((u) => u.id === user2Response.user.id)).toBeDefined();
+      expect(users.find((u) => u.email === 'user1@example.com')).toBeDefined();
+      expect(users.find((u) => u.email === 'user2@example.com')).toBeDefined();
+      // user3 should not be included
+      expect(users.find((u) => u.id === user3Response.user.id)).toBeUndefined();
+    });
+
+    it('should handle empty userIds array', async () => {
+      await apiService.signUp('test@example.com', 'password123');
+
+      const users = await apiService.getUsersByIds([]);
+      expect(users).toHaveLength(0);
+    });
+
+    it('should handle non-existent user IDs gracefully', async () => {
+      const user1Response = await apiService.signUp(
+        'existing@example.com',
+        'password123'
+      );
+
+      const users = await apiService.getUsersByIds([
+        user1Response.user.id,
+        'non-existent-id',
+      ]);
+      expect(users).toHaveLength(1);
+      expect(users[0].id).toBe(user1Response.user.id);
+    });
+
+    it('should require authenticated user for getUsersByIds', async () => {
+      // Ensure no user is signed in
+      await apiService.signOut();
+
+      await expect(apiService.getUsersByIds(['some-id'])).rejects.toThrow(
+        'No authenticated user'
+      );
+    });
+
     it('should reject signup with invalid email', async () => {
       await expect(
         apiService.signUp('invalid-email', 'password123')

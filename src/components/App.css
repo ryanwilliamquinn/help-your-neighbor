@@ -1,42 +1,116 @@
-#root {
-  max-width: 1280px;
+/* Reset the centering from index.css for the main app */
+.App {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Header and Navigation Styles */
+.App-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.App-header nav {
+  max-width: 1200px;
   margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+  padding: 0 1rem;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+.App-header nav ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 60px;
 }
 
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
+.App-header nav ul li {
+  margin: 0;
+}
+
+/* Logo/Brand area */
+.App-header nav ul li:first-child {
+  margin-right: auto;
+}
+
+.App-header nav ul li:first-child a {
+  font-weight: 700;
+  font-size: 1.25rem;
+  color: white;
+  text-decoration: none;
+  transition: opacity 0.2s ease;
+}
+
+.App-header nav ul li:first-child a:hover {
+  opacity: 0.8;
+}
+
+/* Navigation links */
+.App-header nav ul li:not(:first-child) {
+  margin-left: 1.5rem;
+}
+
+.App-header nav ul li a {
+  color: rgba(255, 255, 255, 0.9);
+  text-decoration: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  font-weight: 500;
+}
+
+.App-header nav ul li a:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: white;
+}
+
+/* Logout button styling */
+.App-header nav ul li button {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.App-header nav ul li button:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+/* Main content area */
+.App main {
+  flex: 1;
+  background: #f8fafc;
+  min-height: calc(100vh - 60px);
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .App-header nav ul {
+    flex-wrap: wrap;
+    min-height: auto;
+    padding: 1rem 0;
   }
-  to {
-    transform: rotate(360deg);
+
+  .App-header nav ul li:first-child {
+    margin-right: 0;
+    margin-bottom: 0.5rem;
+    flex-basis: 100%;
+    text-align: center;
   }
-}
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
+  .App-header nav ul li:not(:first-child) {
+    margin-left: 0.5rem;
+    margin-right: 0.5rem;
   }
-}
-
-.card {
-  padding: 2em;
-}
-
-.read-the-docs {
-  color: #888;
 }

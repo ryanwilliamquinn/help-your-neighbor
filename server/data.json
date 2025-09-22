@@ -39,15 +39,15 @@
   ],
   "requests": [
     {
-      "id": "e5362faa-e289-467f-8198-6035cd580146",
+      "id": "b26962dd-474a-4212-b3f0-c67987baec70",
       "userId": "bob-002",
       "itemDescription": "bananas",
       "pickupNotes": "",
-      "storePreference": "PCC",
-      "neededBy": "2025-09-22T16:23",
+      "storePreference": "pcc",
+      "neededBy": "2025-09-23T18:45",
       "groupId": "group-001",
       "status": "open",
-      "createdAt": "2025-09-21T23:23:32.824Z"
+      "createdAt": "2025-09-22T01:45:53.727Z"
     }
   ],
   "invites": [
@@ -84,5 +84,5 @@
     }
   ],
   "currentUser": null,
-  "lastUpdated": "2025-09-21T23:24:45.538Z"
+  "lastUpdated": "2025-09-22T02:10:30.514Z"
 }

@@ -158,4 +158,102 @@ describe('RequestCard', () => {
     render(<RequestCard request={claimedRequest} isOwnRequest={true} />);
     expect(screen.getByText(/being helped by someone/i)).toBeInTheDocument();
   });
+
+  it('should show creator information for group requests', () => {
+    const requestWithCreator: Request = {
+      ...mockRequest,
+      creator: {
+        id: 'user1',
+        name: 'Alice Johnson',
+        email: 'alice@example.com',
+        phone: '555-0101',
+        generalArea: 'Downtown',
+        createdAt: new Date(),
+      },
+    };
+
+    render(<RequestCard request={requestWithCreator} isOwnRequest={false} />);
+    expect(screen.getByText(/posted by alice johnson/i)).toBeInTheDocument();
+  });
+
+  it('should not show creator information for own requests', () => {
+    const requestWithCreator: Request = {
+      ...mockRequest,
+      creator: {
+        id: 'user1',
+        name: 'Alice Johnson',
+        email: 'alice@example.com',
+        phone: '555-0101',
+        generalArea: 'Downtown',
+        createdAt: new Date(),
+      },
+    };
+
+    render(<RequestCard request={requestWithCreator} isOwnRequest={true} />);
+    expect(
+      screen.queryByText(/posted by alice johnson/i)
+    ).not.toBeInTheDocument();
+  });
+
+  it('should show helper information when request is claimed', () => {
+    const claimedRequestWithHelper: Request = {
+      ...mockRequest,
+      status: 'claimed',
+      claimedBy: 'helper1',
+      claimedAt: new Date('2025-01-02T12:00:00Z'),
+      helper: {
+        id: 'helper1',
+        name: 'Bob Helper',
+        email: 'bob@example.com',
+        phone: '555-0102',
+        generalArea: 'Midtown',
+        createdAt: new Date(),
+      },
+    };
+
+    // Test as own request being helped
+    render(
+      <RequestCard request={claimedRequestWithHelper} isOwnRequest={true} />
+    );
+    expect(screen.getByText(/being helped by bob helper/i)).toBeInTheDocument();
+  });
+
+  it('should show fulfilled helper information correctly', () => {
+    const fulfilledRequestWithHelper: Request = {
+      ...mockRequest,
+      status: 'fulfilled',
+      claimedBy: 'helper1',
+      claimedAt: new Date('2025-01-02T12:00:00Z'),
+      helper: {
+        id: 'helper1',
+        name: 'Bob Helper',
+        email: 'bob@example.com',
+        phone: '555-0102',
+        generalArea: 'Midtown',
+        createdAt: new Date(),
+      },
+    };
+
+    // Test as own request that was fulfilled
+    render(
+      <RequestCard request={fulfilledRequestWithHelper} isOwnRequest={true} />
+    );
+    expect(screen.getByText(/fulfilled by bob helper/i)).toBeInTheDocument();
+  });
+
+  it('should handle missing user data gracefully', () => {
+    const requestWithoutUserData: Request = {
+      ...mockRequest,
+      status: 'claimed',
+      claimedBy: 'helper1',
+      claimedAt: new Date('2025-01-02T12:00:00Z'),
+      // No helper or creator data
+    };
+
+    // Should not crash when user data is missing
+    render(
+      <RequestCard request={requestWithoutUserData} isOwnRequest={false} />
+    );
+    expect(screen.getByText(/claimed by you/i)).toBeInTheDocument();
+  });
 });

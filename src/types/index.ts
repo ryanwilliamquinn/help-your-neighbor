@@ -34,6 +34,9 @@ export interface Request {
   claimedBy?: string;
   claimedAt?: Date;
   createdAt: Date;
+  // User data directly embedded in request objects
+  creator?: User;
+  helper?: User;
 }
 
 export interface Invite {

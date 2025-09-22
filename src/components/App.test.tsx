@@ -59,7 +59,9 @@ describe('App', () => {
     // The navigation should show Profile link
     expect(screen.getByRole('link', { name: /profile/i })).toBeInTheDocument();
 
-    // The navigation should show Home link
-    expect(screen.getByRole('link', { name: /home/i })).toBeInTheDocument();
+    // The navigation should show brand link
+    expect(
+      screen.getByRole('link', { name: /help your neighbor/i })
+    ).toBeInTheDocument();
   });
 });

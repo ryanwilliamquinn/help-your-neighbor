@@ -20,6 +20,7 @@ export interface ApiService {
   // User services
   getCurrentUser: () => Promise<User>;
   getUserById: (userId: string) => Promise<User>;
+  getUsersByIds: (userIds: string[]) => Promise<User[]>;
   updateUserProfile: (profile: UserProfileForm) => Promise<User>;
 
   // Group services

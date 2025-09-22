@@ -176,6 +176,17 @@ export class MockApiService implements ApiService {
     return user;
   }
 
+  async getUsersByIds(userIds: string[]): Promise<User[]> {
+    await this.delay();
+
+    if (!this.currentUser) {
+      throw new Error('No authenticated user');
+    }
+
+    const users = this.db.getUsers();
+    return users.filter((user) => userIds.includes(user.id));
+  }
+
   async updateUserProfile(profile: UserProfileForm): Promise<User> {
     await this.delay();
 

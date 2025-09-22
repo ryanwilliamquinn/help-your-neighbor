@@ -113,6 +113,13 @@ export class HttpApiService implements ApiService {
     return this.request<User>(`/user/${userId}`);
   }
 
+  async getUsersByIds(userIds: string[]): Promise<User[]> {
+    return this.request<User[]>('/users/batch', {
+      method: 'POST',
+      body: JSON.stringify({ userIds }),
+    });
+  }
+
   async updateUserProfile(profile: UserProfileForm): Promise<User> {
     return this.request<User>('/user/profile', {
       method: 'PUT',
