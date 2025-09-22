@@ -77,17 +77,14 @@ const CreateRequestForm = ({
   ): Promise<void> => {
     e.preventDefault();
 
-    console.log('Form data before validation:', formData);
     if (!validateForm()) {
-      console.log('Form validation failed:', errors);
       return;
     }
 
-    console.log('Submitting form data:', formData);
     try {
       await onSubmit(formData);
-    } catch (error) {
-      console.error('Form submission error:', error);
+    } catch {
+      // Error is handled by parent component
     }
   };
 

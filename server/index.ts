@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import morgan from 'morgan';
+import { randomUUID, randomBytes } from 'crypto';
 import {
   storage,
   User,
@@ -19,18 +20,101 @@ const PORT = 3002;
 
 // Middleware
 app.use(morgan('combined')); // Log all HTTP requests
-app.use(cors());
-app.use(express.json());
 
-// Helper function to validate email
+// CORS configuration - restrict to known origins in production
+const corsOptions = {
+  origin: function (
+    origin: string | undefined,
+    callback: (error: Error | null, success?: boolean) => void
+  ): void {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+
+    const allowedOrigins = [
+      'http://localhost:5173', // Vite dev server
+      'http://localhost:3000', // Alternative dev port
+      'http://localhost:4173', // Vite preview
+      // Add production domains here when deploying
+      // 'https://your-domain.com',
+      // 'https://www.your-domain.com'
+    ];
+
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      console.warn(`CORS: Blocked origin ${origin}`);
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true, // Allow cookies/auth headers
+  optionsSuccessStatus: 200, // Some legacy browsers choke on 204
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+};
+
+app.use(cors(corsOptions));
+app.use(express.json({ limit: '10mb' })); // Add request size limit
+
+// Input validation helpers
 function validateEmail(email: string): boolean {
+  if (!email || typeof email !== 'string') return false;
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return emailRegex.test(email);
+  return emailRegex.test(email.trim());
+}
+
+function validatePassword(password: string): boolean {
+  if (!password || typeof password !== 'string') return false;
+  return password.length >= 6;
+}
+
+function validateRequired(value: unknown, fieldName: string): string {
+  if (!value || (typeof value === 'string' && !value.trim())) {
+    throw new Error(`${fieldName} is required`);
+  }
+  return typeof value === 'string' ? value.trim() : String(value);
+}
+
+function sanitizeInput(input: string): string {
+  if (!input) return '';
+  // Basic sanitization - remove HTML tags and trim
+  return input
+    .trim()
+    .replace(/<script.*?>.*?<\/script>/gi, '')
+    .replace(/<[^>]*>/g, '');
+}
+
+function validateStringLength(
+  value: string,
+  fieldName: string,
+  minLength: number = 1,
+  maxLength: number = 1000
+): string {
+  const trimmed = value.trim();
+  if (trimmed.length < minLength) {
+    throw new Error(`${fieldName} must be at least ${minLength} characters`);
+  }
+  if (trimmed.length > maxLength) {
+    throw new Error(
+      `${fieldName} must be no more than ${maxLength} characters`
+    );
+  }
+  return sanitizeInput(trimmed);
 }
 
 // Helper function to generate invite token
 function generateToken(): string {
-  return Math.random().toString(36).substr(2, 20);
+  // Use Node.js crypto module for secure token generation
+  try {
+    return randomUUID();
+  } catch {
+    // Fallback to crypto.randomBytes if randomUUID is not available
+    try {
+      return randomBytes(16).toString('hex');
+    } catch {
+      // This fallback should only be used in development environments
+      return Math.random().toString(36).substr(2, 20);
+    }
+  }
 }
 
 // Initialize storage
@@ -41,11 +125,16 @@ app.post('/api/auth/signup', async (req, res) => {
   try {
     const { email, password } = req.body;
 
+    // Validate input
+    if (!email || !password) {
+      return res.status(400).json({ error: 'Email and password are required' });
+    }
+
     if (!validateEmail(email)) {
       return res.status(400).json({ error: 'Invalid email format' });
     }
 
-    if (password.length < 6) {
+    if (!validatePassword(password)) {
       return res
         .status(400)
         .json({ error: 'Password must be at least 6 characters' });
@@ -78,7 +167,8 @@ app.post('/api/auth/signup', async (req, res) => {
       user: newUser,
       session: sessionToken,
     });
-  } catch {
+  } catch (error) {
+    console.error('Signup error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -87,15 +177,20 @@ app.post('/api/auth/signin', async (req, res) => {
   try {
     const { email, password } = req.body;
 
+    // Validate input
+    if (!email || !password) {
+      return res.status(400).json({ error: 'Email and password are required' });
+    }
+
+    if (!validateEmail(email)) {
+      return res.status(400).json({ error: 'Invalid email format' });
+    }
+
     const data = storage.getData();
-    const user = data.users.find((u) => u.email === email);
+    const user = data.users.find((u) => u.email === email.trim());
 
     if (!user) {
       return res.status(400).json({ error: 'Invalid email or password' });
-    }
-
-    if (password.length === 0) {
-      return res.status(400).json({ error: 'Password is required' });
     }
 
     const sessionToken = createSession(user);
@@ -104,7 +199,8 @@ app.post('/api/auth/signin', async (req, res) => {
       user,
       session: sessionToken,
     });
-  } catch {
+  } catch (error) {
+    console.error('Signin error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -124,17 +220,17 @@ app.get('/api/user/current', requireAuth, async (req, res) => {
 
 // Move /api/user/requests BEFORE the parameterized route to avoid conflicts
 app.get('/api/user/requests', requireAuth, async (req, res) => {
-  console.log('🚀 START OF /api/user/requests ROUTE');
   try {
     const user = (req as AuthenticatedRequest).user;
-    console.log('🚀 user:', user);
     const data = storage.getData();
 
     const userRequests = data.requests.filter((r) => r.userId === user.id);
-    console.log('🚀 Found user requests:', userRequests.length);
     res.json(userRequests);
   } catch (error) {
-    console.log('🚀 ERROR in /api/user/requests:', error);
+    console.error(
+      'Error fetching user requests:',
+      error instanceof Error ? error.message : 'Unknown error'
+    );
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -152,7 +248,10 @@ app.post('/api/users/batch', requireAuth, async (req, res) => {
     const users = data.users.filter((user) => userIds.includes(user.id));
     res.json(users);
   } catch (error) {
-    console.log('🚀 ERROR in /api/users/batch:', error);
+    console.error(
+      'Error in batch user lookup:',
+      error instanceof Error ? error.message : 'Unknown error'
+    );
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -181,11 +280,22 @@ app.put('/api/user/profile', requireAuth, async (req, res) => {
       return res.status(404).json({ error: 'User not found' });
     }
 
+    // Validate input
+    const validatedName = name
+      ? validateStringLength(name, 'Name', 1, 100)
+      : data.users[userIndex].name;
+    const validatedPhone = phone
+      ? validateStringLength(phone, 'Phone', 10, 20)
+      : data.users[userIndex].phone;
+    const validatedArea = generalArea
+      ? validateStringLength(generalArea, 'General area', 1, 100)
+      : data.users[userIndex].generalArea;
+
     data.users[userIndex] = {
       ...data.users[userIndex],
-      name: name || data.users[userIndex].name,
-      phone: phone || data.users[userIndex].phone,
-      generalArea: generalArea || data.users[userIndex].generalArea,
+      name: validatedName,
+      phone: validatedPhone,
+      generalArea: validatedArea,
     };
 
     await storage.save();
@@ -231,7 +341,6 @@ app.post('/api/groups', requireAuth, async (req, res) => {
 });
 
 app.get('/api/groups', requireAuth, async (req, res) => {
-  console.log('getting api groups');
   try {
     const user = (req as AuthenticatedRequest).user;
     const data = storage.getData();
@@ -366,23 +475,50 @@ app.post('/api/requests', requireAuth, async (req, res) => {
       req.body;
     const user = (req as AuthenticatedRequest).user;
 
-    if (!itemDescription?.trim()) {
-      return res.status(400).json({ error: 'Item description is required' });
+    // Validate required fields
+    const validatedItemDescription = validateStringLength(
+      validateRequired(itemDescription, 'Item description'),
+      'Item description',
+      3,
+      500
+    );
+
+    const validatedGroupId = validateRequired(groupId, 'Group ID');
+
+    // Validate optional fields
+    const validatedStorePreference = storePreference
+      ? validateStringLength(storePreference, 'Store preference', 1, 100)
+      : '';
+
+    const validatedPickupNotes = pickupNotes
+      ? validateStringLength(pickupNotes, 'Pickup notes', 1, 500)
+      : '';
+
+    // Validate date
+    if (!neededBy) {
+      return res.status(400).json({ error: 'Needed by date is required' });
     }
 
-    if (!groupId) {
-      return res.status(400).json({ error: 'Group ID is required' });
+    const neededByDate = new Date(neededBy);
+    if (isNaN(neededByDate.getTime())) {
+      return res.status(400).json({ error: 'Invalid needed by date' });
+    }
+
+    if (neededByDate <= new Date()) {
+      return res
+        .status(400)
+        .json({ error: 'Needed by date must be in the future' });
     }
 
     const data = storage.getData();
-    const group = data.groups.find((g) => g.id === groupId);
+    const group = data.groups.find((g) => g.id === validatedGroupId);
     if (!group) {
       return res.status(404).json({ error: 'Group not found' });
     }
 
     // Verify user is member of this group
     const userMembership = data.groupMembers.find(
-      (gm) => gm.groupId === groupId && gm.userId === user.id
+      (gm) => gm.groupId === validatedGroupId && gm.userId === user.id
     );
 
     if (!userMembership) {
@@ -394,11 +530,11 @@ app.post('/api/requests', requireAuth, async (req, res) => {
     const newRequest: RequestType = {
       id: storage.generateId(),
       userId: user.id,
-      itemDescription: itemDescription.trim(),
-      pickupNotes: pickupNotes.trim() || '',
-      storePreference: storePreference?.trim() || '',
-      neededBy: neededBy,
-      groupId,
+      itemDescription: validatedItemDescription,
+      pickupNotes: validatedPickupNotes,
+      storePreference: validatedStorePreference,
+      neededBy: neededByDate.toISOString(),
+      groupId: validatedGroupId,
       status: 'open',
       createdAt: new Date().toISOString(),
     };
@@ -413,7 +549,6 @@ app.post('/api/requests', requireAuth, async (req, res) => {
 
 // Test route to verify basic routing works
 app.get('/api/test', (req, res) => {
-  console.log('TEST ROUTE HIT');
   res.json({ message: 'Test route working' });
 });
 
@@ -445,6 +580,12 @@ app.post('/api/requests/:requestId/claim', requireAuth, async (req, res) => {
   try {
     const { requestId } = req.params;
     const user = (req as AuthenticatedRequest).user;
+
+    // Validate requestId
+    if (!requestId || typeof requestId !== 'string') {
+      return res.status(400).json({ error: 'Invalid request ID' });
+    }
+
     const data = storage.getData();
 
     const requestIndex = data.requests.findIndex((r) => r.id === requestId);
@@ -454,6 +595,7 @@ app.post('/api/requests/:requestId/claim', requireAuth, async (req, res) => {
 
     const request = data.requests[requestIndex];
 
+    // Atomic check and update to prevent race conditions
     if (request.status !== 'open') {
       return res
         .status(400)
@@ -476,15 +618,32 @@ app.post('/api/requests/:requestId/claim', requireAuth, async (req, res) => {
         .status(403)
         .json({ error: 'You are not a member of this group' });
     }
-    data.requests[requestIndex] = {
-      ...request,
+
+    // Double-check the status hasn't changed (simple race condition protection)
+    const latestData = storage.getData();
+    const latestRequest = latestData.requests.find((r) => r.id === requestId);
+
+    if (!latestRequest || latestRequest.status !== 'open') {
+      return res
+        .status(409)
+        .json({ error: 'Request was claimed by someone else' });
+    }
+
+    // Update with atomic operation
+    const updatedRequest = {
+      ...latestRequest,
       status: 'claimed',
       claimedBy: user.id,
       claimedAt: new Date().toISOString(),
     };
 
+    const latestRequestIndex = latestData.requests.findIndex(
+      (r) => r.id === requestId
+    );
+    latestData.requests[latestRequestIndex] = updatedRequest;
+
     await storage.save();
-    res.json(data.requests[requestIndex]);
+    res.json(updatedRequest);
   } catch {
     res.status(500).json({ error: 'Internal server error' });
   }
@@ -494,6 +653,12 @@ app.post('/api/requests/:requestId/unclaim', requireAuth, async (req, res) => {
   try {
     const { requestId } = req.params;
     const user = (req as AuthenticatedRequest).user;
+
+    // Validate requestId
+    if (!requestId || typeof requestId !== 'string') {
+      return res.status(400).json({ error: 'Invalid request ID' });
+    }
+
     const data = storage.getData();
 
     const requestIndex = data.requests.findIndex((r) => r.id === requestId);
@@ -513,15 +678,35 @@ app.post('/api/requests/:requestId/unclaim', requireAuth, async (req, res) => {
         .json({ error: 'You can only unclaim requests that you have claimed' });
     }
 
-    data.requests[requestIndex] = {
-      ...request,
+    // Double-check the status hasn't changed (race condition protection)
+    const latestData = storage.getData();
+    const latestRequest = latestData.requests.find((r) => r.id === requestId);
+
+    if (
+      !latestRequest ||
+      latestRequest.status !== 'claimed' ||
+      latestRequest.claimedBy !== user.id
+    ) {
+      return res.status(409).json({
+        error: 'Request status has changed, please refresh and try again',
+      });
+    }
+
+    // Update with atomic operation
+    const updatedRequest = {
+      ...latestRequest,
       status: 'open',
       claimedBy: undefined,
       claimedAt: undefined,
     };
 
+    const latestRequestIndex = latestData.requests.findIndex(
+      (r) => r.id === requestId
+    );
+    latestData.requests[latestRequestIndex] = updatedRequest;
+
     await storage.save();
-    res.json(data.requests[requestIndex]);
+    res.json(updatedRequest);
   } catch {
     res.status(500).json({ error: 'Internal server error' });
   }

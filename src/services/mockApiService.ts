@@ -12,11 +12,35 @@ import type {
 } from '../types';
 import type { ApiService } from './index';
 import { StorageFactory, type StorageAdapter } from '../lib/storage';
-import { validateEmail, validatePhone, generateToken } from '../utils';
+import {
+  validateEmail,
+  validatePhone,
+  generateToken,
+  sanitizeInput,
+} from '../utils';
+
+// Simple password hashing for mock API (for demo purposes only)
+// In production, use bcrypt or similar
+function hashPassword(password: string): string {
+  // This is a simple hash for mock purposes only
+  // Real implementation should use bcrypt
+  let hash = 0;
+  for (let i = 0; i < password.length; i++) {
+    const char = password.charCodeAt(i);
+    hash = (hash << 5) - hash + char;
+    hash = hash & hash; // Convert to 32-bit integer
+  }
+  return hash.toString(36);
+}
+
+function verifyPassword(password: string, hash: string): boolean {
+  return hashPassword(password) === hash;
+}
 
 export class MockApiService implements ApiService {
   private db!: StorageAdapter;
   private currentUser: User | null = null;
+  private passwordHashes: Map<string, string> = new Map(); // userId -> passwordHash
 
   constructor(storage?: StorageAdapter) {
     if (storage) {
@@ -71,6 +95,12 @@ export class MockApiService implements ApiService {
           createdAt: new Date(),
         },
       ];
+
+      // Set default passwords for sample users (password123)
+      sampleUsers.forEach((user) => {
+        this.passwordHashes.set(user.id, hashPassword('password123'));
+      });
+
       this.db.setUsers(sampleUsers);
     }
   }
@@ -104,6 +134,9 @@ export class MockApiService implements ApiService {
       createdAt: new Date(),
     };
 
+    // Store password hash securely
+    this.passwordHashes.set(newUser.id, hashPassword(password));
+
     users.push(newUser);
     this.db.setUsers(users);
 
@@ -120,6 +153,10 @@ export class MockApiService implements ApiService {
     await this.ensureInitialized();
     await this.delay();
 
+    if (!password || password.length === 0) {
+      throw new Error('Password is required');
+    }
+
     const users = this.db.getUsers();
     const user = users.find((u) => u.email === email);
 
@@ -127,10 +164,10 @@ export class MockApiService implements ApiService {
       throw new Error('Invalid email or password');
     }
 
-    // In mock mode, any password works for existing users
-    // Password validation would be implemented in production
-    if (password.length === 0) {
-      throw new Error('Password is required');
+    // Validate password against stored hash
+    const storedHash = this.passwordHashes.get(user.id);
+    if (!storedHash || !verifyPassword(password, storedHash)) {
+      throw new Error('Invalid email or password');
     }
 
     this.currentUser = user;
@@ -207,9 +244,9 @@ export class MockApiService implements ApiService {
 
     const updatedUser: User = {
       ...this.currentUser,
-      name: profile.name.trim(),
-      phone: profile.phone.trim(),
-      generalArea: profile.generalArea.trim(),
+      name: sanitizeInput(profile.name.trim()),
+      phone: sanitizeInput(profile.phone.trim()),
+      generalArea: sanitizeInput(profile.generalArea.trim()),
     };
 
     users[userIndex] = updatedUser;
@@ -234,9 +271,14 @@ export class MockApiService implements ApiService {
       throw new Error('Group name is required');
     }
 
+    const sanitizedName = sanitizeInput(trimmedName);
+    if (!sanitizedName) {
+      throw new Error('Group name contains invalid characters');
+    }
+
     const newGroup: Group = {
       id: this.db.generateId(),
-      name: trimmedName,
+      name: sanitizedName,
       createdBy: this.currentUser.id,
       createdAt: new Date(),
     };
@@ -342,11 +384,8 @@ export class MockApiService implements ApiService {
     await this.delay();
 
     const invites = this.db.getInvites();
-    console.log('All invites in storage:', invites);
-    console.log('Looking for token:', token);
     const invite = invites.find((i) => i.token === token && !i.usedAt);
     if (!invite) {
-      console.log('No matching invite found');
       throw new Error('Invalid or expired invite token');
     }
     if (new Date() > invite.expiresAt) {
@@ -507,10 +546,14 @@ export class MockApiService implements ApiService {
       id: this.db.generateId(),
       userId: this.currentUser.id,
       groupId: request.groupId,
-      itemDescription: request.itemDescription.trim(),
-      storePreference: request.storePreference?.trim(),
+      itemDescription: sanitizeInput(request.itemDescription.trim()),
+      storePreference: request.storePreference
+        ? sanitizeInput(request.storePreference.trim())
+        : undefined,
       neededBy,
-      pickupNotes: request.pickupNotes?.trim(),
+      pickupNotes: request.pickupNotes
+        ? sanitizeInput(request.pickupNotes.trim())
+        : undefined,
       status: 'open' as RequestStatus,
       createdAt: new Date(),
     };

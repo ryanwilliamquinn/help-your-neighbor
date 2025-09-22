@@ -1,11 +1,23 @@
 import { Request, Response, NextFunction } from 'express';
+import { randomUUID, randomBytes } from 'crypto';
 import { User, storage, Session } from './storage.js';
 
 // Simple session management using persistent storage
 // In production, this would use JWT tokens or session middleware
 
 export function generateSessionToken(): string {
-  return 'session-' + Math.random().toString(36).substr(2, 16);
+  // Use Node.js crypto module for secure token generation
+  try {
+    return 'session-' + randomUUID();
+  } catch {
+    // Fallback to crypto.randomBytes if randomUUID is not available
+    try {
+      return 'session-' + randomBytes(16).toString('hex');
+    } catch {
+      // This fallback should only be used in development environments
+      return 'session-' + Math.random().toString(36).substr(2, 16);
+    }
+  }
 }
 
 export function createSession(user: User): string {

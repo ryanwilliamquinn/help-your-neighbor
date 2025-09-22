@@ -103,7 +103,7 @@ const DashboardPage = (): React.JSX.Element => {
       setLoadingData(false);
       loadingRef.current = false;
     }
-  }, [user?.id]);
+  }, [user?.id, toast]);
 
   const handleCreateRequest = async (
     requestData: CreateRequestFormData

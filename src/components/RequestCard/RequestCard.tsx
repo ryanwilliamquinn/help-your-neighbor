@@ -1,5 +1,6 @@
 import React from 'react';
 import type { Request } from '@/types';
+import { sanitizeForDisplay } from '@/utils';
 import './RequestCard.css';
 
 interface RequestCardProps {
@@ -113,7 +114,9 @@ const RequestCard = ({
       className={`request-card ${isOwnRequest ? 'own-request' : 'group-request'} ${request.status}`}
     >
       <div className="request-header">
-        <h3 className="request-item">{request.itemDescription}</h3>
+        <h3 className="request-item">
+          {sanitizeForDisplay(request.itemDescription)}
+        </h3>
         <span className={`status-badge status-${request.status}`}>
           {getStatusDisplay()}
         </span>
@@ -131,13 +134,14 @@ const RequestCard = ({
 
         {request.storePreference && (
           <div className="store-preference">
-            <strong>Preferred store:</strong> {request.storePreference}
+            <strong>Preferred store:</strong>{' '}
+            {sanitizeForDisplay(request.storePreference)}
           </div>
         )}
 
         {request.pickupNotes && (
           <div className="pickup-notes">
-            <strong>Notes:</strong> {request.pickupNotes}
+            <strong>Notes:</strong> {sanitizeForDisplay(request.pickupNotes)}
           </div>
         )}
 
@@ -146,7 +150,7 @@ const RequestCard = ({
             <div className="claimed-info">
               <span className="claimed-badge">
                 {isOwnRequest
-                  ? `${request.status === 'fulfilled' ? 'Fulfilled by' : 'Being helped by'} ${request.helper?.name || 'someone'}`
+                  ? `${request.status === 'fulfilled' ? 'Fulfilled by' : 'Being helped by'} ${sanitizeForDisplay(request.helper?.name || 'someone')}`
                   : `${request.status === 'fulfilled' ? 'Fulfilled by you' : 'Claimed by you'}`}
               </span>
               {request.claimedAt && (
@@ -161,7 +165,7 @@ const RequestCard = ({
         {!isOwnRequest && request.creator && (
           <div className="creator-info">
             <span className="creator-name">
-              Posted by {request.creator.name}
+              Posted by {sanitizeForDisplay(request.creator.name)}
             </span>
           </div>
         )}

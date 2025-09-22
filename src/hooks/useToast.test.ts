@@ -6,7 +6,7 @@ import { ToastProvider } from '@/contexts/ToastContext';
 // Wrapper component for the hook
 const createWrapper = (
   props: { maxToasts?: number; defaultDuration?: number } = {}
-) => {
+): React.FC<{ children: React.ReactNode }> => {
   const WrapperComponent: React.FC<{ children: React.ReactNode }> = ({
     children,
   }) =>

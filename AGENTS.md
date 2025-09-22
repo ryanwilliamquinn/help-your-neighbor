@@ -165,6 +165,7 @@ Invites: id, group_id, email, token, expires_at, used_at
 - **Code Reviews**: Review all changes, even when working solo
 - **Documentation**: Comment complex logic, maintain README
 - **Dependencies**: Keep dependencies minimal and up to date
+- **Pre-commit Validation**: **CRITICAL RULE** - Before completing any task, all pre-commit hooks must be in a passing state. Run `npm run lint`, `npm run format:check`, and `npm test` to ensure code quality standards are met.
 
 ### Development Workflow
 

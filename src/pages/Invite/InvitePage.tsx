@@ -19,13 +19,10 @@ const InvitePage = (): React.JSX.Element => {
   const validateInvitation = useCallback(async (): Promise<void> => {
     try {
       setLoading(true);
-      console.log('Validating invite token:', token);
       const { group } = await apiService.validateInvite(token!);
-      console.log('Invite validation successful, group:', group);
       setGroupName(group.name);
       setError(null);
-    } catch (error) {
-      console.error('Invite validation failed:', error);
+    } catch {
       setError('This invitation link is invalid or has expired.');
     } finally {
       setLoading(false);
