@@ -1,16 +1,30 @@
 import { render, screen } from '@testing-library/react';
 import App from './App';
-import { useAuth } from '@/hooks';
+import { useAuth, useToast } from '@/hooks';
 
-// Mock the useAuth hook
+// Mock the hooks
 jest.mock('@/hooks', () => ({
   useAuth: jest.fn(),
+  useToast: jest.fn(),
 }));
 
-// Cast the mock to the correct type
+// Cast the mocks to the correct types
 const useAuthMock = useAuth as jest.Mock;
+const useToastMock = useToast as jest.Mock;
 
 describe('App', () => {
+  beforeEach(() => {
+    // Mock useToast for all tests
+    useToastMock.mockReturnValue({
+      success: jest.fn(),
+      error: jest.fn(),
+      warning: jest.fn(),
+      info: jest.fn(),
+      remove: jest.fn(),
+      toasts: [],
+    });
+  });
+
   it('should render the loading indicator when loading', () => {
     useAuthMock.mockReturnValue({
       loading: true,

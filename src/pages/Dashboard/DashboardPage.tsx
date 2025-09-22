@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { useAuth } from '@/hooks';
+import { useAuth, useToast } from '@/hooks';
 import { apiService } from '@/services';
 import type {
   Request,
@@ -13,6 +13,7 @@ import './DashboardPage.css';
 
 const DashboardPage = (): React.JSX.Element => {
   const { user, loading } = useAuth();
+  const toast = useToast();
   const [userRequests, setUserRequests] = useState<Request[]>([]);
   const [groupRequests, setGroupRequests] = useState<Request[]>([]);
   const [userGroups, setUserGroups] = useState<Group[]>([]);
@@ -97,7 +98,7 @@ const DashboardPage = (): React.JSX.Element => {
       }
     } catch (error) {
       console.error('Failed to load dashboard data:', error);
-      // TODO: Show user-friendly error message
+      toast.error('Unable to load dashboard data. Please refresh the page.');
     } finally {
       setLoadingData(false);
       loadingRef.current = false;
@@ -114,11 +115,11 @@ const DashboardPage = (): React.JSX.Element => {
       setShowCreateForm(false);
       // Reset the loaded flag so data can be refreshed
       hasLoadedRef.current = null;
+      toast.success('Request created successfully!');
     } catch (error) {
       console.error('Failed to create request:', error);
-      // TODO: Show user-friendly error message
-      alert(
-        `Failed to create request: ${error instanceof Error ? error.message : 'Unknown error'}`
+      toast.error(
+        error instanceof Error ? error.message : 'Failed to create request'
       );
     } finally {
       setIsSubmitting(false);
@@ -152,6 +153,12 @@ const DashboardPage = (): React.JSX.Element => {
       setUserRequests((prev) =>
         prev.map((req) => (req.id === requestId ? updatedRequest : req))
       );
+      toast.success('Request claimed successfully!');
+    } catch (error) {
+      console.error('Failed to claim request:', error);
+      toast.error(
+        error instanceof Error ? error.message : 'Failed to claim request'
+      );
     } finally {
       setIsClaimingRequest(false);
     }
@@ -169,6 +176,12 @@ const DashboardPage = (): React.JSX.Element => {
       setUserRequests((prev) =>
         prev.map((req) => (req.id === requestId ? updatedRequest : req))
       );
+      toast.success('Request fulfilled successfully!');
+    } catch (error) {
+      console.error('Failed to fulfill request:', error);
+      toast.error(
+        error instanceof Error ? error.message : 'Failed to fulfill request'
+      );
     } finally {
       setIsFulfillingRequest(false);
     }
@@ -182,6 +195,12 @@ const DashboardPage = (): React.JSX.Element => {
       // Remove the request from both user and group requests lists
       setUserRequests((prev) => prev.filter((req) => req.id !== requestId));
       setGroupRequests((prev) => prev.filter((req) => req.id !== requestId));
+      toast.success('Request deleted successfully!');
+    } catch (error) {
+      console.error('Failed to delete request:', error);
+      toast.error(
+        error instanceof Error ? error.message : 'Failed to delete request'
+      );
     } finally {
       setIsDeletingRequest(false);
     }

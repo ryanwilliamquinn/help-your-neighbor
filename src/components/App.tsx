@@ -2,6 +2,8 @@ import React from 'react';
 import './App.css';
 import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
 import { useAuth } from '@/hooks';
+import { ToastProvider } from '@/contexts';
+import { ToastContainer } from './Toast';
 import LoginPage from '@/pages/Login/LoginPage';
 import SignUpPage from '@/pages/Login/SignUpPage';
 import ProfilePage from '@/pages/Profile/ProfilePage';
@@ -15,73 +17,76 @@ function App(): React.JSX.Element {
 
   return (
     <BrowserRouter>
-      <div className="App">
-        <header className="App-header">
-          <nav>
-            <ul>
-              <li>
-                <Link to="/">Help Your Neighbor</Link>
-              </li>
-              {!user && (
+      <ToastProvider>
+        <div className="App">
+          <header className="App-header">
+            <nav>
+              <ul>
                 <li>
-                  <Link to="/login">Login</Link>
+                  <Link to="/">Help Your Neighbor</Link>
                 </li>
-              )}
-              {!user && (
-                <li>
-                  <Link to="/signup">Sign Up</Link>
-                </li>
-              )}
-              {user && (
-                <li>
-                  <Link to="/groups">Groups</Link>
-                </li>
-              )}
-              {user && (
-                <li>
-                  <Link to="/profile">Profile</Link>
-                </li>
-              )}
-              {user && (
-                <li>
-                  <button onClick={signOut}>Logout</button>
-                </li>
-              )}
-            </ul>
-          </nav>
-        </header>
-        <main>
-          <Routes>
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/signup" element={<SignUpPage />} />
-            <Route path="/invite" element={<InvitePage />} />
-            <Route
-              path="/"
-              element={
-                <ProtectedRoute>
-                  <DashboardPage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/groups"
-              element={
-                <ProtectedRoute>
-                  <GroupsPage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/profile"
-              element={
-                <ProtectedRoute>
-                  <ProfilePage />
-                </ProtectedRoute>
-              }
-            />
-          </Routes>
-        </main>
-      </div>
+                {!user && (
+                  <li>
+                    <Link to="/login">Login</Link>
+                  </li>
+                )}
+                {!user && (
+                  <li>
+                    <Link to="/signup">Sign Up</Link>
+                  </li>
+                )}
+                {user && (
+                  <li>
+                    <Link to="/groups">Groups</Link>
+                  </li>
+                )}
+                {user && (
+                  <li>
+                    <Link to="/profile">Profile</Link>
+                  </li>
+                )}
+                {user && (
+                  <li>
+                    <button onClick={signOut}>Logout</button>
+                  </li>
+                )}
+              </ul>
+            </nav>
+          </header>
+          <main>
+            <Routes>
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/signup" element={<SignUpPage />} />
+              <Route path="/invite" element={<InvitePage />} />
+              <Route
+                path="/"
+                element={
+                  <ProtectedRoute>
+                    <DashboardPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/groups"
+                element={
+                  <ProtectedRoute>
+                    <GroupsPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/profile"
+                element={
+                  <ProtectedRoute>
+                    <ProfilePage />
+                  </ProtectedRoute>
+                }
+              />
+            </Routes>
+          </main>
+        </div>
+        <ToastContainer />
+      </ToastProvider>
     </BrowserRouter>
   );
 }

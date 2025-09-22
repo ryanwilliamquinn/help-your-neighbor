@@ -46,8 +46,24 @@
       "storePreference": "pcc",
       "neededBy": "2025-09-23T18:45",
       "groupId": "group-001",
-      "status": "open",
-      "createdAt": "2025-09-22T01:45:53.727Z"
+      "status": "fulfilled",
+      "createdAt": "2025-09-22T01:45:53.727Z",
+      "claimedBy": "alice-001",
+      "claimedAt": "2025-09-22T02:31:57.073Z"
+    },
+    {
+      "id": "c3aea058-0157-425f-b9bd-46ff55915de5",
+      "userId": "bob-002",
+      "itemDescription": "milk",
+      "pickupNotes": "thank you",
+      "storePreference": "safeway",
+      "neededBy": "2025-09-22T19:35",
+      "groupId": "group-001",
+      "status": "fulfilled",
+      "createdAt": "2025-09-22T02:35:36.784Z",
+      "claimedBy": "alice-001",
+      "claimedAt": "2025-09-22T02:35:50.575Z",
+      "fulfilledAt": "2025-09-22T02:35:57.600Z"
     }
   ],
   "invites": [
@@ -84,5 +100,5 @@
     }
   ],
   "currentUser": null,
-  "lastUpdated": "2025-09-22T02:10:30.514Z"
+  "lastUpdated": "2025-09-22T02:35:57.600Z"
 }

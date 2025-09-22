@@ -29,6 +29,12 @@ export interface GroupMember {
   joinedAt: string;
 }
 
+export enum RequestStatus {
+  Open = 'open',
+  Claimed = 'claimed',
+  Fulfilled = 'fulfilled',
+}
+
 export interface Request {
   id: string;
   userId: string;
@@ -37,10 +43,11 @@ export interface Request {
   storePreference?: string;
   neededBy: string;
   pickupNotes?: string;
-  status: 'open' | 'claimed' | 'fulfilled';
+  status: RequestStatus;
   claimedBy?: string;
   claimedAt?: string;
   createdAt: string;
+  fulfilledAt?: string;
 }
 
 export interface Invite {

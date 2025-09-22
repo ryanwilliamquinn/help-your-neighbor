@@ -1,12 +1,13 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import DashboardPage from './DashboardPage';
-import { useAuth } from '@/hooks';
+import { useAuth, useToast } from '@/hooks';
 import { apiService } from '@/services';
 import type { Request, RequestStatus } from '@/types';
 
-// Mock the useAuth hook
+// Mock the hooks
 jest.mock('@/hooks', () => ({
   useAuth: jest.fn(),
+  useToast: jest.fn(),
 }));
 
 // Mock the API service
@@ -22,6 +23,7 @@ jest.mock('@/services', () => ({
 
 // Cast the mocks to the correct types
 const useAuthMock = useAuth as jest.Mock;
+const useToastMock = useToast as jest.Mock;
 const mockApiService = apiService as jest.Mocked<typeof apiService>;
 
 describe('DashboardPage', () => {
@@ -518,5 +520,15 @@ describe('DashboardPage', () => {
   beforeEach(() => {
     // Reset all mocks before each test
     jest.clearAllMocks();
+
+    // Mock useToast for all tests
+    useToastMock.mockReturnValue({
+      success: jest.fn(),
+      error: jest.fn(),
+      warning: jest.fn(),
+      info: jest.fn(),
+      remove: jest.fn(),
+      toasts: [],
+    });
   });
 });

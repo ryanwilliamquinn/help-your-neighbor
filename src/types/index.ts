@@ -33,6 +33,7 @@ export interface Request {
   status: RequestStatus;
   claimedBy?: string;
   claimedAt?: Date;
+  fulfilledAt?: Date;
   createdAt: Date;
   // User data directly embedded in request objects
   creator?: User;

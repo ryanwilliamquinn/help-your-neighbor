@@ -460,7 +460,7 @@ app.post('/api/requests/:requestId/claim', requireAuth, async (req, res) => {
         .json({ error: 'Request is not available for claiming' });
     }
 
-    if (request.requesterId === user.id) {
+    if (request.userId === user.id) {
       return res
         .status(400)
         .json({ error: 'You cannot claim your own request' });
@@ -476,6 +476,12 @@ app.post('/api/requests/:requestId/claim', requireAuth, async (req, res) => {
         .status(403)
         .json({ error: 'You are not a member of this group' });
     }
+    data.requests[requestIndex] = {
+      ...request,
+      status: 'claimed',
+      claimedBy: user.id,
+      claimedAt: new Date().toISOString(),
+    };
 
     await storage.save();
     res.json(data.requests[requestIndex]);
@@ -503,7 +509,7 @@ app.post('/api/requests/:requestId/fulfill', requireAuth, async (req, res) => {
         .json({ error: 'Request must be claimed before it can be fulfilled' });
     }
 
-    if (request.helperId !== user.id) {
+    if (request.claimedBy !== user.id) {
       return res
         .status(403)
         .json({ error: 'Only the helper can fulfill this request' });
