@@ -47,8 +47,9 @@ export interface ApiService {
 
 import { MockApiService } from './mockApiService';
 import { HttpApiService } from './httpApiService';
+import { SupabaseApiService } from './supabaseApiService';
 
-// Service factory - chooses between mock and HTTP API based on environment
+// Service factory - chooses between mock, HTTP, and Supabase API based on environment
 function createApiService(): ApiService {
   // Check for test environment first (NODE_ENV is set by Jest)
   if (typeof process !== 'undefined' && process.env.NODE_ENV === 'test') {
@@ -56,10 +57,30 @@ function createApiService(): ApiService {
     return new MockApiService();
   }
 
-  // For development, use HTTP API to connect to the backend server
+  // Check if we should use mock API (development override)
   if (typeof window !== 'undefined') {
-    // Browser environment - use HTTP API
-    return new HttpApiService();
+    // Access environment variables safely for browser environment
+    try {
+      const useMockApi = import.meta.env?.VITE_USE_MOCK_API === 'true';
+      if (useMockApi) {
+        return new MockApiService();
+      }
+
+      // Browser environment - check if Supabase is configured
+      const hasSupabaseConfig = import.meta.env?.VITE_SUPABASE_URL &&
+                               import.meta.env?.VITE_SUPABASE_ANON_KEY;
+
+      if (hasSupabaseConfig) {
+        // Use Supabase for production
+        return new SupabaseApiService();
+      } else {
+        // Fallback to HTTP API for local development
+        return new HttpApiService();
+      }
+    } catch {
+      // If import.meta is not available, fall back to HTTP API
+      return new HttpApiService();
+    }
   } else {
     // SSR fallback - use mock API
     return new MockApiService();
