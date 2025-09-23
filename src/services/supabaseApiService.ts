@@ -278,6 +278,12 @@ export class SupabaseApiService implements ApiService {
       throw new Error('User not authenticated');
     }
 
+    // Debug: Check session state
+    const { data: { session } } = await supabase.auth.getSession();
+    console.log('Debug - User ID:', user.id);
+    console.log('Debug - Session access token:', session?.access_token ? 'Present' : 'Missing');
+    console.log('Debug - Session expires at:', session?.expires_at);
+
     // Create group
     const { data: groupData, error: groupError } = await supabase
       .from('groups')
