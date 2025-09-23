@@ -151,6 +151,34 @@ export class SupabaseApiService implements ApiService {
       .single();
 
     if (error) {
+      // If user profile doesn't exist, create one with basic info from auth
+      if (error.code === 'PGRST116') {
+        const newUser: User = {
+          id: user.id,
+          email: user.email || '',
+          name: user.user_metadata?.name || '',
+          phone: user.user_metadata?.phone || '',
+          generalArea: user.user_metadata?.general_area || '',
+          createdAt: new Date(),
+        };
+
+        const { error: insertError } = await supabase
+          .from('users')
+          .insert([{
+            id: newUser.id,
+            email: newUser.email,
+            name: newUser.name,
+            phone: newUser.phone,
+            general_area: newUser.generalArea,
+          }]);
+
+        if (insertError) {
+          console.error('Failed to create user profile:', insertError);
+          throw new Error('Failed to create user profile');
+        }
+
+        return newUser;
+      }
       throw new Error(error.message);
     }
 
