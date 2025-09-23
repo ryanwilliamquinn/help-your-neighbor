@@ -283,6 +283,7 @@ export class SupabaseApiService implements ApiService {
     console.log('Debug - User ID:', user.id);
     console.log('Debug - Session access token:', session?.access_token ? 'Present' : 'Missing');
     console.log('Debug - Session expires at:', session?.expires_at);
+    console.log('Debug - Full access token (first 50 chars):', session?.access_token?.substring(0, 50));
 
     // Test auth.uid() from app context
     try {
