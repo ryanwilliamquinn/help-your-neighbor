@@ -51,41 +51,19 @@ export class SupabaseApiService implements ApiService {
       throw new Error('User creation failed');
     }
 
-    // Explicitly create the user profile in our database
-    const { data: profileData, error: profileError } = await supabase
-      .from('users')
-      .insert({
-        id: data.user.id,
-        email: data.user.email || email,
-        name: '',
-        phone: '',
-        general_area: ''
-      })
-      .select()
-      .single();
-
-    if (profileError) {
-      console.error('Profile creation error:', profileError);
-      // If profile creation fails, still return a basic user object
-      const basicUser = {
-        id: data.user.id,
-        email: data.user.email || email,
-        name: '',
-        phone: '',
-        generalArea: '',
-        createdAt: new Date()
-      };
-
-      return {
-        user: basicUser,
-        session: data.session?.access_token || ''
-      };
-    }
-
-    const user = this.mapDbUserToUser(profileData);
+    // For signup, just return a basic user object
+    // The profile will be created when they first update their profile
+    const basicUser = {
+      id: data.user.id,
+      email: data.user.email || email,
+      name: '',
+      phone: '',
+      generalArea: '',
+      createdAt: new Date()
+    };
 
     return {
-      user,
+      user: basicUser,
       session: data.session?.access_token || ''
     };
   }
@@ -196,7 +174,8 @@ export class SupabaseApiService implements ApiService {
       throw new Error('User not authenticated');
     }
 
-    const { data, error } = await supabase
+    // First try to update the existing profile
+    const { data: updateData, error: updateError } = await supabase
       .from('users')
       .update({
         name: profile.name,
@@ -207,11 +186,29 @@ export class SupabaseApiService implements ApiService {
       .select()
       .single();
 
-    if (error) {
-      throw new Error(error.message);
+    if (!updateError && updateData) {
+      return this.mapDbUserToUser(updateData);
     }
 
-    return this.mapDbUserToUser(data);
+    // If update failed (profile doesn't exist), create the profile
+    console.log('Profile not found, creating new profile for user:', user.id);
+    const { data: insertData, error: insertError } = await supabase
+      .from('users')
+      .insert({
+        id: user.id,
+        email: user.email || '',
+        name: profile.name,
+        phone: profile.phone,
+        general_area: profile.generalArea
+      })
+      .select()
+      .single();
+
+    if (insertError) {
+      throw new Error(`Failed to create profile: ${insertError.message}`);
+    }
+
+    return this.mapDbUserToUser(insertData);
   }
 
   // Group services
