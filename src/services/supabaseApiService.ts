@@ -9,6 +9,7 @@ import type {
   AuthResponse,
   CreateRequestForm,
   UserProfileForm,
+  RequestStatus,
 } from '@/types';
 
 export class SupabaseApiService implements ApiService {
@@ -233,15 +234,27 @@ export class SupabaseApiService implements ApiService {
       throw new Error('User not authenticated');
     }
 
+    // First get the group IDs for the user
+    const { data: memberData, error: memberError } = await supabase
+      .from('group_members')
+      .select('group_id')
+      .eq('user_id', user.id);
+
+    if (memberError) {
+      throw new Error(memberError.message);
+    }
+
+    if (!memberData || memberData.length === 0) {
+      return [];
+    }
+
+    const groupIds = memberData.map(m => m.group_id);
+
+    // Then get the groups
     const { data, error } = await supabase
       .from('groups')
       .select('*')
-      .in('id',
-        supabase
-          .from('group_members')
-          .select('group_id')
-          .eq('user_id', user.id)
-      );
+      .in('id', groupIds);
 
     if (error) {
       throw new Error(error.message);
@@ -330,15 +343,27 @@ export class SupabaseApiService implements ApiService {
       throw new Error('Supabase client not initialized');
     }
 
+    // First get the user IDs for the group
+    const { data: memberData, error: memberError } = await supabase
+      .from('group_members')
+      .select('user_id')
+      .eq('group_id', groupId);
+
+    if (memberError) {
+      throw new Error(memberError.message);
+    }
+
+    if (!memberData || memberData.length === 0) {
+      return [];
+    }
+
+    const userIds = memberData.map(m => m.user_id);
+
+    // Then get the users
     const { data, error } = await supabase
       .from('users')
       .select('*')
-      .in('id',
-        supabase
-          .from('group_members')
-          .select('user_id')
-          .eq('group_id', groupId)
-      );
+      .in('id', userIds);
 
     if (error) {
       throw new Error(error.message);
@@ -661,7 +686,7 @@ export class SupabaseApiService implements ApiService {
       storePreference: dbRequest.store_preference,
       neededBy: new Date(dbRequest.needed_by),
       pickupNotes: dbRequest.pickup_notes,
-      status: dbRequest.status,
+      status: dbRequest.status as RequestStatus,
       claimedBy: dbRequest.claimed_by,
       claimedAt: dbRequest.claimed_at ? new Date(dbRequest.claimed_at) : undefined,
       fulfilledAt: dbRequest.fulfilled_at ? new Date(dbRequest.fulfilled_at) : undefined,
