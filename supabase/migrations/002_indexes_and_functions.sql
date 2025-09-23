@@ -51,23 +51,5 @@ BEGIN
 END;
 $$ LANGUAGE 'plpgsql';
 
--- Function to handle new user signup
-CREATE OR REPLACE FUNCTION handle_new_user()
-RETURNS trigger AS $$
-BEGIN
-  INSERT INTO public.users (id, email, name, phone, general_area)
-  VALUES (
-    NEW.id,
-    NEW.email,
-    COALESCE(NEW.raw_user_meta_data->>'name', ''),
-    COALESCE(NEW.raw_user_meta_data->>'phone', ''),
-    COALESCE(NEW.raw_user_meta_data->>'general_area', '')
-  );
-  RETURN NEW;
-END;
-$$ LANGUAGE 'plpgsql' SECURITY DEFINER;
-
--- Trigger to automatically create user profile on signup
-CREATE TRIGGER on_auth_user_created
-  AFTER INSERT ON auth.users
-  FOR EACH ROW EXECUTE FUNCTION handle_new_user();
+-- Note: User profiles are now created explicitly in the signup API call
+-- No automatic triggers needed - this provides better error handling and control

@@ -51,19 +51,22 @@ export class SupabaseApiService implements ApiService {
       throw new Error('User creation failed');
     }
 
-    // For signup, the user profile might not exist yet due to async trigger
-    // Wait a moment for the database trigger to create the profile
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    // Explicitly create the user profile in our database
+    const { data: profileData, error: profileError } = await supabase
+      .from('users')
+      .insert({
+        id: data.user.id,
+        email: data.user.email || email,
+        name: '',
+        phone: '',
+        general_area: ''
+      })
+      .select()
+      .single();
 
-    try {
-      // Try to get the user profile
-      const user = await this.getCurrentUser();
-      return {
-        user,
-        session: data.session?.access_token || ''
-      };
-    } catch {
-      // If profile doesn't exist yet, create a basic user object from auth data
+    if (profileError) {
+      console.error('Profile creation error:', profileError);
+      // If profile creation fails, still return a basic user object
       const basicUser = {
         id: data.user.id,
         email: data.user.email || email,
@@ -78,6 +81,13 @@ export class SupabaseApiService implements ApiService {
         session: data.session?.access_token || ''
       };
     }
+
+    const user = this.mapDbUserToUser(profileData);
+
+    return {
+      user,
+      session: data.session?.access_token || ''
+    };
   }
 
   async signIn(email: string, password: string): Promise<AuthResponse> {
