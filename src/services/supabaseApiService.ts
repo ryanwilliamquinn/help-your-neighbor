@@ -297,6 +297,8 @@ export class SupabaseApiService implements ApiService {
     }
 
     // Create group
+    console.log('Debug - About to insert group with:', { name, created_by: user.id });
+
     const { data: groupData, error: groupError } = await supabase
       .from('groups')
       .insert({
@@ -305,6 +307,8 @@ export class SupabaseApiService implements ApiService {
       })
       .select()
       .single();
+
+    console.log('Debug - Insert result:', { groupData, groupError });
 
     if (groupError) {
       throw new Error(groupError.message);
