@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { useAuth, useToast } from '@/hooks';
+import { useAuth, useToast, useUserLimits } from '@/hooks';
 import { apiService } from '@/services';
 import type {
   Request,
@@ -9,11 +9,18 @@ import type {
 } from '@/types';
 import CreateRequestForm from '@/components/CreateRequestForm/CreateRequestForm';
 import RequestList from '@/components/RequestList/RequestList';
+import { UserLimitsDisplay } from '@/components/UserLimits';
 import './DashboardPage.css';
 
 const DashboardPage = (): React.JSX.Element => {
   const { user, loading } = useAuth();
   const toast = useToast();
+  const {
+    limitsData,
+    loading: limitsLoading,
+    canCreateRequest,
+    refreshLimits,
+  } = useUserLimits();
   const [userRequests, setUserRequests] = useState<Request[]>([]);
   const [groupRequests, setGroupRequests] = useState<Request[]>([]);
   const [userGroups, setUserGroups] = useState<Group[]>([]);
@@ -112,6 +119,8 @@ const DashboardPage = (): React.JSX.Element => {
       setShowCreateForm(false);
       // Reset the loaded flag so data can be refreshed
       hasLoadedRef.current = null;
+      // Refresh limits after creating a request
+      await refreshLimits();
       toast.success('Request created successfully!');
     } catch (error) {
       // Failed to create request
@@ -195,6 +204,8 @@ const DashboardPage = (): React.JSX.Element => {
       setUserRequests((prev) =>
         prev.map((req) => (req.id === requestId ? updatedRequest : req))
       );
+      // Refresh limits after fulfilling a request
+      await refreshLimits();
       toast.success('Request fulfilled successfully!');
     } catch (error) {
       // Failed to fulfill request
@@ -214,6 +225,8 @@ const DashboardPage = (): React.JSX.Element => {
       // Remove the request from both user and group requests lists
       setUserRequests((prev) => prev.filter((req) => req.id !== requestId));
       setGroupRequests((prev) => prev.filter((req) => req.id !== requestId));
+      // Refresh limits after deleting a request
+      await refreshLimits();
       toast.success('Request deleted successfully!');
     } catch (error) {
       // Failed to delete request
@@ -250,6 +263,11 @@ const DashboardPage = (): React.JSX.Element => {
         </p>
       </header>
 
+      {/* User Limits Display */}
+      {limitsData && !limitsLoading && (
+        <UserLimitsDisplay limitsData={limitsData} />
+      )}
+
       <div className="dashboard-content">
         <div className="dashboard-grid">
           {/* User's Requests Section */}
@@ -257,8 +275,14 @@ const DashboardPage = (): React.JSX.Element => {
             <div className="section-header">
               <h2>Your Requests</h2>
               <button
-                className="btn-primary"
-                onClick={() => setShowCreateForm(true)}
+                className={`btn-primary ${!canCreateRequest ? 'btn-disabled' : ''}`}
+                onClick={() => canCreateRequest && setShowCreateForm(true)}
+                disabled={!canCreateRequest}
+                title={
+                  !canCreateRequest
+                    ? 'You have reached your limit of open requests'
+                    : 'Create a new request'
+                }
               >
                 + New Request
               </button>
@@ -268,8 +292,14 @@ const DashboardPage = (): React.JSX.Element => {
                 <div className="empty-state">
                   <p>You haven't posted any requests yet.</p>
                   <button
-                    className="btn-secondary"
-                    onClick={() => setShowCreateForm(true)}
+                    className={`btn-secondary ${!canCreateRequest ? 'btn-disabled' : ''}`}
+                    onClick={() => canCreateRequest && setShowCreateForm(true)}
+                    disabled={!canCreateRequest}
+                    title={
+                      !canCreateRequest
+                        ? 'You have reached your limit of open requests'
+                        : 'Create your first request'
+                    }
                   >
                     Create your first request
                   </button>

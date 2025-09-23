@@ -88,3 +88,26 @@ export interface UserProfileForm {
   phone: string;
   generalArea: string;
 }
+
+// User limits configuration
+export interface UserLimits {
+  userId: string;
+  maxOpenRequests: number;
+  maxGroupsCreated: number;
+  maxGroupsJoined: number;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+// User usage counts
+export interface UserCounts {
+  openRequestsCount: number;
+  groupsCreatedCount: number;
+  groupsJoinedCount: number;
+}
+
+// Combined user limits and counts for UI display
+export interface UserLimitsWithCounts {
+  limits: UserLimits;
+  counts: UserCounts;
+}

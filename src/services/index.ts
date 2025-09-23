@@ -9,6 +9,9 @@ import type {
   AuthResponse,
   CreateRequestForm,
   UserProfileForm,
+  UserLimits,
+  UserCounts,
+  UserLimitsWithCounts,
 } from '../types';
 
 export interface ApiService {
@@ -24,6 +27,15 @@ export interface ApiService {
   getUserById: (userId: string) => Promise<User>;
   getUsersByIds: (userIds: string[]) => Promise<User[]>;
   updateUserProfile: (profile: UserProfileForm) => Promise<User>;
+
+  // User limits services
+  getUserLimits: () => Promise<UserLimits>;
+  getUserCounts: () => Promise<UserCounts>;
+  getUserLimitsWithCounts: () => Promise<UserLimitsWithCounts>;
+  updateUserLimits: (limits: Partial<UserLimits>) => Promise<UserLimits>;
+  canCreateRequest: () => Promise<boolean>;
+  canCreateGroup: () => Promise<boolean>;
+  canJoinGroup: () => Promise<boolean>;
 
   // Group services
   createGroup: (name: string) => Promise<Group>;

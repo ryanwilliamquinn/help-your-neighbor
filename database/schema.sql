@@ -16,6 +16,16 @@ CREATE TABLE IF NOT EXISTS public.users (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL
 );
 
+-- User limits table (configurable limits per user)
+CREATE TABLE IF NOT EXISTS public.user_limits (
+  user_id UUID REFERENCES public.users(id) ON DELETE CASCADE PRIMARY KEY,
+  max_open_requests INTEGER NOT NULL DEFAULT 5,
+  max_groups_created INTEGER NOT NULL DEFAULT 3,
+  max_groups_joined INTEGER NOT NULL DEFAULT 5,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL
+);
+
 -- Groups table
 CREATE TABLE IF NOT EXISTS public.groups (
   id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
@@ -70,6 +80,7 @@ CREATE INDEX IF NOT EXISTS idx_requests_status ON public.requests(status);
 CREATE INDEX IF NOT EXISTS idx_requests_needed_by ON public.requests(needed_by);
 CREATE INDEX IF NOT EXISTS idx_invites_token ON public.invites(token);
 CREATE INDEX IF NOT EXISTS idx_invites_email ON public.invites(email);
+CREATE INDEX IF NOT EXISTS idx_user_limits_user_id ON public.user_limits(user_id);
 
 -- Row Level Security Policies
 
@@ -84,6 +95,18 @@ CREATE POLICY "Users can update own profile" ON public.users
 
 CREATE POLICY "Users can insert own profile" ON public.users
   FOR INSERT WITH CHECK (auth.uid() IS NOT NULL AND auth.uid() = id);
+
+-- User Limits: Users can only see and update their own limits
+ALTER TABLE public.user_limits ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can view own limits" ON public.user_limits
+  FOR SELECT USING (auth.uid() IS NOT NULL AND auth.uid() = user_id);
+
+CREATE POLICY "Users can update own limits" ON public.user_limits
+  FOR UPDATE USING (auth.uid() IS NOT NULL AND auth.uid() = user_id);
+
+CREATE POLICY "Users can insert own limits" ON public.user_limits
+  FOR INSERT WITH CHECK (auth.uid() IS NOT NULL AND auth.uid() = user_id);
 
 -- Groups: Users can only see groups they belong to
 ALTER TABLE public.groups ENABLE ROW LEVEL SECURITY;
@@ -177,6 +200,9 @@ $$ LANGUAGE 'plpgsql';
 CREATE TRIGGER update_users_updated_at BEFORE UPDATE ON public.users
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+CREATE TRIGGER update_user_limits_updated_at BEFORE UPDATE ON public.user_limits
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
 CREATE TRIGGER update_groups_updated_at BEFORE UPDATE ON public.groups
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
@@ -201,5 +227,109 @@ BEGIN
   DELETE FROM public.invites
   WHERE expires_at < NOW()
     AND used_at IS NULL;
+END;
+$$ LANGUAGE 'plpgsql';
+
+-- Function to get or create user limits with defaults
+CREATE OR REPLACE FUNCTION get_user_limits(p_user_id UUID)
+RETURNS TABLE(
+  user_id UUID,
+  max_open_requests INTEGER,
+  max_groups_created INTEGER,
+  max_groups_joined INTEGER
+) AS $$
+BEGIN
+  -- Insert default limits if they don't exist
+  INSERT INTO public.user_limits (user_id)
+  VALUES (p_user_id)
+  ON CONFLICT (user_id) DO NOTHING;
+
+  -- Return the limits
+  RETURN QUERY
+  SELECT ul.user_id, ul.max_open_requests, ul.max_groups_created, ul.max_groups_joined
+  FROM public.user_limits ul
+  WHERE ul.user_id = p_user_id;
+END;
+$$ LANGUAGE 'plpgsql';
+
+-- Function to get current user counts
+CREATE OR REPLACE FUNCTION get_user_counts(p_user_id UUID)
+RETURNS TABLE(
+  open_requests_count INTEGER,
+  groups_created_count INTEGER,
+  groups_joined_count INTEGER
+) AS $$
+BEGIN
+  RETURN QUERY
+  SELECT
+    (SELECT COUNT(*)::INTEGER
+     FROM public.requests
+     WHERE user_id = p_user_id AND status = 'open') as open_requests_count,
+    (SELECT COUNT(*)::INTEGER
+     FROM public.groups
+     WHERE created_by = p_user_id) as groups_created_count,
+    (SELECT COUNT(*)::INTEGER
+     FROM public.group_members
+     WHERE user_id = p_user_id) as groups_joined_count;
+END;
+$$ LANGUAGE 'plpgsql';
+
+-- Function to check if user can create a request
+CREATE OR REPLACE FUNCTION can_create_request(p_user_id UUID)
+RETURNS BOOLEAN AS $$
+DECLARE
+  current_count INTEGER;
+  max_allowed INTEGER;
+BEGIN
+  -- Get current open requests count
+  SELECT COUNT(*)::INTEGER INTO current_count
+  FROM public.requests
+  WHERE user_id = p_user_id AND status = 'open';
+
+  -- Get max allowed (create limits if they don't exist)
+  SELECT ul.max_open_requests INTO max_allowed
+  FROM get_user_limits(p_user_id) ul;
+
+  RETURN current_count < max_allowed;
+END;
+$$ LANGUAGE 'plpgsql';
+
+-- Function to check if user can create a group
+CREATE OR REPLACE FUNCTION can_create_group(p_user_id UUID)
+RETURNS BOOLEAN AS $$
+DECLARE
+  current_count INTEGER;
+  max_allowed INTEGER;
+BEGIN
+  -- Get current groups created count
+  SELECT COUNT(*)::INTEGER INTO current_count
+  FROM public.groups
+  WHERE created_by = p_user_id;
+
+  -- Get max allowed (create limits if they don't exist)
+  SELECT ul.max_groups_created INTO max_allowed
+  FROM get_user_limits(p_user_id) ul;
+
+  RETURN current_count < max_allowed;
+END;
+$$ LANGUAGE 'plpgsql';
+
+-- Function to check if user can join a group
+CREATE OR REPLACE FUNCTION can_join_group(p_user_id UUID)
+RETURNS BOOLEAN AS $$
+DECLARE
+  current_count INTEGER;
+  max_allowed INTEGER;
+BEGIN
+  -- Get current groups joined count
+  SELECT COUNT(*)::INTEGER INTO current_count
+  FROM public.group_members
+  WHERE user_id = p_user_id;
+
+  -- Get max allowed (create limits if they don't exist)
+  SELECT ul.max_groups_joined INTO max_allowed
+  FROM get_user_limits(p_user_id) ul;
+
+  RETURN current_count < max_allowed;
 END;
 $$ LANGUAGE 'plpgsql';

@@ -9,6 +9,9 @@ import type {
   CreateRequestForm,
   UserProfileForm,
   RequestStatus,
+  UserLimits,
+  UserCounts,
+  UserLimitsWithCounts,
 } from '../types';
 import type { ApiService } from './index';
 import { StorageFactory, type StorageAdapter } from '../lib/storage';
@@ -278,6 +281,15 @@ export class MockApiService implements ApiService {
       throw new Error('No authenticated user');
     }
 
+    // Check if user can create more groups
+    const canCreate = await this.canCreateGroup();
+    if (!canCreate) {
+      const { limits, counts } = await this.getUserLimitsWithCounts();
+      throw new Error(
+        `You have reached your limit of ${limits.maxGroupsCreated} groups. You currently have ${counts.groupsCreatedCount} groups.`
+      );
+    }
+
     const trimmedName = name.trim();
     if (!trimmedName) {
       throw new Error('Group name is required');
@@ -335,6 +347,15 @@ export class MockApiService implements ApiService {
 
     if (!this.currentUser) {
       throw new Error('No authenticated user');
+    }
+
+    // Check if user can join more groups
+    const canJoin = await this.canJoinGroup();
+    if (!canJoin) {
+      const { limits, counts } = await this.getUserLimitsWithCounts();
+      throw new Error(
+        `You have reached your limit of ${limits.maxGroupsJoined} groups. You are currently a member of ${counts.groupsJoinedCount} groups.`
+      );
     }
 
     const invites = this.db.getInvites();
@@ -529,6 +550,15 @@ export class MockApiService implements ApiService {
 
     if (!this.currentUser) {
       throw new Error('No authenticated user');
+    }
+
+    // Check if user can create more requests
+    const canCreate = await this.canCreateRequest();
+    if (!canCreate) {
+      const { limits, counts } = await this.getUserLimitsWithCounts();
+      throw new Error(
+        `You have reached your limit of ${limits.maxOpenRequests} open requests. You currently have ${counts.openRequestsCount} open requests.`
+      );
     }
 
     if (!request.itemDescription.trim()) {
@@ -819,5 +849,131 @@ export class MockApiService implements ApiService {
     this.db.setInvites(invites);
 
     return newInvite;
+  }
+
+  // Default limits configuration
+  private getDefaultLimits(): Omit<
+    UserLimits,
+    'userId' | 'createdAt' | 'updatedAt'
+  > {
+    return {
+      maxOpenRequests: 5,
+      maxGroupsCreated: 3,
+      maxGroupsJoined: 5,
+    };
+  }
+
+  // User limits services
+  async getUserLimits(): Promise<UserLimits> {
+    await this.ensureInitialized();
+    await this.delay();
+
+    if (!this.currentUser) {
+      throw new Error('No authenticated user');
+    }
+
+    // Get or create user limits
+    const userLimits = this.db.getUserLimits();
+    let limits = userLimits.find((ul) => ul.userId === this.currentUser!.id);
+
+    if (!limits) {
+      // Create default limits for user
+      const defaultLimits = this.getDefaultLimits();
+      limits = {
+        userId: this.currentUser!.id,
+        ...defaultLimits,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      userLimits.push(limits);
+      this.db.setUserLimits(userLimits);
+    }
+
+    return limits;
+  }
+
+  async getUserCounts(): Promise<UserCounts> {
+    await this.ensureInitialized();
+    await this.delay();
+
+    if (!this.currentUser) {
+      throw new Error('No authenticated user');
+    }
+
+    const requests = this.db.getRequests();
+    const groups = this.db.getGroups();
+    const groupMembers = this.db.getGroupMembers();
+
+    const openRequestsCount = requests.filter(
+      (r) => r.userId === this.currentUser!.id && r.status === 'open'
+    ).length;
+
+    const groupsCreatedCount = groups.filter(
+      (g) => g.createdBy === this.currentUser!.id
+    ).length;
+
+    const groupsJoinedCount = groupMembers.filter(
+      (gm) => gm.userId === this.currentUser!.id
+    ).length;
+
+    return {
+      openRequestsCount,
+      groupsCreatedCount,
+      groupsJoinedCount,
+    };
+  }
+
+  async getUserLimitsWithCounts(): Promise<UserLimitsWithCounts> {
+    const [limits, counts] = await Promise.all([
+      this.getUserLimits(),
+      this.getUserCounts(),
+    ]);
+
+    return { limits, counts };
+  }
+
+  async updateUserLimits(
+    updatedLimits: Partial<UserLimits>
+  ): Promise<UserLimits> {
+    await this.ensureInitialized();
+    await this.delay();
+
+    if (!this.currentUser) {
+      throw new Error('No authenticated user');
+    }
+
+    const userLimits = this.db.getUserLimits();
+    const index = userLimits.findIndex(
+      (ul) => ul.userId === this.currentUser!.id
+    );
+
+    if (index === -1) {
+      throw new Error('User limits not found');
+    }
+
+    // Update limits
+    userLimits[index] = {
+      ...userLimits[index],
+      ...updatedLimits,
+      updatedAt: new Date(),
+    };
+
+    this.db.setUserLimits(userLimits);
+    return userLimits[index];
+  }
+
+  async canCreateRequest(): Promise<boolean> {
+    const { limits, counts } = await this.getUserLimitsWithCounts();
+    return counts.openRequestsCount < limits.maxOpenRequests;
+  }
+
+  async canCreateGroup(): Promise<boolean> {
+    const { limits, counts } = await this.getUserLimitsWithCounts();
+    return counts.groupsCreatedCount < limits.maxGroupsCreated;
+  }
+
+  async canJoinGroup(): Promise<boolean> {
+    const { limits, counts } = await this.getUserLimitsWithCounts();
+    return counts.groupsJoinedCount < limits.maxGroupsJoined;
   }
 }

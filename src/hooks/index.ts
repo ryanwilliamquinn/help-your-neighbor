@@ -2,6 +2,7 @@
 
 export { useAuth } from './useAuth';
 export { useToast } from './useToast';
+export { useUserLimits } from './useUserLimits';
 
 // Additional hooks will be added as we develop features
 // Examples:

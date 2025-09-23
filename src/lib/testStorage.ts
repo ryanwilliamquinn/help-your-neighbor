@@ -1,6 +1,13 @@
 // Test-specific storage implementation that doesn't depend on fetch or files
 import type { StorageAdapter } from './storage';
-import type { User, Group, GroupMember, Request, Invite } from '../types';
+import type {
+  User,
+  Group,
+  GroupMember,
+  Request,
+  Invite,
+  UserLimits,
+} from '../types';
 import { AuthStorage } from './authStorage';
 
 export class TestStorageDB implements StorageAdapter {
@@ -9,6 +16,7 @@ export class TestStorageDB implements StorageAdapter {
   private groupMembers: GroupMember[] = [];
   private requests: Request[] = [];
   private invites: Invite[] = [];
+  private userLimits: UserLimits[] = [];
   private currentUser: User | null = null;
 
   constructor(initialData?: {
@@ -17,6 +25,7 @@ export class TestStorageDB implements StorageAdapter {
     groupMembers?: GroupMember[];
     requests?: Request[];
     invites?: Invite[];
+    userLimits?: UserLimits[];
     currentUser?: User | null;
   }) {
     if (initialData) {
@@ -25,6 +34,7 @@ export class TestStorageDB implements StorageAdapter {
       this.groupMembers = [...(initialData.groupMembers || [])];
       this.requests = [...(initialData.requests || [])];
       this.invites = [...(initialData.invites || [])];
+      this.userLimits = [...(initialData.userLimits || [])];
       this.currentUser = initialData.currentUser || null;
     }
   }
@@ -69,6 +79,14 @@ export class TestStorageDB implements StorageAdapter {
     this.invites = [...invites];
   }
 
+  getUserLimits(): UserLimits[] {
+    return [...this.userLimits];
+  }
+
+  setUserLimits(userLimits: UserLimits[]): void {
+    this.userLimits = [...userLimits];
+  }
+
   getCurrentUser(): User | null {
     // In test environment, localStorage won't be available so this will fall back to in-memory
     // But we use the same interface for consistency
@@ -91,6 +109,7 @@ export class TestStorageDB implements StorageAdapter {
     this.groupMembers = [];
     this.requests = [];
     this.invites = [];
+    this.userLimits = [];
     this.currentUser = null;
     AuthStorage.clearCurrentUser();
   }

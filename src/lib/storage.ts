@@ -2,7 +2,14 @@
 
 import { SimpleFileStorageDB } from './fileStorageSimple';
 import { TestStorageDB } from './testStorage';
-import type { User, Group, GroupMember, Request, Invite } from '../types';
+import type {
+  User,
+  Group,
+  GroupMember,
+  Request,
+  Invite,
+  UserLimits,
+} from '../types';
 
 export interface StorageAdapter {
   getUsers(): User[];
@@ -15,6 +22,8 @@ export interface StorageAdapter {
   setRequests(requests: Request[]): void;
   getInvites(): Invite[];
   setInvites(invites: Invite[]): void;
+  getUserLimits(): UserLimits[];
+  setUserLimits(userLimits: UserLimits[]): void;
   getCurrentUser(): User | null;
   setCurrentUser(user: User | null): void;
   clearAll(): void;

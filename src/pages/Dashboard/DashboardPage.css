@@ -242,6 +242,19 @@
   transform: translateY(-1px);
 }
 
+.btn-disabled {
+  background-color: #bdc3c7 !important;
+  color: #7f8c8d !important;
+  cursor: not-allowed !important;
+  opacity: 0.6;
+  transform: none !important;
+}
+
+.btn-disabled:hover {
+  background-color: #bdc3c7 !important;
+  transform: none !important;
+}
+
 .btn-small {
   padding: 0.375rem 0.75rem;
   font-size: 0.9rem;

@@ -1,6 +1,13 @@
 // Simple file-based storage that reads from JSON file and keeps data in memory
 
-import type { User, Group, GroupMember, Request, Invite } from '../types';
+import type {
+  User,
+  Group,
+  GroupMember,
+  Request,
+  Invite,
+  UserLimits,
+} from '../types';
 import {
   validateUsers,
   validateGroups,
@@ -19,6 +26,7 @@ interface MockDataFile {
   groupMembers: GroupMember[];
   requests: Request[];
   invites: Invite[];
+  userLimits: UserLimits[];
   currentUser: User | null;
   lastUpdated: string;
 }
@@ -37,6 +45,7 @@ export class SimpleFileStorageDB implements StorageAdapter {
       groupMembers: [],
       requests: [],
       invites: [],
+      userLimits: [],
       currentUser: null,
       lastUpdated: new Date().toISOString(),
     };
@@ -68,6 +77,7 @@ export class SimpleFileStorageDB implements StorageAdapter {
         groupMembers: validateGroupMembers(fileData.groupMembers || []),
         requests: validateRequests(fileData.requests || []),
         invites: validateInvites(fileData.invites || []),
+        userLimits: fileData.userLimits || [],
         currentUser: fileData.currentUser
           ? validateUser(fileData.currentUser)
           : null,
@@ -126,6 +136,15 @@ export class SimpleFileStorageDB implements StorageAdapter {
     this.data.lastUpdated = new Date().toISOString();
   }
 
+  getUserLimits(): UserLimits[] {
+    return [...this.data.userLimits];
+  }
+
+  setUserLimits(userLimits: UserLimits[]): void {
+    this.data.userLimits = userLimits;
+    this.data.lastUpdated = new Date().toISOString();
+  }
+
   getCurrentUser(): User | null {
     // Use AuthStorage for persistent currentUser across page refreshes
     return AuthStorage.getCurrentUser();
@@ -144,6 +163,7 @@ export class SimpleFileStorageDB implements StorageAdapter {
       groupMembers: [],
       requests: [],
       invites: [],
+      userLimits: [],
       currentUser: null,
       lastUpdated: new Date().toISOString(),
     };

@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth, useToast } from '@/hooks';
+import { useAuth, useToast, useUserLimits } from '@/hooks';
 import { apiService } from '@/services';
 import type { Group, User } from '@/types';
+import { UserLimitsDisplay } from '@/components/UserLimits';
 import './GroupsPage.css';
 
 const GroupsPage = (): React.JSX.Element => {
   const { user, loading } = useAuth();
   const toast = useToast();
+  const { limitsData, canCreateGroup, refreshLimits } = useUserLimits();
   const [groups, setGroups] = useState<Group[]>([]);
   const [loadingGroups, setLoadingGroups] = useState(true);
   const [showCreateForm, setShowCreateForm] = useState(false);
@@ -67,6 +69,8 @@ const GroupsPage = (): React.JSX.Element => {
       setGroups((prev) => [...prev, newGroup]);
       setGroupName('');
       setShowCreateForm(false);
+      // Refresh limits after creating a group
+      await refreshLimits();
       toast.success('Group created successfully!');
     } catch (error) {
       // Failed to create group
@@ -234,12 +238,21 @@ const GroupsPage = (): React.JSX.Element => {
         <p className="groups-subtitle">Manage the groups you belong to</p>
       </header>
 
+      {/* User Limits Display */}
+      {limitsData && <UserLimitsDisplay limitsData={limitsData} compact />}
+
       <div className="groups-content">
         <div className="groups-actions">
           {!showCreateForm && (
             <button
-              className="btn-primary"
-              onClick={() => setShowCreateForm(true)}
+              className={`btn-primary ${!canCreateGroup ? 'btn-disabled' : ''}`}
+              onClick={() => canCreateGroup && setShowCreateForm(true)}
+              disabled={!canCreateGroup}
+              title={
+                !canCreateGroup
+                  ? 'You have reached your limit of groups created'
+                  : 'Create a new group'
+              }
             >
               + Create New Group
             </button>

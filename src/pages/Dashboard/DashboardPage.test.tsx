@@ -1,6 +1,6 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import DashboardPage from './DashboardPage';
-import { useAuth, useToast } from '@/hooks';
+import { useAuth, useToast, useUserLimits } from '@/hooks';
 import { apiService } from '@/services';
 import type { Request, RequestStatus } from '@/types';
 
@@ -8,6 +8,7 @@ import type { Request, RequestStatus } from '@/types';
 jest.mock('@/hooks', () => ({
   useAuth: jest.fn(),
   useToast: jest.fn(),
+  useUserLimits: jest.fn(),
 }));
 
 // Mock the API service
@@ -24,9 +25,41 @@ jest.mock('@/services', () => ({
 // Cast the mocks to the correct types
 const useAuthMock = useAuth as jest.Mock;
 const useToastMock = useToast as jest.Mock;
+const useUserLimitsMock = useUserLimits as jest.Mock;
 const mockApiService = apiService as jest.Mocked<typeof apiService>;
 
 describe('DashboardPage', () => {
+  beforeEach(() => {
+    // Default mock for useUserLimits
+    useUserLimitsMock.mockReturnValue({
+      limitsData: {
+        limits: {
+          maxOpenRequests: 5,
+          maxGroupsCreated: 3,
+          maxGroupsJoined: 5,
+        },
+        counts: {
+          openRequestsCount: 2,
+          groupsCreatedCount: 1,
+          groupsJoinedCount: 2,
+        },
+      },
+      loading: false,
+      canCreateRequest: true,
+      canCreateGroup: true,
+      canJoinGroup: true,
+      refreshLimits: jest.fn(),
+    });
+
+    // Default mock for useToast
+    useToastMock.mockReturnValue({
+      success: jest.fn(),
+      error: jest.fn(),
+      info: jest.fn(),
+      warning: jest.fn(),
+    });
+  });
+
   it('should render loading state when loading', () => {
     useAuthMock.mockReturnValue({
       loading: true,
