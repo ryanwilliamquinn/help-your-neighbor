@@ -58,3 +58,10 @@ export const supabase =
   supabaseUrl && supabaseAnonKey
     ? createClient(supabaseUrl, supabaseAnonKey)
     : null;
+
+// Debug logging for production
+if (typeof window !== 'undefined') {
+  console.log('Supabase client initialized:', !!supabase);
+  console.log('Supabase URL configured:', !!supabaseUrl);
+  console.log('Use mock API:', import.meta.env.VITE_USE_MOCK_API);
+}

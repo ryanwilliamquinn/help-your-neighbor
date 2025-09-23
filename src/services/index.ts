@@ -61,29 +61,24 @@ function createApiService(): ApiService {
   if (typeof window !== 'undefined') {
     // Access environment variables safely for browser environment
     try {
-      // Use a more compatible way to access Vite env vars
-      const env = (globalThis as any)?.import?.meta?.env ||
-                  (window as any)?.import?.meta?.env ||
-                  {};
-
-      const useMockApi = env.VITE_USE_MOCK_API === 'true';
-      if (useMockApi) {
+      // Check for mock API override first
+      if (import.meta.env.VITE_USE_MOCK_API === 'true') {
         return new MockApiService();
       }
 
-      // Browser environment - check if Supabase is configured
-      const hasSupabaseConfig = env.VITE_SUPABASE_URL && env.VITE_SUPABASE_ANON_KEY;
-
-      if (hasSupabaseConfig) {
-        // Use Supabase for production
+      // Check if Supabase is configured - prioritize Supabase for production
+      if (import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_ANON_KEY) {
+        console.log('Using Supabase API service');
         return new SupabaseApiService();
-      } else {
-        // Fallback to HTTP API for local development
-        return new HttpApiService();
       }
-    } catch {
-      // If environment variables are not available, fall back to HTTP API
+
+      // Fallback to HTTP API for local development
+      console.log('Using HTTP API service');
       return new HttpApiService();
+    } catch (error) {
+      console.error('Error accessing environment variables:', error);
+      // If we can't access env vars but have Supabase configured, try Supabase
+      return new SupabaseApiService();
     }
   } else {
     // SSR fallback - use mock API

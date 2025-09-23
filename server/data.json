@@ -15,6 +15,22 @@
       "phone": "555-0102",
       "generalArea": "Midtown",
       "createdAt": "2024-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "08fa8106-df61-4dd9-8448-ee44c713a4ee",
+      "email": "ryan@example.com",
+      "name": "",
+      "phone": "",
+      "generalArea": "",
+      "createdAt": "2025-09-23T04:07:50.566Z"
+    },
+    {
+      "id": "5b41fe73-2a79-4a40-b444-d35603e8ddd9",
+      "email": "ryan2@example.com",
+      "name": "",
+      "phone": "",
+      "generalArea": "",
+      "createdAt": "2025-09-23T04:08:08.280Z"
     }
   ],
   "groups": [
@@ -120,8 +136,20 @@
       "userId": "bob-002",
       "createdAt": "2025-09-22T17:04:44.215Z",
       "expiresAt": "2025-10-22T17:04:44.215Z"
+    },
+    {
+      "token": "session-6a7ea138-114c-4b59-b296-2c814a1a2362",
+      "userId": "08fa8106-df61-4dd9-8448-ee44c713a4ee",
+      "createdAt": "2025-09-23T04:07:50.569Z",
+      "expiresAt": "2025-10-23T04:07:50.569Z"
+    },
+    {
+      "token": "session-f0de3c4f-084d-4396-bfe5-683f20ffb20b",
+      "userId": "5b41fe73-2a79-4a40-b444-d35603e8ddd9",
+      "createdAt": "2025-09-23T04:08:08.281Z",
+      "expiresAt": "2025-10-23T04:08:08.281Z"
     }
   ],
   "currentUser": null,
-  "lastUpdated": "2025-09-22T17:07:46.752Z"
+  "lastUpdated": "2025-09-23T04:08:08.281Z"
 }
