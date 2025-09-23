@@ -16,34 +16,42 @@ const ResetPasswordPage = (): React.JSX.Element => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const checkToken = async (): Promise<void> => {
+    const handlePasswordReset = async (): Promise<void> => {
       if (!supabase) return;
 
-      const urlParams = new URLSearchParams(window.location.search);
-      const token = urlParams.get('token');
-      const type = urlParams.get('type');
-
-      if (token && type === 'recovery') {
-        try {
-          const { error } = await supabase.auth.verifyOtp({
-            token_hash: token,
-            type: 'recovery'
-          });
-
-          if (!error) {
+      try {
+        // Listen for auth state changes after password reset
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+          if (event === 'PASSWORD_RECOVERY' && session) {
             setIsValidToken(true);
-          } else {
-            toast.error('Invalid or expired reset link');
           }
-        } catch (error) {
-          toast.error('Error validating reset link');
+        });
+
+        // Also check current session for already authenticated users
+        const { data: { session } } = await supabase.auth.getSession();
+
+        // Check if we're coming from a password reset link
+        const hashParams = new URLSearchParams(window.location.hash.substring(1));
+        const urlParams = new URLSearchParams(window.location.search);
+
+        const accessToken = hashParams.get('access_token') || urlParams.get('access_token');
+        const type = hashParams.get('type') || urlParams.get('type');
+
+        if (type === 'recovery' && (accessToken || session)) {
+          setIsValidToken(true);
+        } else if (!session && !accessToken) {
+          toast.error('Invalid reset link - please use the link from your email');
         }
-      } else {
-        toast.error('Invalid reset link');
+
+        // Cleanup subscription
+        subscription.unsubscribe();
+      } catch (error) {
+        console.error('Password reset validation error:', error);
+        toast.error('Error validating reset link');
       }
     };
 
-    checkToken();
+    handlePasswordReset();
   }, [toast]);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>): Promise<void> => {
