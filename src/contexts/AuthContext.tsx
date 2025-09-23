@@ -62,6 +62,16 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
+  const resetPassword = async (email: string): Promise<void> => {
+    const { apiService } = await import('../services');
+    await apiService.resetPassword(email);
+  };
+
+  const updatePassword = async (password: string): Promise<void> => {
+    const { apiService } = await import('../services');
+    await apiService.updatePassword(password);
+  };
+
   const updateUserProfile = async (profile: UserProfileForm): Promise<User> => {
     setLoading(true);
     try {
@@ -80,6 +90,8 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     signIn,
     signUp,
     signOut,
+    resetPassword,
+    updatePassword,
     updateUserProfile,
   };
 

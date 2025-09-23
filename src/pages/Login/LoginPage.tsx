@@ -36,6 +36,9 @@ const LoginPage = (): React.JSX.Element => {
         </div>
         <button type="submit">Login</button>
       </form>
+      <div className="login-links">
+        <a href="/forgot-password">Forgot your password?</a>
+      </div>
     </div>
   );
 };

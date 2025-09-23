@@ -6,6 +6,8 @@ import { ToastProvider } from '@/contexts';
 import { ToastContainer } from './Toast';
 import LoginPage from '@/pages/Login/LoginPage';
 import SignUpPage from '@/pages/Login/SignUpPage';
+import ForgotPasswordPage from '@/pages/ForgotPassword/ForgotPasswordPage';
+import ResetPasswordPage from '@/pages/ResetPassword/ResetPasswordPage';
 import ProfilePage from '@/pages/Profile/ProfilePage';
 import DashboardPage from '@/pages/Dashboard/DashboardPage';
 import GroupsPage from '@/pages/Groups/GroupsPage';
@@ -57,6 +59,8 @@ function App(): React.JSX.Element {
             <Routes>
               <Route path="/login" element={<LoginPage />} />
               <Route path="/signup" element={<SignUpPage />} />
+              <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+              <Route path="/reset-password" element={<ResetPasswordPage />} />
               <Route path="/invite" element={<InvitePage />} />
               <Route
                 path="/"

@@ -105,6 +105,34 @@ export class SupabaseApiService implements ApiService {
     }
   }
 
+  async resetPassword(email: string): Promise<void> {
+    if (!supabase) {
+      throw new Error('Supabase client not initialized');
+    }
+
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`
+    });
+
+    if (error) {
+      throw new Error(error.message);
+    }
+  }
+
+  async updatePassword(password: string): Promise<void> {
+    if (!supabase) {
+      throw new Error('Supabase client not initialized');
+    }
+
+    const { error } = await supabase.auth.updateUser({
+      password
+    });
+
+    if (error) {
+      throw new Error(error.message);
+    }
+  }
+
   // User services
   async getCurrentUser(): Promise<User> {
     if (!supabase) {
