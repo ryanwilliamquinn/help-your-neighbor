@@ -284,6 +284,17 @@ export class SupabaseApiService implements ApiService {
     console.log('Debug - Session access token:', session?.access_token ? 'Present' : 'Missing');
     console.log('Debug - Session expires at:', session?.expires_at);
 
+    // Test auth.uid() from app context
+    try {
+      const { data: authCheck, error: authCheckError } = await supabase
+        .rpc('check_auth_uid');
+
+      console.log('Debug - auth.uid() from RPC:', authCheck);
+      if (authCheckError) console.log('Debug - auth.uid() error:', authCheckError);
+    } catch (e) {
+      console.log('Debug - RPC not available, creating it...');
+    }
+
     // Create group
     const { data: groupData, error: groupError } = await supabase
       .from('groups')
