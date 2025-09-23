@@ -12,7 +12,9 @@ const LoginPage = (): React.JSX.Element => {
   const navigate = useNavigate();
   const toast = useToast();
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>): Promise<void> => {
+  const handleSubmit = async (
+    event: React.FormEvent<HTMLFormElement>
+  ): Promise<void> => {
     event.preventDefault();
 
     if (!email || !password) {

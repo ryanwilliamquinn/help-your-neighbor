@@ -61,7 +61,10 @@ export const supabase =
 
 // Debug logging for production
 if (typeof window !== 'undefined') {
+  // eslint-disable-next-line no-console
   console.log('Supabase client initialized:', !!supabase);
+  // eslint-disable-next-line no-console
   console.log('Supabase URL configured:', !!supabaseUrl);
+  // eslint-disable-next-line no-console
   console.log('Use mock API:', import.meta.env.VITE_USE_MOCK_API);
 }

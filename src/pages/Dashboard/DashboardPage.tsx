@@ -87,23 +87,20 @@ const DashboardPage = (): React.JSX.Element => {
 
         setUserRequests(enhancedUserRequests);
         setGroupRequests(enhancedGroupRequests);
-      } catch (userLoadError) {
-        console.error(
-          'Failed to load user data for requests, continuing without user info:',
-          userLoadError
-        );
+      } catch {
+        // Failed to load user data, continuing without user info
         // Set requests without user data enhancement
         setUserRequests(userRequests);
         setGroupRequests(allGroupRequests);
       }
-    } catch (error) {
-      console.error('Failed to load dashboard data:', error);
+    } catch {
+      // Failed to load dashboard data
       toast.error('Unable to load dashboard data. Please refresh the page.');
     } finally {
       setLoadingData(false);
       loadingRef.current = false;
     }
-  }, [user?.id, toast]);
+  }, [user, toast]);
 
   const handleCreateRequest = async (
     requestData: CreateRequestFormData
@@ -117,7 +114,7 @@ const DashboardPage = (): React.JSX.Element => {
       hasLoadedRef.current = null;
       toast.success('Request created successfully!');
     } catch (error) {
-      console.error('Failed to create request:', error);
+      // Failed to create request
       toast.error(
         error instanceof Error ? error.message : 'Failed to create request'
       );
@@ -155,7 +152,7 @@ const DashboardPage = (): React.JSX.Element => {
       );
       toast.success('Request claimed successfully!');
     } catch (error) {
-      console.error('Failed to claim request:', error);
+      // Failed to claim request
       toast.error(
         error instanceof Error ? error.message : 'Failed to claim request'
       );
@@ -177,7 +174,7 @@ const DashboardPage = (): React.JSX.Element => {
       );
       toast.success('Request unclaimed successfully!');
     } catch (error) {
-      console.error('Failed to unclaim request:', error);
+      // Failed to unclaim request
       toast.error(
         error instanceof Error ? error.message : 'Failed to unclaim request'
       );
@@ -200,7 +197,7 @@ const DashboardPage = (): React.JSX.Element => {
       );
       toast.success('Request fulfilled successfully!');
     } catch (error) {
-      console.error('Failed to fulfill request:', error);
+      // Failed to fulfill request
       toast.error(
         error instanceof Error ? error.message : 'Failed to fulfill request'
       );
@@ -219,7 +216,7 @@ const DashboardPage = (): React.JSX.Element => {
       setGroupRequests((prev) => prev.filter((req) => req.id !== requestId));
       toast.success('Request deleted successfully!');
     } catch (error) {
-      console.error('Failed to delete request:', error);
+      // Failed to delete request
       toast.error(
         error instanceof Error ? error.message : 'Failed to delete request'
       );

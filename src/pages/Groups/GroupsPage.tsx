@@ -69,7 +69,7 @@ const GroupsPage = (): React.JSX.Element => {
       setShowCreateForm(false);
       toast.success('Group created successfully!');
     } catch (error) {
-      console.error('Failed to create group:', error);
+      // Failed to create group
       toast.error(
         error instanceof Error ? error.message : 'Failed to create group'
       );
@@ -97,7 +97,7 @@ const GroupsPage = (): React.JSX.Element => {
       setInviteEmail('');
       setInvitingGroupId(null);
     } catch (error) {
-      console.error('Failed to create invitation:', error);
+      // Failed to create invitation
       toast.error(
         error instanceof Error ? error.message : 'Failed to create invitation'
       );
@@ -174,7 +174,7 @@ const GroupsPage = (): React.JSX.Element => {
 
       toast.success('Successfully left the group');
     } catch (error) {
-      console.error('Failed to leave group:', error);
+      // Failed to leave group
       toast.error(
         error instanceof Error ? error.message : 'Failed to leave group'
       );
@@ -208,7 +208,7 @@ const GroupsPage = (): React.JSX.Element => {
 
       toast.success(`Successfully removed ${memberName} from the group`);
     } catch (error) {
-      console.error('Failed to remove member:', error);
+      // Failed to remove member
       toast.error(
         error instanceof Error ? error.message : 'Failed to remove member'
       );

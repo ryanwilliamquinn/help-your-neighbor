@@ -94,7 +94,7 @@ const ProfilePage = (): React.JSX.Element => {
         toast.success('Profile updated successfully!');
       }
     } catch (error) {
-      console.error('Failed to update profile:', error);
+      // Failed to update profile
       toast.error(
         error instanceof Error ? error.message : 'Failed to update profile.'
       );

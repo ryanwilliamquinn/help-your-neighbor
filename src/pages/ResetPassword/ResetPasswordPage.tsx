@@ -21,32 +21,41 @@ const ResetPasswordPage = (): React.JSX.Element => {
 
       try {
         // Listen for auth state changes after password reset
-        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+        const {
+          data: { subscription },
+        } = supabase.auth.onAuthStateChange(async (event, session) => {
           if (event === 'PASSWORD_RECOVERY' && session) {
             setIsValidToken(true);
           }
         });
 
         // Also check current session for already authenticated users
-        const { data: { session } } = await supabase.auth.getSession();
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
 
         // Check if we're coming from a password reset link
-        const hashParams = new URLSearchParams(window.location.hash.substring(1));
+        const hashParams = new URLSearchParams(
+          window.location.hash.substring(1)
+        );
         const urlParams = new URLSearchParams(window.location.search);
 
-        const accessToken = hashParams.get('access_token') || urlParams.get('access_token');
+        const accessToken =
+          hashParams.get('access_token') || urlParams.get('access_token');
         const type = hashParams.get('type') || urlParams.get('type');
 
         if (type === 'recovery' && (accessToken || session)) {
           setIsValidToken(true);
         } else if (!session && !accessToken) {
-          toast.error('Invalid reset link - please use the link from your email');
+          toast.error(
+            'Invalid reset link - please use the link from your email'
+          );
         }
 
         // Cleanup subscription
         subscription.unsubscribe();
-      } catch (error) {
-        console.error('Password reset validation error:', error);
+      } catch {
+        // Password reset validation error
         toast.error('Error validating reset link');
       }
     };
@@ -54,7 +63,9 @@ const ResetPasswordPage = (): React.JSX.Element => {
     handlePasswordReset();
   }, [toast]);
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>): Promise<void> => {
+  const handleSubmit = async (
+    event: React.FormEvent<HTMLFormElement>
+  ): Promise<void> => {
     event.preventDefault();
 
     if (!password || !confirmPassword) {
@@ -81,7 +92,9 @@ const ResetPasswordPage = (): React.JSX.Element => {
         navigate('/');
       }, 2000);
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Failed to update password');
+      toast.error(
+        error instanceof Error ? error.message : 'Failed to update password'
+      );
     } finally {
       setIsLoading(false);
     }

@@ -38,9 +38,9 @@ export class SupabaseApiService implements ApiService {
           email,
           name: '',
           phone: '',
-          general_area: ''
-        }
-      }
+          general_area: '',
+        },
+      },
     });
 
     if (error) {
@@ -59,12 +59,12 @@ export class SupabaseApiService implements ApiService {
       name: '',
       phone: '',
       generalArea: '',
-      createdAt: new Date()
+      createdAt: new Date(),
     };
 
     return {
       user: basicUser,
-      session: data.session?.access_token || ''
+      session: data.session?.access_token || '',
     };
   }
 
@@ -75,7 +75,7 @@ export class SupabaseApiService implements ApiService {
 
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
-      password
+      password,
     });
 
     if (error) {
@@ -90,7 +90,7 @@ export class SupabaseApiService implements ApiService {
 
     return {
       user,
-      session: data.session?.access_token || ''
+      session: data.session?.access_token || '',
     };
   }
 
@@ -111,7 +111,7 @@ export class SupabaseApiService implements ApiService {
     }
 
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/reset-password`
+      redirectTo: `${window.location.origin}/reset-password`,
     });
 
     if (error) {
@@ -125,7 +125,7 @@ export class SupabaseApiService implements ApiService {
     }
 
     const { error } = await supabase.auth.updateUser({
-      password
+      password,
     });
 
     if (error) {
@@ -139,7 +139,10 @@ export class SupabaseApiService implements ApiService {
       throw new Error('Supabase client not initialized');
     }
 
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
     if (authError || !user) {
       throw new Error('User not authenticated');
     }
@@ -162,18 +165,17 @@ export class SupabaseApiService implements ApiService {
           createdAt: new Date(),
         };
 
-        const { error: insertError } = await supabase
-          .from('users')
-          .insert([{
+        const { error: insertError } = await supabase.from('users').insert([
+          {
             id: newUser.id,
             email: newUser.email,
             name: newUser.name,
             phone: newUser.phone,
             general_area: newUser.generalArea,
-          }]);
+          },
+        ]);
 
         if (insertError) {
-          console.error('Failed to create user profile:', insertError);
           throw new Error('Failed to create user profile');
         }
 
@@ -225,7 +227,10 @@ export class SupabaseApiService implements ApiService {
       throw new Error('Supabase client not initialized');
     }
 
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
     if (authError || !user) {
       throw new Error('User not authenticated');
     }
@@ -236,7 +241,7 @@ export class SupabaseApiService implements ApiService {
       .update({
         name: profile.name,
         phone: profile.phone,
-        general_area: profile.generalArea
+        general_area: profile.generalArea,
       })
       .eq('id', user.id)
       .select()
@@ -247,7 +252,7 @@ export class SupabaseApiService implements ApiService {
     }
 
     // If update failed (profile doesn't exist), create the profile
-    console.log('Profile not found, creating new profile for user:', user.id);
+    // Profile not found, creating new profile
     const { data: insertData, error: insertError } = await supabase
       .from('users')
       .insert({
@@ -255,7 +260,7 @@ export class SupabaseApiService implements ApiService {
         email: user.email || '',
         name: profile.name,
         phone: profile.phone,
-        general_area: profile.generalArea
+        general_area: profile.generalArea,
       })
       .select()
       .single();
@@ -273,54 +278,33 @@ export class SupabaseApiService implements ApiService {
       throw new Error('Supabase client not initialized');
     }
 
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
     if (authError || !user) {
       throw new Error('User not authenticated');
     }
 
-    // Debug: Check session state
-    const { data: { session } } = await supabase.auth.getSession();
-    console.log('Debug - User ID:', user.id);
-    console.log('Debug - Session access token:', session?.access_token ? 'Present' : 'Missing');
-    console.log('Debug - Session expires at:', session?.expires_at);
-    console.log('Debug - Full access token (first 50 chars):', session?.access_token?.substring(0, 50));
-
-    // Test auth.uid() from app context
-    try {
-      const { data: authCheck, error: authCheckError } = await supabase
-        .rpc('check_auth_uid');
-
-      console.log('Debug - auth.uid() from RPC:', authCheck);
-      if (authCheckError) console.log('Debug - auth.uid() error:', authCheckError);
-    } catch (e) {
-      console.log('Debug - RPC not available, creating it...');
-    }
-
     // Create group
-    console.log('Debug - About to insert group with:', { name, created_by: user.id });
-
     const { data: groupData, error: groupError } = await supabase
       .from('groups')
       .insert({
         name,
-        created_by: user.id
+        created_by: user.id,
       })
       .select()
       .single();
-
-    console.log('Debug - Insert result:', { groupData, groupError });
 
     if (groupError) {
       throw new Error(groupError.message);
     }
 
     // Add creator as member
-    const { error: memberError } = await supabase
-      .from('group_members')
-      .insert({
-        group_id: groupData.id,
-        user_id: user.id
-      });
+    const { error: memberError } = await supabase.from('group_members').insert({
+      group_id: groupData.id,
+      user_id: user.id,
+    });
 
     if (memberError) {
       throw new Error(memberError.message);
@@ -334,7 +318,10 @@ export class SupabaseApiService implements ApiService {
       throw new Error('Supabase client not initialized');
     }
 
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
     if (authError || !user) {
       throw new Error('User not authenticated');
     }
@@ -353,7 +340,7 @@ export class SupabaseApiService implements ApiService {
       return [];
     }
 
-    const groupIds = memberData.map(m => m.group_id);
+    const groupIds = memberData.map((m) => m.group_id);
 
     // Then get the groups
     const { data, error } = await supabase
@@ -373,7 +360,10 @@ export class SupabaseApiService implements ApiService {
       throw new Error('Supabase client not initialized');
     }
 
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
     if (authError || !user) {
       throw new Error('User not authenticated');
     }
@@ -398,12 +388,10 @@ export class SupabaseApiService implements ApiService {
     }
 
     // Add user to group
-    const { error: joinError } = await supabase
-      .from('group_members')
-      .insert({
-        group_id: group.id,
-        user_id: user.id
-      });
+    const { error: joinError } = await supabase.from('group_members').insert({
+      group_id: group.id,
+      user_id: user.id,
+    });
 
     if (joinError) {
       throw new Error(joinError.message);
@@ -427,7 +415,10 @@ export class SupabaseApiService implements ApiService {
       throw new Error('Supabase client not initialized');
     }
 
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
     if (authError || !user) {
       throw new Error('User not authenticated');
     }
@@ -462,7 +453,7 @@ export class SupabaseApiService implements ApiService {
       return [];
     }
 
-    const userIds = memberData.map(m => m.user_id);
+    const userIds = memberData.map((m) => m.user_id);
 
     // Then get the users
     const { data, error } = await supabase
@@ -499,7 +490,10 @@ export class SupabaseApiService implements ApiService {
       throw new Error('Supabase client not initialized');
     }
 
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
     if (authError || !user) {
       throw new Error('User not authenticated');
     }
@@ -512,7 +506,7 @@ export class SupabaseApiService implements ApiService {
         item_description: request.itemDescription,
         store_preference: request.storePreference,
         needed_by: request.neededBy,
-        pickup_notes: request.pickupNotes
+        pickup_notes: request.pickupNotes,
       })
       .select()
       .single();
@@ -529,7 +523,10 @@ export class SupabaseApiService implements ApiService {
       throw new Error('Supabase client not initialized');
     }
 
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
     if (authError || !user) {
       throw new Error('User not authenticated');
     }
@@ -570,7 +567,10 @@ export class SupabaseApiService implements ApiService {
       throw new Error('Supabase client not initialized');
     }
 
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
     if (authError || !user) {
       throw new Error('User not authenticated');
     }
@@ -580,7 +580,7 @@ export class SupabaseApiService implements ApiService {
       .update({
         status: 'claimed',
         claimed_by: user.id,
-        claimed_at: new Date().toISOString()
+        claimed_at: new Date().toISOString(),
       })
       .eq('id', requestId)
       .eq('status', 'open')
@@ -599,7 +599,10 @@ export class SupabaseApiService implements ApiService {
       throw new Error('Supabase client not initialized');
     }
 
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
     if (authError || !user) {
       throw new Error('User not authenticated');
     }
@@ -609,7 +612,7 @@ export class SupabaseApiService implements ApiService {
       .update({
         status: 'open',
         claimed_by: null,
-        claimed_at: null
+        claimed_at: null,
       })
       .eq('id', requestId)
       .eq('claimed_by', user.id)
@@ -628,7 +631,10 @@ export class SupabaseApiService implements ApiService {
       throw new Error('Supabase client not initialized');
     }
 
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
     if (authError || !user) {
       throw new Error('User not authenticated');
     }
@@ -637,7 +643,7 @@ export class SupabaseApiService implements ApiService {
       .from('requests')
       .update({
         status: 'fulfilled',
-        fulfilled_at: new Date().toISOString()
+        fulfilled_at: new Date().toISOString(),
       })
       .eq('id', requestId)
       .eq('claimed_by', user.id)
@@ -656,7 +662,10 @@ export class SupabaseApiService implements ApiService {
       throw new Error('Supabase client not initialized');
     }
 
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
     if (authError || !user) {
       throw new Error('User not authenticated');
     }
@@ -687,7 +696,7 @@ export class SupabaseApiService implements ApiService {
         group_id: groupId,
         email,
         token,
-        expires_at: expiresAt.toISOString()
+        expires_at: expiresAt.toISOString(),
       })
       .select()
       .single();
@@ -699,7 +708,9 @@ export class SupabaseApiService implements ApiService {
     return this.mapDbInviteToInvite(data);
   }
 
-  async validateInvite(token: string): Promise<{ group: Group; invite: Invite }> {
+  async validateInvite(
+    token: string
+  ): Promise<{ group: Group; invite: Invite }> {
     if (!supabase) {
       throw new Error('Supabase client not initialized');
     }
@@ -751,7 +762,7 @@ export class SupabaseApiService implements ApiService {
       name: dbUser.name,
       phone: dbUser.phone,
       generalArea: dbUser.general_area,
-      createdAt: new Date(dbUser.created_at)
+      createdAt: new Date(dbUser.created_at),
     };
   }
 
@@ -765,7 +776,7 @@ export class SupabaseApiService implements ApiService {
       id: dbGroup.id,
       name: dbGroup.name,
       createdBy: dbGroup.created_by,
-      createdAt: new Date(dbGroup.created_at)
+      createdAt: new Date(dbGroup.created_at),
     };
   }
 
@@ -793,9 +804,13 @@ export class SupabaseApiService implements ApiService {
       pickupNotes: dbRequest.pickup_notes,
       status: dbRequest.status as RequestStatus,
       claimedBy: dbRequest.claimed_by,
-      claimedAt: dbRequest.claimed_at ? new Date(dbRequest.claimed_at) : undefined,
-      fulfilledAt: dbRequest.fulfilled_at ? new Date(dbRequest.fulfilled_at) : undefined,
-      createdAt: new Date(dbRequest.created_at)
+      claimedAt: dbRequest.claimed_at
+        ? new Date(dbRequest.claimed_at)
+        : undefined,
+      fulfilledAt: dbRequest.fulfilled_at
+        ? new Date(dbRequest.fulfilled_at)
+        : undefined,
+      createdAt: new Date(dbRequest.created_at),
     };
   }
 
@@ -815,7 +830,7 @@ export class SupabaseApiService implements ApiService {
       token: dbInvite.token,
       expiresAt: new Date(dbInvite.expires_at),
       usedAt: dbInvite.used_at ? new Date(dbInvite.used_at) : undefined,
-      createdAt: new Date(dbInvite.created_at)
+      createdAt: new Date(dbInvite.created_at),
     };
   }
 }

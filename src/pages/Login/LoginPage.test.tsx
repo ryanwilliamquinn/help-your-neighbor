@@ -1,13 +1,18 @@
 import { render, screen } from '@testing-library/react';
+import { BrowserRouter } from 'react-router-dom';
 import LoginPage from '@/pages/Login/LoginPage';
-import { AuthProvider } from '@/contexts';
+import { AuthProvider, ToastProvider } from '@/contexts';
 
 describe('LoginPage', () => {
   beforeEach(async () => {
     render(
-      <AuthProvider>
-        <LoginPage />
-      </AuthProvider>
+      <BrowserRouter>
+        <ToastProvider>
+          <AuthProvider>
+            <LoginPage />
+          </AuthProvider>
+        </ToastProvider>
+      </BrowserRouter>
     );
     // Wait for the component to finish its initial render and async effects
     await screen.findByRole('heading', { name: /login/i, level: 1 });

@@ -28,11 +28,13 @@ This guide will help you set up Supabase for production deployment of the A Cup 
    - **Anon/Public Key**: `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...`
 
 3. Create a `.env.local` file in your project root:
+
 ```bash
 cp .env.example .env.local
 ```
 
 4. Update `.env.local` with your Supabase credentials:
+
 ```bash
 # Application Configuration
 VITE_APP_NAME="Help Your Neighbor"
@@ -55,32 +57,39 @@ VITE_SUPABASE_ANON_KEY=your_anon_key_here
 3. Run the migration files in order:
 
 #### Migration 1: Initial Schema
+
 Copy and paste the contents of `supabase/migrations/001_initial_schema.sql` and click "Run"
 
 #### Migration 2: Indexes and Functions
+
 Copy and paste the contents of `supabase/migrations/002_indexes_and_functions.sql` and click "Run"
 
 #### Migration 3: Row Level Security
+
 Copy and paste the contents of `supabase/migrations/003_row_level_security.sql` and click "Run"
 
 ### Option B: Using Supabase CLI
 
 1. Install the Supabase CLI:
+
 ```bash
 npm install -g supabase
 ```
 
 2. Initialize Supabase in your project:
+
 ```bash
 supabase init
 ```
 
 3. Link to your remote project:
+
 ```bash
 supabase link --project-ref your-project-id
 ```
 
 4. Copy the migration files to the supabase folder and run:
+
 ```bash
 supabase db push
 ```
@@ -91,19 +100,23 @@ supabase db push
 2. Configure the following settings:
 
 ### Site URL
+
 - Set **Site URL** to `https://acupofsugar.org`
 - For development, add `http://localhost:5173`
 
 ### Email Templates (Optional)
+
 - Customize signup confirmation and password reset email templates
 - Update the email templates to match your app branding
 
 ### Auth Providers (Optional)
+
 - Enable additional auth providers if needed (Google, GitHub, etc.)
 
 ## Step 5: Test the Setup
 
 1. Start your development server:
+
 ```bash
 npm run dev
 ```
@@ -131,6 +144,7 @@ VITE_SUPABASE_ANON_KEY=your_anon_key_here
 ### Build and Deploy
 
 1. Build the production app:
+
 ```bash
 npm run build
 ```
@@ -147,6 +161,7 @@ You can set up periodic cleanup of expired data using Supabase Edge Functions or
 2. **Cleanup old invites**: Call the `cleanup_old_invites()` function periodically
 
 ### Example cron setup (if using a server):
+
 ```bash
 # Add to crontab - run every hour
 0 * * * * psql "your-connection-string" -c "SELECT expire_old_requests();"
