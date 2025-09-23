@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks';
 import { useToast } from '@/hooks/useToast';
 import { supabase } from '@/lib/supabase';
@@ -11,7 +12,8 @@ const ResetPasswordPage = (): React.JSX.Element => {
   const [isValidToken, setIsValidToken] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const { updatePassword } = useAuth();
-  const { showToast } = useToast();
+  const toast = useToast();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const checkToken = async (): Promise<void> => {
@@ -31,34 +33,34 @@ const ResetPasswordPage = (): React.JSX.Element => {
           if (!error) {
             setIsValidToken(true);
           } else {
-            showToast('Invalid or expired reset link', 'error');
+            toast.error('Invalid or expired reset link');
           }
         } catch (error) {
-          showToast('Error validating reset link', 'error');
+          toast.error('Error validating reset link');
         }
       } else {
-        showToast('Invalid reset link', 'error');
+        toast.error('Invalid reset link');
       }
     };
 
     checkToken();
-  }, [showToast]);
+  }, [toast]);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>): Promise<void> => {
     event.preventDefault();
 
     if (!password || !confirmPassword) {
-      showToast('Please fill in all fields', 'error');
+      toast.error('Please fill in all fields');
       return;
     }
 
     if (password.length < 6) {
-      showToast('Password must be at least 6 characters long', 'error');
+      toast.error('Password must be at least 6 characters long');
       return;
     }
 
     if (password !== confirmPassword) {
-      showToast('Passwords do not match', 'error');
+      toast.error('Passwords do not match');
       return;
     }
 
@@ -66,9 +68,12 @@ const ResetPasswordPage = (): React.JSX.Element => {
     try {
       await updatePassword(password);
       setIsSuccess(true);
-      showToast('Password updated successfully!', 'success');
+      toast.success('Password updated successfully!');
+      setTimeout(() => {
+        navigate('/');
+      }, 2000);
     } catch (error) {
-      showToast(error instanceof Error ? error.message : 'Failed to update password', 'error');
+      toast.error(error instanceof Error ? error.message : 'Failed to update password');
     } finally {
       setIsLoading(false);
     }
@@ -92,7 +97,7 @@ const ResetPasswordPage = (): React.JSX.Element => {
         <div className="reset-password-success">
           <h1>Password Updated!</h1>
           <p>Your password has been successfully updated.</p>
-          <a href="/login">Go to Login</a>
+          <p>Redirecting to dashboard...</p>
         </div>
       </div>
     );

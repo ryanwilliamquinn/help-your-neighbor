@@ -192,7 +192,7 @@ export class MockApiService implements ApiService {
     console.log(`Mock: Password reset email sent to ${email}`);
   }
 
-  async updatePassword(password: string): Promise<void> {
+  async updatePassword(_password: string): Promise<void> {
     await this.ensureInitialized();
     await this.delay();
     console.log('Mock: Password updated successfully');

@@ -104,6 +104,20 @@ export class HttpApiService implements ApiService {
     }
   }
 
+  async resetPassword(email: string): Promise<void> {
+    await this.request('/auth/reset-password', {
+      method: 'POST',
+      body: JSON.stringify({ email }),
+    });
+  }
+
+  async updatePassword(password: string): Promise<void> {
+    await this.request('/auth/update-password', {
+      method: 'POST',
+      body: JSON.stringify({ password }),
+    });
+  }
+
   // User services
   async getCurrentUser(): Promise<User> {
     return this.request<User>('/user/current');

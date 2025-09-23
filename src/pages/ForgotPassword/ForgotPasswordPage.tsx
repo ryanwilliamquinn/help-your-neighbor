@@ -8,13 +8,13 @@ const ForgotPasswordPage = (): React.JSX.Element => {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { resetPassword } = useAuth();
-  const { showToast } = useToast();
+  const toast = useToast();
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>): Promise<void> => {
     event.preventDefault();
 
     if (!email) {
-      showToast('Please enter your email address', 'error');
+      toast.error('Please enter your email address');
       return;
     }
 
@@ -22,9 +22,9 @@ const ForgotPasswordPage = (): React.JSX.Element => {
     try {
       await resetPassword(email);
       setIsSubmitted(true);
-      showToast('Password reset email sent!', 'success');
+      toast.success('Password reset email sent!');
     } catch (error) {
-      showToast(error instanceof Error ? error.message : 'Failed to send reset email', 'error');
+      toast.error(error instanceof Error ? error.message : 'Failed to send reset email');
     } finally {
       setIsLoading(false);
     }

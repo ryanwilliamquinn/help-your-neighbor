@@ -166,6 +166,7 @@ Invites: id, group_id, email, token, expires_at, used_at
 - **Documentation**: Comment complex logic, maintain README
 - **Dependencies**: Keep dependencies minimal and up to date
 - **Pre-commit Validation**: **CRITICAL RULE** - Before completing any task, all pre-commit hooks must be in a passing state. Run `npm run lint`, `npm run format:check`, and `npm test` to ensure code quality standards are met.
+- **Build Verification**: **REQUIRED** - Before marking any task as complete, run `npm run build` to verify there are no TypeScript compilation errors or build failures. A successful build is mandatory for task completion.
 
 ### Development Workflow
 
