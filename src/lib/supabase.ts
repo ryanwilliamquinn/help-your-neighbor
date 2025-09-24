@@ -4,14 +4,26 @@ import { createClient } from '@supabase/supabase-js';
 function validateEnvironmentVariables(): {
   supabaseUrl: string;
   supabaseAnonKey: string;
+  shouldUseStaging: boolean;
 } {
-  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-  const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
   const useMockApi = import.meta.env.VITE_USE_MOCK_API;
+  const useStaging = import.meta.env.VITE_USE_STAGING === 'true';
+  const isPreview = import.meta.env.VITE_VERCEL_ENV === 'preview';
+
+  // Use staging credentials for preview deployments or when explicitly requested
+  const shouldUseStaging = isPreview || useStaging;
+
+  const supabaseUrl = shouldUseStaging
+    ? import.meta.env.VITE_SUPABASE_STAGING_URL
+    : import.meta.env.VITE_SUPABASE_URL;
+
+  const supabaseAnonKey = shouldUseStaging
+    ? import.meta.env.VITE_SUPABASE_STAGING_ANON_KEY
+    : import.meta.env.VITE_SUPABASE_ANON_KEY;
 
   // If using mock API, Supabase vars are optional
   if (useMockApi === 'true') {
-    return { supabaseUrl: '', supabaseAnonKey: '' };
+    return { supabaseUrl: '', supabaseAnonKey: '', shouldUseStaging };
   }
 
   // Validate required environment variables
@@ -48,10 +60,11 @@ function validateEnvironmentVariables(): {
     console.warn('VITE_SUPABASE_URL does not appear to be a Supabase URL');
   }
 
-  return { supabaseUrl, supabaseAnonKey };
+  return { supabaseUrl, supabaseAnonKey, shouldUseStaging };
 }
 
-const { supabaseUrl, supabaseAnonKey } = validateEnvironmentVariables();
+const { supabaseUrl, supabaseAnonKey, shouldUseStaging } =
+  validateEnvironmentVariables();
 
 // Only create client if not using mock API
 export const supabase =
@@ -67,4 +80,6 @@ if (typeof window !== 'undefined') {
   console.log('Supabase URL configured:', !!supabaseUrl);
   // eslint-disable-next-line no-console
   console.log('Use mock API:', import.meta.env.VITE_USE_MOCK_API);
+  // eslint-disable-next-line no-console
+  console.log('Environment:', shouldUseStaging ? 'staging' : 'production');
 }

@@ -7,6 +7,9 @@ import type {
   AuthResponse,
   CreateRequestForm,
   UserProfileForm,
+  UserLimits,
+  UserCounts,
+  UserLimitsWithCounts,
 } from '../types';
 import type { ApiService } from './index';
 
@@ -238,5 +241,46 @@ export class HttpApiService implements ApiService {
     return this.request<{ group: Group; invite: Invite }>(
       `/invites/validate/${token}`
     );
+  }
+
+  // User limits services
+  async getUserLimits(): Promise<UserLimits> {
+    return this.request<UserLimits>('/user/limits');
+  }
+
+  async getUserCounts(): Promise<UserCounts> {
+    return this.request<UserCounts>('/user/counts');
+  }
+
+  async getUserLimitsWithCounts(): Promise<UserLimitsWithCounts> {
+    return this.request<UserLimitsWithCounts>('/user/limits-with-counts');
+  }
+
+  async updateUserLimits(limits: Partial<UserLimits>): Promise<UserLimits> {
+    return this.request<UserLimits>('/user/limits', {
+      method: 'PUT',
+      body: JSON.stringify(limits),
+    });
+  }
+
+  async canCreateRequest(): Promise<boolean> {
+    const response = await this.request<{ canCreate: boolean }>(
+      '/user/can-create-request'
+    );
+    return response.canCreate;
+  }
+
+  async canCreateGroup(): Promise<boolean> {
+    const response = await this.request<{ canCreate: boolean }>(
+      '/user/can-create-group'
+    );
+    return response.canCreate;
+  }
+
+  async canJoinGroup(): Promise<boolean> {
+    const response = await this.request<{ canJoin: boolean }>(
+      '/user/can-join-group'
+    );
+    return response.canJoin;
   }
 }

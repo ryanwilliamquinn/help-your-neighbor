@@ -1,8 +1,8 @@
 -- Help Your Neighbor Database Schema
 -- Initial migration for Supabase
 
--- Enable UUID extension
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+-- Enable UUID extension (gen_random_uuid is built-in, no extension needed)
+-- CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- Users table (extends Supabase auth.users)
 CREATE TABLE IF NOT EXISTS public.users (
@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS public.users (
 
 -- Groups table
 CREATE TABLE IF NOT EXISTS public.groups (
-  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   name TEXT NOT NULL,
   created_by UUID REFERENCES public.users(id) ON DELETE CASCADE NOT NULL,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL,
@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS public.groups (
 
 -- Group members junction table
 CREATE TABLE IF NOT EXISTS public.group_members (
-  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   group_id UUID REFERENCES public.groups(id) ON DELETE CASCADE NOT NULL,
   user_id UUID REFERENCES public.users(id) ON DELETE CASCADE NOT NULL,
   joined_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL,
@@ -35,7 +35,7 @@ CREATE TABLE IF NOT EXISTS public.group_members (
 
 -- Requests table
 CREATE TABLE IF NOT EXISTS public.requests (
-  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   user_id UUID REFERENCES public.users(id) ON DELETE CASCADE NOT NULL,
   group_id UUID REFERENCES public.groups(id) ON DELETE CASCADE NOT NULL,
   item_description TEXT NOT NULL,
@@ -52,7 +52,7 @@ CREATE TABLE IF NOT EXISTS public.requests (
 
 -- Invites table
 CREATE TABLE IF NOT EXISTS public.invites (
-  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   group_id UUID REFERENCES public.groups(id) ON DELETE CASCADE NOT NULL,
   email TEXT NOT NULL,
   token TEXT NOT NULL UNIQUE,

@@ -10,6 +10,9 @@ import type {
   CreateRequestForm,
   UserProfileForm,
   RequestStatus,
+  UserLimits,
+  UserCounts,
+  UserLimitsWithCounts,
 } from '@/types';
 
 export class SupabaseApiService implements ApiService {
@@ -832,5 +835,187 @@ export class SupabaseApiService implements ApiService {
       usedAt: dbInvite.used_at ? new Date(dbInvite.used_at) : undefined,
       createdAt: new Date(dbInvite.created_at),
     };
+  }
+
+  // User limits services
+  async getUserLimits(): Promise<UserLimits> {
+    if (!supabase) {
+      throw new Error('Supabase client not initialized');
+    }
+
+    const { data: user } = await supabase.auth.getUser();
+    if (!user.user) {
+      throw new Error('No authenticated user');
+    }
+
+    const { data, error } = await supabase.rpc('get_user_limits', {
+      p_user_id: user.user.id,
+    });
+
+    if (error) {
+      throw new Error(`Failed to get user limits: ${error.message}`);
+    }
+
+    if (!data || data.length === 0) {
+      throw new Error('User limits not found');
+    }
+
+    const limits = data[0];
+    return {
+      userId: limits.user_id,
+      maxOpenRequests: limits.max_open_requests,
+      maxGroupsCreated: limits.max_groups_created,
+      maxGroupsJoined: limits.max_groups_joined,
+      createdAt: new Date(limits.created_at),
+      updatedAt: new Date(limits.updated_at),
+    };
+  }
+
+  async getUserCounts(): Promise<UserCounts> {
+    if (!supabase) {
+      throw new Error('Supabase client not initialized');
+    }
+
+    const { data: user } = await supabase.auth.getUser();
+    if (!user.user) {
+      throw new Error('No authenticated user');
+    }
+
+    const { data, error } = await supabase.rpc('get_user_counts', {
+      p_user_id: user.user.id,
+    });
+
+    if (error) {
+      throw new Error(`Failed to get user counts: ${error.message}`);
+    }
+
+    if (!data || data.length === 0) {
+      throw new Error('User counts not found');
+    }
+
+    const counts = data[0];
+    return {
+      openRequestsCount: counts.open_requests_count,
+      groupsCreatedCount: counts.groups_created_count,
+      groupsJoinedCount: counts.groups_joined_count,
+    };
+  }
+
+  async getUserLimitsWithCounts(): Promise<UserLimitsWithCounts> {
+    const [limits, counts] = await Promise.all([
+      this.getUserLimits(),
+      this.getUserCounts(),
+    ]);
+
+    return { limits, counts };
+  }
+
+  async updateUserLimits(
+    updatedLimits: Partial<UserLimits>
+  ): Promise<UserLimits> {
+    if (!supabase) {
+      throw new Error('Supabase client not initialized');
+    }
+
+    const { data: user } = await supabase.auth.getUser();
+    if (!user.user) {
+      throw new Error('No authenticated user');
+    }
+
+    const updateData: Record<string, number> = {};
+    if (updatedLimits.maxOpenRequests !== undefined) {
+      updateData.max_open_requests = updatedLimits.maxOpenRequests;
+    }
+    if (updatedLimits.maxGroupsCreated !== undefined) {
+      updateData.max_groups_created = updatedLimits.maxGroupsCreated;
+    }
+    if (updatedLimits.maxGroupsJoined !== undefined) {
+      updateData.max_groups_joined = updatedLimits.maxGroupsJoined;
+    }
+
+    const { data, error } = await supabase
+      .from('user_limits')
+      .update(updateData)
+      .eq('user_id', user.user.id)
+      .select()
+      .single();
+
+    if (error) {
+      throw new Error(`Failed to update user limits: ${error.message}`);
+    }
+
+    return {
+      userId: data.user_id,
+      maxOpenRequests: data.max_open_requests,
+      maxGroupsCreated: data.max_groups_created,
+      maxGroupsJoined: data.max_groups_joined,
+      createdAt: new Date(data.created_at),
+      updatedAt: new Date(data.updated_at),
+    };
+  }
+
+  async canCreateRequest(): Promise<boolean> {
+    if (!supabase) {
+      throw new Error('Supabase client not initialized');
+    }
+
+    const { data: user } = await supabase.auth.getUser();
+    if (!user.user) {
+      throw new Error('No authenticated user');
+    }
+
+    const { data, error } = await supabase.rpc('can_create_request', {
+      p_user_id: user.user.id,
+    });
+
+    if (error) {
+      throw new Error(
+        `Failed to check request creation limit: ${error.message}`
+      );
+    }
+
+    return data as boolean;
+  }
+
+  async canCreateGroup(): Promise<boolean> {
+    if (!supabase) {
+      throw new Error('Supabase client not initialized');
+    }
+
+    const { data: user } = await supabase.auth.getUser();
+    if (!user.user) {
+      throw new Error('No authenticated user');
+    }
+
+    const { data, error } = await supabase.rpc('can_create_group', {
+      p_user_id: user.user.id,
+    });
+
+    if (error) {
+      throw new Error(`Failed to check group creation limit: ${error.message}`);
+    }
+
+    return data as boolean;
+  }
+
+  async canJoinGroup(): Promise<boolean> {
+    if (!supabase) {
+      throw new Error('Supabase client not initialized');
+    }
+
+    const { data: user } = await supabase.auth.getUser();
+    if (!user.user) {
+      throw new Error('No authenticated user');
+    }
+
+    const { data, error } = await supabase.rpc('can_join_group', {
+      p_user_id: user.user.id,
+    });
+
+    if (error) {
+      throw new Error(`Failed to check group join limit: ${error.message}`);
+    }
+
+    return data as boolean;
   }
 }
