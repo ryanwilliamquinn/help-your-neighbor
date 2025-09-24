@@ -77,9 +77,11 @@ if (typeof window !== 'undefined') {
   // eslint-disable-next-line no-console
   console.log('Supabase client initialized:', !!supabase);
   // eslint-disable-next-line no-console
-  console.log('Supabase URL configured:', !!supabaseUrl);
+  console.log('Supabase URL:', supabaseUrl);
   // eslint-disable-next-line no-console
   console.log('Use mock API:', import.meta.env.VITE_USE_MOCK_API);
   // eslint-disable-next-line no-console
   console.log('Environment:', shouldUseStaging ? 'staging' : 'production');
+  // eslint-disable-next-line no-console
+  console.log('VITE_VERCEL_ENV:', import.meta.env.VITE_VERCEL_ENV);
 }
