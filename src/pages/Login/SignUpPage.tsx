@@ -1,15 +1,37 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import './LoginPage.css';
 import { useAuth } from '@/hooks';
+import { useToast } from '@/hooks/useToast';
 
 const SignUpPage = (): React.JSX.Element => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const { signUp } = useAuth();
+  const navigate = useNavigate();
+  const toast = useToast();
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>): void => {
+  const handleSubmit = async (
+    event: React.FormEvent<HTMLFormElement>
+  ): Promise<void> => {
     event.preventDefault();
-    signUp(email, password);
+
+    if (!email || !password) {
+      toast.error('Please fill in all fields');
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      await signUp(email, password);
+      toast.success('Sign up successful!');
+      navigate('/');
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Sign up failed');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -23,6 +45,8 @@ const SignUpPage = (): React.JSX.Element => {
             id="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            required
+            disabled={isLoading}
           />
         </div>
         <div>
@@ -32,9 +56,13 @@ const SignUpPage = (): React.JSX.Element => {
             id="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            required
+            disabled={isLoading}
           />
         </div>
-        <button type="submit">Sign Up</button>
+        <button type="submit" disabled={isLoading}>
+          {isLoading ? 'Signing up...' : 'Sign Up'}
+        </button>
       </form>
     </div>
   );
