@@ -31,6 +31,14 @@ const GroupsPage = (): React.JSX.Element => {
   const [loadingMembers, setLoadingMembers] = useState<string | null>(null);
   const [leavingGroup, setLeavingGroup] = useState<string | null>(null);
   const [removingMember, setRemovingMember] = useState<string | null>(null);
+  const [confirmLeaveGroupId, setConfirmLeaveGroupId] = useState<string | null>(
+    null
+  );
+  const [confirmRemoveMember, setConfirmRemoveMember] = useState<{
+    groupId: string;
+    userId: string;
+    memberName: string;
+  } | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -156,10 +164,6 @@ const GroupsPage = (): React.JSX.Element => {
   };
 
   const handleLeaveGroup = async (groupId: string): Promise<void> => {
-    if (!confirm('Are you sure you want to leave this group?')) {
-      return;
-    }
-
     try {
       setLeavingGroup(groupId);
       setError(null);
@@ -187,6 +191,7 @@ const GroupsPage = (): React.JSX.Element => {
       );
     } finally {
       setLeavingGroup(null);
+      setConfirmLeaveGroupId(null);
     }
   };
 
@@ -195,12 +200,6 @@ const GroupsPage = (): React.JSX.Element => {
     userId: string,
     memberName: string
   ): Promise<void> => {
-    if (
-      !confirm(`Are you sure you want to remove ${memberName} from this group?`)
-    ) {
-      return;
-    }
-
     try {
       setRemovingMember(userId);
       setError(null);
@@ -221,6 +220,7 @@ const GroupsPage = (): React.JSX.Element => {
       );
     } finally {
       setRemovingMember(null);
+      setConfirmRemoveMember(null);
     }
   };
 
@@ -429,11 +429,11 @@ const GroupsPage = (): React.JSX.Element => {
                                     <button
                                       className="btn-danger btn-small"
                                       onClick={() =>
-                                        handleRemoveMember(
-                                          group.id,
-                                          member.id,
-                                          member.name
-                                        )
+                                        setConfirmRemoveMember({
+                                          groupId: group.id,
+                                          userId: member.id,
+                                          memberName: member.name,
+                                        })
                                       }
                                       disabled={removingMember === member.id}
                                       style={{
@@ -540,7 +540,7 @@ const GroupsPage = (): React.JSX.Element => {
                       </button>
                       <button
                         className="btn-danger btn-small"
-                        onClick={() => handleLeaveGroup(group.id)}
+                        onClick={() => setConfirmLeaveGroupId(group.id)}
                         disabled={leavingGroup === group.id}
                         style={{
                           backgroundColor: '#dc3545',
@@ -560,6 +560,75 @@ const GroupsPage = (): React.JSX.Element => {
           )}
         </div>
       </div>
+
+      {/* Leave Group Confirmation Modal */}
+      {confirmLeaveGroupId && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <h3>Leave Group</h3>
+            <p>
+              Are you sure you want to leave this group? This action cannot be
+              undone.
+            </p>
+            <div className="modal-actions">
+              <button
+                className="btn-secondary"
+                onClick={() => setConfirmLeaveGroupId(null)}
+                disabled={leavingGroup === confirmLeaveGroupId}
+              >
+                Cancel
+              </button>
+              <button
+                className="btn-danger"
+                onClick={() => handleLeaveGroup(confirmLeaveGroupId)}
+                disabled={leavingGroup === confirmLeaveGroupId}
+              >
+                {leavingGroup === confirmLeaveGroupId
+                  ? 'Leaving...'
+                  : 'Leave Group'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Remove Member Confirmation Modal */}
+      {confirmRemoveMember && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <h3>Remove Member</h3>
+            <p>
+              Are you sure you want to remove{' '}
+              <strong>{confirmRemoveMember.memberName}</strong> from this group?
+              This action cannot be undone.
+            </p>
+            <div className="modal-actions">
+              <button
+                className="btn-secondary"
+                onClick={() => setConfirmRemoveMember(null)}
+                disabled={removingMember === confirmRemoveMember.userId}
+              >
+                Cancel
+              </button>
+              <button
+                className="btn-danger"
+                onClick={() =>
+                  handleRemoveMember(
+                    confirmRemoveMember.groupId,
+                    confirmRemoveMember.userId,
+                    confirmRemoveMember.memberName
+                  )
+                }
+                disabled={removingMember === confirmRemoveMember.userId}
+              >
+                {removingMember === confirmRemoveMember.userId
+                  ? 'Removing...'
+                  : 'Remove Member'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
