@@ -33,6 +33,13 @@ const DashboardPage = (): React.JSX.Element => {
   const loadingRef = useRef(false);
   const hasLoadedRef = useRef<string | null>(null);
 
+  // Check if user can create requests (has groups AND hasn't hit limits)
+  const canCreateRequestWithGroup = canCreateRequest && userGroups.length > 0;
+  const noGroupsMessage =
+    userGroups.length === 0
+      ? 'You need to join a group before creating requests'
+      : 'You have reached your limit of open requests';
+
   const loadDashboardData = useCallback(async (): Promise<void> => {
     if (!user || loadingRef.current) return;
 
@@ -275,12 +282,14 @@ const DashboardPage = (): React.JSX.Element => {
             <div className="section-header">
               <h2>Your Requests</h2>
               <button
-                className={`btn-primary ${!canCreateRequest ? 'btn-disabled' : ''}`}
-                onClick={() => canCreateRequest && setShowCreateForm(true)}
-                disabled={!canCreateRequest}
+                className={`btn-primary ${!canCreateRequestWithGroup ? 'btn-disabled' : ''}`}
+                onClick={() =>
+                  canCreateRequestWithGroup && setShowCreateForm(true)
+                }
+                disabled={!canCreateRequestWithGroup}
                 title={
-                  !canCreateRequest
-                    ? 'You have reached your limit of open requests'
+                  !canCreateRequestWithGroup
+                    ? noGroupsMessage
                     : 'Create a new request'
                 }
               >
@@ -291,18 +300,34 @@ const DashboardPage = (): React.JSX.Element => {
               {userRequests.length === 0 ? (
                 <div className="empty-state">
                   <p>You haven't posted any requests yet.</p>
-                  <button
-                    className={`btn-secondary ${!canCreateRequest ? 'btn-disabled' : ''}`}
-                    onClick={() => canCreateRequest && setShowCreateForm(true)}
-                    disabled={!canCreateRequest}
-                    title={
-                      !canCreateRequest
-                        ? 'You have reached your limit of open requests'
-                        : 'Create your first request'
-                    }
-                  >
-                    Create your first request
-                  </button>
+                  {userGroups.length === 0 ? (
+                    <div>
+                      <p className="empty-state-sub">
+                        You need to join a group first!
+                      </p>
+                      <button
+                        className="btn-secondary"
+                        onClick={() => (window.location.href = '/groups')}
+                      >
+                        Join or Create a Group
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      className={`btn-secondary ${!canCreateRequestWithGroup ? 'btn-disabled' : ''}`}
+                      onClick={() =>
+                        canCreateRequestWithGroup && setShowCreateForm(true)
+                      }
+                      disabled={!canCreateRequestWithGroup}
+                      title={
+                        !canCreateRequestWithGroup
+                          ? noGroupsMessage
+                          : 'Create your first request'
+                      }
+                    >
+                      Create your first request
+                    </button>
+                  )}
                 </div>
               ) : (
                 <RequestList

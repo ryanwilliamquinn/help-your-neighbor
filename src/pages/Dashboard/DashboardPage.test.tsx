@@ -118,6 +118,132 @@ describe('DashboardPage', () => {
     ).toBeInTheDocument();
   });
 
+  it('should disable create request button when user has no groups', async () => {
+    useAuthMock.mockReturnValue({
+      loading: false,
+      user: { name: 'Test User', email: 'test@example.com', id: 'test-id' },
+    });
+
+    // Mock empty groups array
+    mockApiService.getUserGroups.mockResolvedValue([]);
+
+    render(<DashboardPage />);
+
+    // Wait for the dashboard to finish loading
+    await waitFor(() => {
+      expect(screen.getByText(/welcome back, Test User/i)).toBeInTheDocument();
+    });
+
+    // Should show disabled create request button
+    const createButton = screen.getByRole('button', {
+      name: /\+ new request/i,
+    });
+    expect(createButton).toBeDisabled();
+    expect(createButton).toHaveAttribute(
+      'title',
+      'You need to join a group before creating requests'
+    );
+
+    // Should show "Join or Create a Group" button in empty state
+    expect(
+      screen.getByText(/you need to join a group first!/i)
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: /join or create a group/i })
+    ).toBeInTheDocument();
+  });
+
+  it('should enable create request button when user has groups and can create', async () => {
+    useAuthMock.mockReturnValue({
+      loading: false,
+      user: { name: 'Test User', email: 'test@example.com', id: 'test-id' },
+    });
+
+    // Mock groups array with one group
+    mockApiService.getUserGroups.mockResolvedValue([
+      {
+        id: 'group-1',
+        name: 'Test Group',
+        createdBy: 'test-id',
+        createdAt: new Date(),
+      },
+    ]);
+
+    render(<DashboardPage />);
+
+    // Wait for the dashboard to finish loading
+    await waitFor(() => {
+      expect(screen.getByText(/welcome back, Test User/i)).toBeInTheDocument();
+    });
+
+    // Should show enabled create request button
+    const createButton = screen.getByRole('button', {
+      name: /\+ new request/i,
+    });
+    expect(createButton).not.toBeDisabled();
+    expect(createButton).toHaveAttribute('title', 'Create a new request');
+
+    // Should show "Create your first request" button in empty state
+    expect(
+      screen.getByRole('button', { name: /create your first request/i })
+    ).toBeInTheDocument();
+  });
+
+  it('should disable create request button when user has groups but hit limits', async () => {
+    useAuthMock.mockReturnValue({
+      loading: false,
+      user: { name: 'Test User', email: 'test@example.com', id: 'test-id' },
+    });
+
+    // Mock user at request limit
+    useUserLimitsMock.mockReturnValue({
+      limitsData: {
+        limits: {
+          maxOpenRequests: 5,
+          maxGroupsCreated: 3,
+          maxGroupsJoined: 5,
+        },
+        counts: {
+          openRequestsCount: 5, // At limit
+          groupsCreatedCount: 1,
+          groupsJoinedCount: 2,
+        },
+      },
+      loading: false,
+      canCreateRequest: false, // Hit limit
+      canCreateGroup: true,
+      canJoinGroup: true,
+      refreshLimits: jest.fn(),
+    });
+
+    // Mock groups array with one group
+    mockApiService.getUserGroups.mockResolvedValue([
+      {
+        id: 'group-1',
+        name: 'Test Group',
+        createdBy: 'test-id',
+        createdAt: new Date(),
+      },
+    ]);
+
+    render(<DashboardPage />);
+
+    // Wait for the dashboard to finish loading
+    await waitFor(() => {
+      expect(screen.getByText(/welcome back, Test User/i)).toBeInTheDocument();
+    });
+
+    // Should show disabled create request button with limit message
+    const createButton = screen.getByRole('button', {
+      name: /\+ new request/i,
+    });
+    expect(createButton).toBeDisabled();
+    expect(createButton).toHaveAttribute(
+      'title',
+      'You have reached your limit of open requests'
+    );
+  });
+
   it('should render action buttons', async () => {
     useAuthMock.mockReturnValue({
       loading: false,
