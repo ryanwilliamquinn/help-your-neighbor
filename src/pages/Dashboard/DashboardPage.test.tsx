@@ -1,4 +1,5 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, fireEvent } from '@testing-library/react';
+import { BrowserRouter } from 'react-router-dom';
 import DashboardPage from './DashboardPage';
 import { useAuth, useToast, useUserLimits } from '@/hooks';
 import { apiService } from '@/services';
@@ -27,6 +28,11 @@ const useAuthMock = useAuth as jest.Mock;
 const useToastMock = useToast as jest.Mock;
 const useUserLimitsMock = useUserLimits as jest.Mock;
 const mockApiService = apiService as jest.Mocked<typeof apiService>;
+
+// Helper to render with router
+const renderWithRouter = (component: React.ReactElement) => {
+  return render(<BrowserRouter>{component}</BrowserRouter>);
+};
 
 describe('DashboardPage', () => {
   beforeEach(() => {
@@ -66,7 +72,7 @@ describe('DashboardPage', () => {
       user: null,
     });
 
-    render(<DashboardPage />);
+    renderWithRouter(<DashboardPage />);
     expect(screen.getByText(/loading dashboard.../i)).toBeInTheDocument();
   });
 
@@ -76,7 +82,7 @@ describe('DashboardPage', () => {
       user: null,
     });
 
-    render(<DashboardPage />);
+    renderWithRouter(<DashboardPage />);
     expect(
       screen.getByText(/please log in to view your dashboard/i)
     ).toBeInTheDocument();
@@ -88,7 +94,7 @@ describe('DashboardPage', () => {
       user: { name: 'Test User', email: 'test@example.com' },
     });
 
-    render(<DashboardPage />);
+    renderWithRouter(<DashboardPage />);
 
     // Wait for the dashboard to finish loading
     await waitFor(() => {
@@ -127,7 +133,7 @@ describe('DashboardPage', () => {
     // Mock empty groups array
     mockApiService.getUserGroups.mockResolvedValue([]);
 
-    render(<DashboardPage />);
+    renderWithRouter(<DashboardPage />);
 
     // Wait for the dashboard to finish loading
     await waitFor(() => {
@@ -169,7 +175,7 @@ describe('DashboardPage', () => {
       },
     ]);
 
-    render(<DashboardPage />);
+    renderWithRouter(<DashboardPage />);
 
     // Wait for the dashboard to finish loading
     await waitFor(() => {
@@ -226,7 +232,7 @@ describe('DashboardPage', () => {
       },
     ]);
 
-    render(<DashboardPage />);
+    renderWithRouter(<DashboardPage />);
 
     // Wait for the dashboard to finish loading
     await waitFor(() => {
@@ -244,13 +250,51 @@ describe('DashboardPage', () => {
     );
   });
 
+  it('should render clickable group cards that navigate to groups page', async () => {
+    useAuthMock.mockReturnValue({
+      loading: false,
+      user: { name: 'Test User', email: 'test@example.com', id: 'test-id' },
+    });
+
+    // Mock groups array
+    mockApiService.getUserGroups.mockResolvedValue([
+      {
+        id: 'group-1',
+        name: 'Test Group',
+        createdBy: 'test-id',
+        createdAt: new Date(),
+      },
+    ]);
+
+    renderWithRouter(<DashboardPage />);
+
+    // Wait for groups to load
+    await waitFor(() => {
+      expect(screen.getByText('Test Group')).toBeInTheDocument();
+    });
+
+    // Find the group card and verify it has clickable attributes
+    const groupCard = screen
+      .getByText('Test Group')
+      .closest('.group-card-clickable');
+    expect(groupCard).toBeInTheDocument();
+    expect(groupCard).toHaveAttribute('role', 'button');
+    expect(groupCard).toHaveAttribute('tabIndex', '0');
+
+    // Verify keyboard navigation works
+    if (groupCard) {
+      fireEvent.keyDown(groupCard, { key: 'Enter' });
+      fireEvent.keyDown(groupCard, { key: ' ' });
+    }
+  });
+
   it('should render action buttons', async () => {
     useAuthMock.mockReturnValue({
       loading: false,
       user: { name: 'Test User', email: 'test@example.com' },
     });
 
-    render(<DashboardPage />);
+    renderWithRouter(<DashboardPage />);
 
     // Wait for the dashboard to finish loading
     await waitFor(() => {
@@ -373,7 +417,7 @@ describe('DashboardPage', () => {
     mockApiService.getGroupRequests.mockResolvedValue(mockGroupRequests);
     mockApiService.getUsersByIds.mockResolvedValue(mockUsers);
 
-    render(<DashboardPage />);
+    renderWithRouter(<DashboardPage />);
 
     // Wait for the dashboard to finish loading
     await waitFor(() => {
@@ -482,7 +526,7 @@ describe('DashboardPage', () => {
     mockApiService.getGroupRequests.mockResolvedValue(mockGroupRequests);
     mockApiService.getUsersByIds.mockResolvedValue(mockUsers);
 
-    render(<DashboardPage />);
+    renderWithRouter(<DashboardPage />);
 
     await waitFor(() => {
       expect(screen.getByText(/welcome back, Test User/i)).toBeInTheDocument();
@@ -518,7 +562,7 @@ describe('DashboardPage', () => {
     mockApiService.getGroupRequests.mockResolvedValue([]);
     mockApiService.getUsersByIds.mockResolvedValue([]);
 
-    render(<DashboardPage />);
+    renderWithRouter(<DashboardPage />);
 
     await waitFor(() => {
       expect(screen.getByText(/welcome back, Test User/i)).toBeInTheDocument();
@@ -598,7 +642,7 @@ describe('DashboardPage', () => {
     mockApiService.getGroupRequests.mockResolvedValue(mockGroupRequests);
     mockApiService.getUsersByIds.mockResolvedValue(mockUsers);
 
-    render(<DashboardPage />);
+    renderWithRouter(<DashboardPage />);
 
     await waitFor(() => {
       expect(screen.getByText(/welcome back, Test User/i)).toBeInTheDocument();
@@ -653,7 +697,7 @@ describe('DashboardPage', () => {
     // Suppress console.error for this test since we expect an error
     const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
 
-    render(<DashboardPage />);
+    renderWithRouter(<DashboardPage />);
 
     // Wait for loading to complete
     await waitFor(() => {

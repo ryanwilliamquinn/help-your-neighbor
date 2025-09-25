@@ -1,6 +1,10 @@
 export default {
   preset: 'ts-jest',
   testEnvironment: 'jsdom',
+  // Performance optimizations
+  maxWorkers: '50%',
+  cache: true,
+  cacheDirectory: '<rootDir>/node_modules/.cache/jest',
   testEnvironmentOptions: {
     url: 'http://localhost/',
   },
