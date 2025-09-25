@@ -53,9 +53,11 @@ function App(): React.JSX.Element {
                     <Link to="/profile">Profile</Link>
                   </li>
                 )}
-                <li>
-                  <Link to="/feedback">Feedback</Link>
-                </li>
+                {user && (
+                  <li>
+                    <Link to="/feedback">Feedback</Link>
+                  </li>
+                )}
                 {user && (
                   <li>
                     <button onClick={signOut}>Logout</button>
