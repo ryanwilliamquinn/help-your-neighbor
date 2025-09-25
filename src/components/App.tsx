@@ -13,6 +13,7 @@ import DashboardPage from '@/pages/Dashboard/DashboardPage';
 import GroupsPage from '@/pages/Groups/GroupsPage';
 import InvitePage from '@/pages/Invite/InvitePage';
 import FeedbackPage from '@/pages/Feedback/FeedbackPage';
+import AboutPage from '@/pages/About/AboutPage';
 import ProtectedRoute from './ProtectedRoute';
 
 function App(): React.JSX.Element {
@@ -53,6 +54,9 @@ function App(): React.JSX.Element {
                     <Link to="/profile">Profile</Link>
                   </li>
                 )}
+                <li>
+                  <Link to="/about">About</Link>
+                </li>
                 {user && (
                   <li>
                     <Link to="/feedback">Feedback</Link>
@@ -74,6 +78,7 @@ function App(): React.JSX.Element {
               <Route path="/reset-password" element={<ResetPasswordPage />} />
               <Route path="/invite" element={<InvitePage />} />
               <Route path="/feedback" element={<FeedbackPage />} />
+              <Route path="/about" element={<AboutPage />} />
               <Route
                 path="/"
                 element={
