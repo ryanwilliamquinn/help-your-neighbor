@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth, useToast, useUserLimits } from '@/hooks';
 import { apiService } from '@/services';
 import type {
@@ -15,6 +16,7 @@ import './DashboardPage.css';
 const DashboardPage = (): React.JSX.Element => {
   const { user, loading } = useAuth();
   const toast = useToast();
+  const navigate = useNavigate();
   const {
     limitsData,
     loading: limitsLoading,
@@ -245,6 +247,10 @@ const DashboardPage = (): React.JSX.Element => {
     }
   };
 
+  const handleGroupClick = (groupId: string): void => {
+    navigate(`/groups?highlight=${groupId}`);
+  };
+
   if (loading) {
     return <div className="dashboard-loading">Loading dashboard...</div>;
   }
@@ -388,7 +394,19 @@ const DashboardPage = (): React.JSX.Element => {
             ) : (
               <div className="groups-list">
                 {userGroups.map((group) => (
-                  <div key={group.id} className="group-card">
+                  <div
+                    key={group.id}
+                    className="group-card group-card-clickable"
+                    onClick={() => handleGroupClick(group.id)}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        handleGroupClick(group.id);
+                      }
+                    }}
+                  >
                     <h3>{group.name}</h3>
                     <p className="group-meta">
                       Joined {new Date(group.createdAt).toLocaleDateString()}

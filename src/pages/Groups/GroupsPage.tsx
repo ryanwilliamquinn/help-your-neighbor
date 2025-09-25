@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useAuth, useToast, useUserLimits } from '@/hooks';
 import { apiService } from '@/services';
 import type { Group, User } from '@/types';
@@ -9,6 +10,8 @@ const GroupsPage = (): React.JSX.Element => {
   const { user, loading } = useAuth();
   const toast = useToast();
   const { limitsData, canCreateGroup, refreshLimits } = useUserLimits();
+  const [searchParams] = useSearchParams();
+  const highlightGroupId = searchParams.get('highlight');
   const [groups, setGroups] = useState<Group[]>([]);
   const [loadingGroups, setLoadingGroups] = useState(true);
   const [showCreateForm, setShowCreateForm] = useState(false);
@@ -357,7 +360,14 @@ const GroupsPage = (): React.JSX.Element => {
           ) : (
             <div className="groups-grid">
               {groups.map((group) => (
-                <div key={group.id} className="group-card">
+                <div
+                  key={group.id}
+                  className={`group-card ${
+                    highlightGroupId === group.id
+                      ? 'group-card-highlighted'
+                      : ''
+                  }`}
+                >
                   <div className="group-header">
                     <h3 className="group-name">{group.name}</h3>
                     <span className="group-role">
