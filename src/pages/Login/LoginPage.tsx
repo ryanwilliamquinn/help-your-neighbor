@@ -25,7 +25,6 @@ const LoginPage = (): React.JSX.Element => {
     setIsLoading(true);
     try {
       await signIn(email, password);
-      toast.success('Login successful!');
       navigate('/');
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Login failed');

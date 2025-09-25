@@ -39,6 +39,11 @@ function App(): React.JSX.Element {
                 )}
                 {user && (
                   <li>
+                    <Link to="/">Dashboard</Link>
+                  </li>
+                )}
+                {user && (
+                  <li>
                     <Link to="/groups">Groups</Link>
                   </li>
                 )}
