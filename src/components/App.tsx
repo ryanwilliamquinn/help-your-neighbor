@@ -74,10 +74,10 @@ function App(): React.JSX.Element {
           </header>
           <main>
             <Routes>
+              <Route path="/auth/callback" element={<AuthCallbackPage />} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/signup" element={<SignUpPage />} />
               <Route path="/verify-email" element={<EmailVerificationPage />} />
-              <Route path="/auth/callback" element={<AuthCallbackPage />} />
               <Route path="/forgot-password" element={<ForgotPasswordPage />} />
               <Route path="/reset-password" element={<ResetPasswordPage />} />
               <Route path="/invite" element={<InvitePage />} />

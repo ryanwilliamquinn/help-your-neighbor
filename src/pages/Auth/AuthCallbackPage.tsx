@@ -1,0 +1,59 @@
+import React, { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useToast } from '@/hooks/useToast';
+
+const AuthCallbackPage = (): React.JSX.Element => {
+  const navigate = useNavigate();
+  const toast = useToast();
+
+  // Debug: Log that component is mounting
+  console.log('AuthCallbackPage mounted with URL:', window.location.href);
+
+  useEffect(() => {
+    const handleAuthCallback = async (): Promise<void> => {
+      try {
+        const { apiService } = await import('../../services');
+
+        // Get the URL params
+        const urlParams = new URLSearchParams(window.location.search);
+        const tokenHash = urlParams.get('token_hash');
+        const type = urlParams.get('type');
+
+        if (!tokenHash || !type) {
+          throw new Error('Invalid authentication link');
+        }
+
+        if (type === 'signup') {
+          // Handle email confirmation
+          await apiService.verifyEmailToken(tokenHash);
+          toast.success('Email confirmed successfully! You are now logged in.');
+          navigate('/');
+        } else if (type === 'recovery') {
+          // Handle password reset
+          navigate(`/reset-password?token=${tokenHash}`);
+        } else {
+          throw new Error('Unknown authentication type');
+        }
+      } catch (error) {
+        console.error('Auth callback error:', error);
+        toast.error(
+          error instanceof Error ? error.message : 'Authentication failed'
+        );
+        navigate('/login');
+      }
+    };
+
+    handleAuthCallback();
+  }, [navigate, toast]);
+
+  return (
+    <div className="login-page">
+      <div className="auth-callback-container">
+        <h1>Confirming your account...</h1>
+        <p>Please wait while we verify your email.</p>
+      </div>
+    </div>
+  );
+};
+
+export default AuthCallbackPage;
