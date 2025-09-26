@@ -33,8 +33,11 @@ const AuthCallbackPage = (): React.JSX.Element => {
         }
 
         if (type === 'signup') {
-          // Handle email confirmation - Supabase auth listener will handle state updates
+          // Handle email confirmation
           await apiService.verifyEmailToken(tokenHash);
+
+          // Refresh auth state to get the authenticated user
+          await refreshAuth();
 
           toast.success('Email confirmed successfully! You are now logged in.');
           setIsProcessing(false);
@@ -78,6 +81,7 @@ const AuthCallbackPage = (): React.JSX.Element => {
   // Redirect to dashboard once user is authenticated
   useEffect(() => {
     if (!isProcessing && user) {
+      console.log('User authenticated, redirecting to dashboard:', user.email);
       navigate('/');
     }
   }, [user, isProcessing, navigate]);
