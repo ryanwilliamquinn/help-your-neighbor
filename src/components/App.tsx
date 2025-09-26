@@ -6,6 +6,7 @@ import { ToastProvider } from '@/contexts';
 import { ToastContainer } from './Toast';
 import LoginPage from '@/pages/Login/LoginPage';
 import SignUpPage from '@/pages/Login/SignUpPage';
+import EmailVerificationPage from '@/pages/Login/EmailVerificationPage';
 import ForgotPasswordPage from '@/pages/ForgotPassword/ForgotPasswordPage';
 import ResetPasswordPage from '@/pages/ResetPassword/ResetPasswordPage';
 import ProfilePage from '@/pages/Profile/ProfilePage';
@@ -74,6 +75,7 @@ function App(): React.JSX.Element {
             <Routes>
               <Route path="/login" element={<LoginPage />} />
               <Route path="/signup" element={<SignUpPage />} />
+              <Route path="/verify-email" element={<EmailVerificationPage />} />
               <Route path="/forgot-password" element={<ForgotPasswordPage />} />
               <Route path="/reset-password" element={<ResetPasswordPage />} />
               <Route path="/invite" element={<InvitePage />} />

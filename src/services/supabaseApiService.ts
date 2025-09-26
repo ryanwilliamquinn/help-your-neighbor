@@ -33,6 +33,11 @@ export class SupabaseApiService implements ApiService {
       throw new Error('Supabase client not initialized');
     }
 
+    // Use environment variable for redirect URL, fallback to current origin
+    const redirectUrl = import.meta.env.VITE_AUTH_REDIRECT_URL
+      ? `${import.meta.env.VITE_AUTH_REDIRECT_URL}/auth/callback`
+      : `${window.location.origin}/auth/callback`;
+
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
@@ -43,6 +48,7 @@ export class SupabaseApiService implements ApiService {
           phone: '',
           general_area: '',
         },
+        emailRedirectTo: redirectUrl,
       },
     });
 
@@ -65,10 +71,37 @@ export class SupabaseApiService implements ApiService {
       createdAt: new Date(),
     };
 
+    // Check if email confirmation is required (session will be null)
+    const emailConfirmationRequired = !data.session;
+
     return {
       user: basicUser,
-      session: data.session?.access_token || '',
+      session: data.session?.access_token || null,
+      emailConfirmationRequired,
     };
+  }
+
+  async resendConfirmationEmail(email: string): Promise<void> {
+    if (!supabase) {
+      throw new Error('Supabase client not initialized');
+    }
+
+    // Use environment variable for redirect URL, fallback to current origin
+    const redirectUrl = import.meta.env.VITE_AUTH_REDIRECT_URL
+      ? `${import.meta.env.VITE_AUTH_REDIRECT_URL}/auth/callback`
+      : `${window.location.origin}/auth/callback`;
+
+    const { error } = await supabase.auth.resend({
+      type: 'signup',
+      email,
+      options: {
+        emailRedirectTo: redirectUrl,
+      },
+    });
+
+    if (error) {
+      throw new Error(error.message);
+    }
   }
 
   async signIn(email: string, password: string): Promise<AuthResponse> {

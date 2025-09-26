@@ -1,14 +1,12 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './LoginPage.css';
-import { useAuth } from '@/hooks';
 import { useToast } from '@/hooks/useToast';
 
 const SignUpPage = (): React.JSX.Element => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const { signUp } = useAuth();
   const navigate = useNavigate();
   const toast = useToast();
 
@@ -24,9 +22,19 @@ const SignUpPage = (): React.JSX.Element => {
 
     setIsLoading(true);
     try {
-      await signUp(email, password);
-      toast.success('Sign up successful!');
-      navigate('/');
+      const { apiService } = await import('../../services');
+      const response = await apiService.signUp(email, password);
+
+      if (response.emailConfirmationRequired || !response.session) {
+        // Email confirmation required - redirect to verification page
+        navigate('/verify-email', {
+          state: { email: response.user.email },
+        });
+      } else {
+        // Normal signup flow - user is signed in
+        toast.success('Sign up successful!');
+        navigate('/');
+      }
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Sign up failed');
     } finally {

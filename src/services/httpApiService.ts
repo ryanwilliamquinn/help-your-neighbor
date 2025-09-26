@@ -121,6 +121,13 @@ export class HttpApiService implements ApiService {
     });
   }
 
+  async resendConfirmationEmail(email: string): Promise<void> {
+    await this.request('/auth/resend-confirmation', {
+      method: 'POST',
+      body: JSON.stringify({ email }),
+    });
+  }
+
   // User services
   async getCurrentUser(): Promise<User> {
     return this.request<User>('/user/current');

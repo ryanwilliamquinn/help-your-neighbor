@@ -201,6 +201,12 @@ export class MockApiService implements ApiService {
     // Mock: Password updated successfully
   }
 
+  async resendConfirmationEmail(): Promise<void> {
+    await this.ensureInitialized();
+    await this.delay();
+    // Mock: Confirmation email sent
+  }
+
   // User services
   async getCurrentUser(): Promise<User> {
     await this.delay();

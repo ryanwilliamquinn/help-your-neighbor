@@ -67,7 +67,8 @@ export interface ApiResponse<T> {
 
 export interface AuthResponse {
   user: User;
-  session: string;
+  session: string | null;
+  emailConfirmationRequired?: boolean;
 }
 
 // Form types

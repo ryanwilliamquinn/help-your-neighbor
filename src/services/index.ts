@@ -21,6 +21,7 @@ export interface ApiService {
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
   updatePassword: (password: string) => Promise<void>;
+  resendConfirmationEmail: (email: string) => Promise<void>;
 
   // User services
   getCurrentUser: () => Promise<User>;

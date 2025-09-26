@@ -45,7 +45,12 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       const { apiService } = await import('../services');
       const response = await apiService.signUp(email, password);
-      setUser(response.user);
+
+      // Only set user if they have a valid session (email confirmed)
+      // If email confirmation is required, leave user as null
+      if (response.session && !response.emailConfirmationRequired) {
+        setUser(response.user);
+      }
     } finally {
       setLoading(false);
     }
