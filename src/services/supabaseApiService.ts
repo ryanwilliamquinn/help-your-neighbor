@@ -174,12 +174,20 @@ export class SupabaseApiService implements ApiService {
       throw new Error('Supabase client not initialized');
     }
 
-    const { error } = await supabase.auth.verifyOtp({
+    console.log('Verifying token with Supabase:', {
+      tokenHash,
+      type: 'signup',
+    });
+
+    const { data, error } = await supabase.auth.verifyOtp({
       token_hash: tokenHash,
       type: 'signup',
     });
 
+    console.log('Supabase verifyOtp response:', { data, error });
+
     if (error) {
+      console.error('Supabase verifyOtp error:', error);
       throw new Error(error.message);
     }
   }

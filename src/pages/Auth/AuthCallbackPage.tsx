@@ -19,6 +19,12 @@ const AuthCallbackPage = (): React.JSX.Element => {
         const tokenHash = urlParams.get('token_hash');
         const type = urlParams.get('type');
 
+        console.log('URL params:', {
+          tokenHash,
+          type,
+          url: window.location.href,
+        });
+
         if (!tokenHash || !type) {
           throw new Error('Invalid authentication link');
         }

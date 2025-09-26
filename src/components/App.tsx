@@ -75,6 +75,7 @@ function App(): React.JSX.Element {
           <main>
             <Routes>
               <Route path="/auth/callback" element={<AuthCallbackPage />} />
+              <Route path="//auth/callback" element={<AuthCallbackPage />} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/signup" element={<SignUpPage />} />
               <Route path="/verify-email" element={<EmailVerificationPage />} />
