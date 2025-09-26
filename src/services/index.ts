@@ -87,18 +87,12 @@ function createApiService(): ApiService {
         import.meta.env.VITE_SUPABASE_URL &&
         import.meta.env.VITE_SUPABASE_ANON_KEY
       ) {
-        // eslint-disable-next-line no-console
-        console.log('Using Supabase API service');
         return new SupabaseApiService();
       }
 
       // Fallback to HTTP API for local development
-      // eslint-disable-next-line no-console
-      console.log('Using HTTP API service');
       return new HttpApiService();
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error('Error accessing environment variables:', error);
+    } catch {
       // If we can't access env vars but have Supabase configured, try Supabase
       return new SupabaseApiService();
     }

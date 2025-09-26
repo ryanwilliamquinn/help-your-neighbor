@@ -23,11 +23,6 @@ function validateAppEnvironment(): void {
     console.error('VITE_USE_MOCK_API must be either "true" or "false"');
     throw new Error('Invalid VITE_USE_MOCK_API configuration');
   }
-
-  // eslint-disable-next-line no-console
-  console.log(
-    `A Cup of Sugar starting in ${requiredVars.VITE_USE_MOCK_API === 'true' ? 'mock' : 'production'} mode`
-  );
 }
 
 // Validate environment before starting the app

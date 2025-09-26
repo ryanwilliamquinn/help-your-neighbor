@@ -36,16 +36,13 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       // Set up auth state listener for automatic updates
       const { supabase } = await import('../lib/supabase');
       if (supabase) {
-        const { data } = supabase.auth.onAuthStateChange(
-          async (event, session) => {
-            console.log('Auth state changed:', event, session?.user?.id);
-            if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-              await checkSession();
-            } else if (event === 'SIGNED_OUT') {
-              setUser(null);
-            }
+        const { data } = supabase.auth.onAuthStateChange(async (event) => {
+          if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+            await checkSession();
+          } else if (event === 'SIGNED_OUT') {
+            setUser(null);
           }
-        );
+        });
         subscription = data.subscription;
       }
 

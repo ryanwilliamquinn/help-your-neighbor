@@ -10,17 +10,6 @@ function validateEnvironmentVariables(): {
   const useStaging = import.meta.env.VITE_USE_STAGING === 'true';
   const isPreview = import.meta.env.VITE_VERCEL_ENV === 'preview';
 
-  // Debug logging for environment variables
-  if (typeof window !== 'undefined') {
-    console.log('Environment debug:', {
-      useMockApi,
-      useStaging,
-      isPreview,
-      supabaseUrl: import.meta.env.VITE_SUPABASE_URL,
-      hasAnonKey: !!import.meta.env.VITE_SUPABASE_ANON_KEY,
-    });
-  }
-
   // Use staging credentials for preview deployments or when explicitly requested
   const shouldUseStaging = isPreview || useStaging;
 
@@ -74,34 +63,10 @@ function validateEnvironmentVariables(): {
   return { supabaseUrl, supabaseAnonKey, shouldUseStaging };
 }
 
-const { supabaseUrl, supabaseAnonKey, shouldUseStaging } =
-  validateEnvironmentVariables();
+const { supabaseUrl, supabaseAnonKey } = validateEnvironmentVariables();
 
 // Only create client if not using mock API
 export const supabase =
   supabaseUrl && supabaseAnonKey
     ? createClient(supabaseUrl, supabaseAnonKey)
     : null;
-
-// Debug logging for production
-if (typeof window !== 'undefined') {
-  // eslint-disable-next-line no-console
-  console.log('Supabase client initialized:', !!supabase);
-  // eslint-disable-next-line no-console
-  console.log('Supabase URL configured:', !!supabaseUrl);
-
-  try {
-    const isTest =
-      typeof process !== 'undefined' && process.env?.NODE_ENV === 'test';
-    if (isTest) {
-      console.log('Use mock API:', 'true (test environment)');
-    } else {
-      const getImportMeta = new Function('return import.meta.env');
-      console.log('Use mock API:', getImportMeta()?.VITE_USE_MOCK_API);
-    }
-  } catch {
-    console.log('Use mock API:', 'unavailable');
-  }
-  // eslint-disable-next-line no-console
-  console.log('Environment:', shouldUseStaging ? 'staging' : 'production');
-}

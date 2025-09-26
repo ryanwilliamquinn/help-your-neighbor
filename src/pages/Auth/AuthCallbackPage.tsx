@@ -10,9 +10,6 @@ const AuthCallbackPage = (): React.JSX.Element => {
   const [isProcessing, setIsProcessing] = useState(true);
   const [hasAttempted, setHasAttempted] = useState(false);
 
-  // Debug: Log that component is mounting
-  console.log('AuthCallbackPage mounted with URL:', window.location.href);
-
   useEffect(() => {
     const handleAuthCallback = async (): Promise<void> => {
       try {
@@ -21,12 +18,6 @@ const AuthCallbackPage = (): React.JSX.Element => {
         const tokenHash = urlParams.get('token_hash');
         const type = urlParams.get('type');
 
-        console.log('URL params:', {
-          tokenHash,
-          type,
-          url: window.location.href,
-        });
-
         if (!tokenHash || !type) {
           throw new Error('Invalid authentication link');
         }
@@ -34,7 +25,6 @@ const AuthCallbackPage = (): React.JSX.Element => {
         if (type === 'signup') {
           // Check if user is already authenticated (from auth state listener)
           if (user) {
-            console.log('User already authenticated via auth state listener');
             toast.success(
               'Email confirmed successfully! You are now logged in.'
             );
@@ -59,8 +49,6 @@ const AuthCallbackPage = (): React.JSX.Element => {
           throw new Error('Unknown authentication type');
         }
       } catch (error) {
-        console.error('Auth callback error:', error);
-
         // Handle specific error cases
         if (error instanceof Error) {
           if (
@@ -92,7 +80,6 @@ const AuthCallbackPage = (): React.JSX.Element => {
   // Redirect to dashboard once user is authenticated
   useEffect(() => {
     if (!isProcessing && user) {
-      console.log('User authenticated, redirecting to dashboard:', user.email);
       navigate('/');
     }
   }, [user, isProcessing, navigate]);
