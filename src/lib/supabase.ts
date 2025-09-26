@@ -10,7 +10,7 @@ function validateEnvironmentVariables(): {
   const isTestEnvironment =
     typeof process !== 'undefined' && process.env?.NODE_ENV === 'test';
 
-  // Access environment variables with test environment fallback
+  // Helper function to access environment variables
   const getEnvVar = (key: string): string | undefined => {
     if (isTestEnvironment) {
       // Return mock values for test environment
@@ -18,10 +18,13 @@ function validateEnvironmentVariables(): {
       return undefined;
     }
 
-    // Use eval to avoid Jest parsing issues with import.meta
+    // For production builds, Vite will replace import.meta.env with actual values
+    // For test environment, we use eval to avoid parsing issues
     try {
-      const importMeta = eval('import.meta');
-      return importMeta?.env?.[key];
+      // Create a function that returns import.meta.env to avoid direct syntax issues
+      const getImportMeta = new Function('return import.meta.env');
+      const env = getImportMeta();
+      return env?.[key];
     } catch {
       return undefined;
     }
@@ -117,7 +120,8 @@ if (typeof window !== 'undefined') {
     if (isTest) {
       console.log('Use mock API:', 'true (test environment)');
     } else {
-      console.log('Use mock API:', eval('import.meta')?.env?.VITE_USE_MOCK_API);
+      const getImportMeta = new Function('return import.meta.env');
+      console.log('Use mock API:', getImportMeta()?.VITE_USE_MOCK_API);
     }
   } catch {
     console.log('Use mock API:', 'unavailable');
