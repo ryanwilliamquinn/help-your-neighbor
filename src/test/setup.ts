@@ -5,6 +5,19 @@ import { TextEncoder, TextDecoder } from 'util';
 
 Object.assign(global, { TextEncoder, TextDecoder });
 
+// Mock import.meta for Jest
+Object.defineProperty(globalThis, 'import', {
+  value: {
+    meta: {
+      env: {
+        VITE_USE_MOCK_API: 'true',
+        VITE_SUPABASE_URL: '',
+        VITE_SUPABASE_ANON_KEY: '',
+      },
+    },
+  },
+});
+
 // Polyfill fetch for Jest environment with a simple mock
 global.fetch = jest.fn(() =>
   Promise.resolve({

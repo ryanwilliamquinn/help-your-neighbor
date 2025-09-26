@@ -6,33 +6,9 @@ function validateEnvironmentVariables(): {
   supabaseAnonKey: string;
   shouldUseStaging: boolean;
 } {
-  // Check if we're in test environment (Jest sets NODE_ENV to 'test')
-  const isTestEnvironment =
-    typeof process !== 'undefined' && process.env?.NODE_ENV === 'test';
-
-  // Helper function to access environment variables
-  const getEnvVar = (key: string): string | undefined => {
-    if (isTestEnvironment) {
-      // Return mock values for test environment
-      if (key === 'VITE_USE_MOCK_API') return 'true';
-      return undefined;
-    }
-
-    // For production builds, Vite will replace import.meta.env with actual values
-    // For test environment, we use eval to avoid parsing issues
-    try {
-      // Create a function that returns import.meta.env to avoid direct syntax issues
-      const getImportMeta = new Function('return import.meta.env');
-      const env = getImportMeta();
-      return env?.[key];
-    } catch {
-      return undefined;
-    }
-  };
-
-  const useMockApi = getEnvVar('VITE_USE_MOCK_API');
-  const useStaging = getEnvVar('VITE_USE_STAGING') === 'true';
-  const isPreview = getEnvVar('VITE_VERCEL_ENV') === 'preview';
+  const useMockApi = import.meta.env.VITE_USE_MOCK_API;
+  const useStaging = import.meta.env.VITE_USE_STAGING === 'true';
+  const isPreview = import.meta.env.VITE_VERCEL_ENV === 'preview';
 
   // Debug logging for environment variables
   if (typeof window !== 'undefined') {
@@ -40,8 +16,8 @@ function validateEnvironmentVariables(): {
       useMockApi,
       useStaging,
       isPreview,
-      supabaseUrl: getEnvVar('VITE_SUPABASE_URL'),
-      hasAnonKey: !!getEnvVar('VITE_SUPABASE_ANON_KEY'),
+      supabaseUrl: import.meta.env.VITE_SUPABASE_URL,
+      hasAnonKey: !!import.meta.env.VITE_SUPABASE_ANON_KEY,
     });
   }
 
@@ -49,12 +25,12 @@ function validateEnvironmentVariables(): {
   const shouldUseStaging = isPreview || useStaging;
 
   const supabaseUrl = shouldUseStaging
-    ? getEnvVar('VITE_SUPABASE_STAGING_URL')
-    : getEnvVar('VITE_SUPABASE_URL');
+    ? import.meta.env.VITE_SUPABASE_STAGING_URL
+    : import.meta.env.VITE_SUPABASE_URL;
 
   const supabaseAnonKey = shouldUseStaging
-    ? getEnvVar('VITE_SUPABASE_STAGING_ANON_KEY')
-    : getEnvVar('VITE_SUPABASE_ANON_KEY');
+    ? import.meta.env.VITE_SUPABASE_STAGING_ANON_KEY
+    : import.meta.env.VITE_SUPABASE_ANON_KEY;
 
   // If using mock API, Supabase vars are optional
   if (useMockApi === 'true') {

@@ -9,7 +9,7 @@ export default {
     url: 'http://localhost/',
   },
   globals: {
-    'import.meta': {
+    importMeta: {
       env: {
         VITE_USE_MOCK_API: 'true',
         VITE_SUPABASE_URL: '',
@@ -25,6 +25,8 @@ export default {
     '^@/(.*)$': '<rootDir>/src/$1',
     '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
     '\\.(svg|png|jpg|jpeg|gif)$': '<rootDir>/src/test/__mocks__/fileMock.ts',
+    '^\\.\\./lib/supabase$': '<rootDir>/src/test/__mocks__/supabase.ts',
+    '^\\.\\./services$': '<rootDir>/src/test/__mocks__/services.ts',
   },
   transform: {
     '^.+\\.(ts|tsx)$': [
