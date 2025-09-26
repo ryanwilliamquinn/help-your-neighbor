@@ -28,7 +28,7 @@ const SignUpPage = (): React.JSX.Element => {
       if (response.emailConfirmationRequired || !response.session) {
         // Email confirmation required - redirect to verification page
         navigate('/verify-email', {
-          state: { email: response.user.email },
+          state: { email: response.user.email || email },
         });
       } else {
         // Normal signup flow - user is signed in

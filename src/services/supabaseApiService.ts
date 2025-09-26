@@ -169,6 +169,21 @@ export class SupabaseApiService implements ApiService {
     }
   }
 
+  async verifyEmailToken(tokenHash: string): Promise<void> {
+    if (!supabase) {
+      throw new Error('Supabase client not initialized');
+    }
+
+    const { error } = await supabase.auth.verifyOtp({
+      token_hash: tokenHash,
+      type: 'signup',
+    });
+
+    if (error) {
+      throw new Error(error.message);
+    }
+  }
+
   // User services
   async getCurrentUser(): Promise<User> {
     if (!supabase) {

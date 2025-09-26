@@ -128,6 +128,13 @@ export class HttpApiService implements ApiService {
     });
   }
 
+  async verifyEmailToken(tokenHash: string): Promise<void> {
+    await this.request('/auth/verify-email', {
+      method: 'POST',
+      body: JSON.stringify({ token_hash: tokenHash }),
+    });
+  }
+
   // User services
   async getCurrentUser(): Promise<User> {
     return this.request<User>('/user/current');
