@@ -6,6 +6,7 @@ import { useToast } from '@/hooks/useToast';
 const SignUpPage = (): React.JSX.Element => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const toast = useToast();
@@ -15,8 +16,13 @@ const SignUpPage = (): React.JSX.Element => {
   ): Promise<void> => {
     event.preventDefault();
 
-    if (!email || !password) {
+    if (!email || !password || !confirmPassword) {
       toast.error('Please fill in all fields');
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      toast.error('Passwords do not match');
       return;
     }
 
@@ -63,6 +69,17 @@ const SignUpPage = (): React.JSX.Element => {
             id="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            required
+            disabled={isLoading}
+          />
+        </div>
+        <div>
+          <label htmlFor="confirmPassword">Confirm Password</label>
+          <input
+            type="password"
+            id="confirmPassword"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
             required
             disabled={isLoading}
           />
