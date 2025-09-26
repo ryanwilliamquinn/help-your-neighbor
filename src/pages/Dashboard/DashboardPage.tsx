@@ -130,7 +130,6 @@ const DashboardPage = (): React.JSX.Element => {
       hasLoadedRef.current = null;
       // Refresh limits after creating a request
       await refreshLimits();
-      toast.success('Request created successfully!');
     } catch (error) {
       // Failed to create request
       toast.error(
@@ -168,7 +167,6 @@ const DashboardPage = (): React.JSX.Element => {
       setUserRequests((prev) =>
         prev.map((req) => (req.id === requestId ? updatedRequest : req))
       );
-      toast.success('Request claimed successfully!');
     } catch (error) {
       // Failed to claim request
       toast.error(
@@ -190,7 +188,6 @@ const DashboardPage = (): React.JSX.Element => {
       setUserRequests((prev) =>
         prev.map((req) => (req.id === requestId ? updatedRequest : req))
       );
-      toast.success('Request unclaimed successfully!');
     } catch (error) {
       // Failed to unclaim request
       toast.error(
@@ -215,7 +212,6 @@ const DashboardPage = (): React.JSX.Element => {
       );
       // Refresh limits after fulfilling a request
       await refreshLimits();
-      toast.success('Request fulfilled successfully!');
     } catch (error) {
       // Failed to fulfill request
       toast.error(
@@ -236,7 +232,6 @@ const DashboardPage = (): React.JSX.Element => {
       setGroupRequests((prev) => prev.filter((req) => req.id !== requestId));
       // Refresh limits after deleting a request
       await refreshLimits();
-      toast.success('Request deleted successfully!');
     } catch (error) {
       // Failed to delete request
       toast.error(

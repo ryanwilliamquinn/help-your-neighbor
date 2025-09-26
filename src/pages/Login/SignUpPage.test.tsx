@@ -185,9 +185,11 @@ describe('SignUpPage', () => {
     await user.click(submitButton);
 
     await waitFor(() => {
-      expect(mockToast.success).toHaveBeenCalledWith('Sign up successful!');
       expect(mockNavigate).toHaveBeenCalledWith('/');
     });
+
+    // Verify no success toast is shown (success toasts have been removed)
+    expect(mockToast.success).not.toHaveBeenCalled();
 
     expect(apiService.signUp).toHaveBeenCalledWith(
       'test@example.com',

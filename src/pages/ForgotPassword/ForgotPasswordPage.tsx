@@ -24,7 +24,6 @@ const ForgotPasswordPage = (): React.JSX.Element => {
     try {
       await resetPassword(email);
       setIsSubmitted(true);
-      toast.success('Password reset email sent!');
     } catch (error) {
       toast.error(
         error instanceof Error ? error.message : 'Failed to send reset email'

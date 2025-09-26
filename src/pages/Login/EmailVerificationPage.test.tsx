@@ -89,14 +89,13 @@ describe('EmailVerificationPage', () => {
     await user.click(resendButton);
 
     await waitFor(() => {
-      expect(mockToast.success).toHaveBeenCalledWith(
-        'Confirmation email sent! Please check your inbox.'
+      expect(apiService.resendConfirmationEmail).toHaveBeenCalledWith(
+        'test@example.com'
       );
     });
 
-    expect(apiService.resendConfirmationEmail).toHaveBeenCalledWith(
-      'test@example.com'
-    );
+    // Verify no success toast is shown (success toasts have been removed)
+    expect(mockToast.success).not.toHaveBeenCalled();
   });
 
   it('shows error when resend fails', async () => {

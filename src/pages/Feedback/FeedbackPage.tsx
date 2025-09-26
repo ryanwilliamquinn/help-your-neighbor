@@ -65,8 +65,6 @@ const FeedbackPage = (): React.JSX.Element => {
         throw new Error('Failed to send feedback');
       }
 
-      toast.success("Thank you for your feedback! We'll get back to you soon.");
-
       // Clear form and navigate back
       setFormData({
         subject: '',

@@ -91,7 +91,6 @@ const ProfilePage = (): React.JSX.Element => {
       if (updateUserProfile) {
         await updateUserProfile(profile);
         setOriginalProfile(profile); // Update the original to reflect the new saved state
-        toast.success('Profile updated successfully!');
       }
     } catch (error) {
       // Failed to update profile

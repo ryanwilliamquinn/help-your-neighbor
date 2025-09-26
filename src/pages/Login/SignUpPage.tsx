@@ -32,7 +32,6 @@ const SignUpPage = (): React.JSX.Element => {
         });
       } else {
         // Normal signup flow - user is signed in
-        toast.success('Sign up successful!');
         navigate('/');
       }
     } catch (error) {

@@ -27,7 +27,6 @@ const EmailVerificationPage = (): React.JSX.Element => {
     try {
       const { apiService } = await import('../../services');
       await apiService.resendConfirmationEmail(email);
-      toast.success('Confirmation email sent! Please check your inbox.');
     } catch (error) {
       toast.error(
         error instanceof Error ? error.message : 'Failed to resend email'

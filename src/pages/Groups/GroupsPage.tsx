@@ -82,7 +82,6 @@ const GroupsPage = (): React.JSX.Element => {
       setShowCreateForm(false);
       // Refresh limits after creating a group
       await refreshLimits();
-      toast.success('Group created successfully!');
     } catch (error) {
       // Failed to create group
       toast.error(
@@ -106,9 +105,7 @@ const GroupsPage = (): React.JSX.Element => {
     }
 
     try {
-      const invite = await apiService.createInvite(groupId, inviteEmail.trim());
-      const inviteUrl = `${window.location.origin}/invite?token=${invite.token}`;
-      toast.success(`Invitation created! Share this link: ${inviteUrl}`);
+      await apiService.createInvite(groupId, inviteEmail.trim());
       setInviteEmail('');
       setInvitingGroupId(null);
     } catch (error) {
@@ -182,8 +179,6 @@ const GroupsPage = (): React.JSX.Element => {
       if (viewingMembersGroupId === groupId) {
         setViewingMembersGroupId(null);
       }
-
-      toast.success('Successfully left the group');
     } catch (error) {
       // Failed to leave group
       toast.error(
@@ -197,8 +192,7 @@ const GroupsPage = (): React.JSX.Element => {
 
   const handleRemoveMember = async (
     groupId: string,
-    userId: string,
-    memberName: string
+    userId: string
   ): Promise<void> => {
     try {
       setRemovingMember(userId);
@@ -211,8 +205,6 @@ const GroupsPage = (): React.JSX.Element => {
         [groupId]:
           prev[groupId]?.filter((member) => member.id !== userId) || [],
       }));
-
-      toast.success(`Successfully removed ${memberName} from the group`);
     } catch (error) {
       // Failed to remove member
       toast.error(
@@ -615,8 +607,7 @@ const GroupsPage = (): React.JSX.Element => {
                 onClick={() =>
                   handleRemoveMember(
                     confirmRemoveMember.groupId,
-                    confirmRemoveMember.userId,
-                    confirmRemoveMember.memberName
+                    confirmRemoveMember.userId
                   )
                 }
                 disabled={removingMember === confirmRemoveMember.userId}

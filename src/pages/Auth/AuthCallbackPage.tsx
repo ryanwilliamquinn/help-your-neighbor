@@ -25,9 +25,6 @@ const AuthCallbackPage = (): React.JSX.Element => {
         if (type === 'signup') {
           // Check if user is already authenticated (from auth state listener)
           if (user) {
-            toast.success(
-              'Email confirmed successfully! You are now logged in.'
-            );
             setIsProcessing(false);
             return;
           }
@@ -39,7 +36,6 @@ const AuthCallbackPage = (): React.JSX.Element => {
           // Refresh auth state to get the authenticated user
           await refreshAuth();
 
-          toast.success('Email confirmed successfully! You are now logged in.');
           setIsProcessing(false);
         } else if (type === 'recovery') {
           // Handle password reset

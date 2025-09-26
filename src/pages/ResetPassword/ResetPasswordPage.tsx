@@ -87,7 +87,6 @@ const ResetPasswordPage = (): React.JSX.Element => {
     try {
       await updatePassword(password);
       setIsSuccess(true);
-      toast.success('Password updated successfully!');
       setTimeout(() => {
         navigate('/');
       }, 2000);
