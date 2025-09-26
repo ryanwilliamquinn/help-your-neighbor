@@ -18,9 +18,23 @@ function validateEnvironmentVariables(): {
       return undefined;
     }
 
-    // Only access import.meta in non-test environments
+    // Use a safer approach that works in both dev and production
     try {
-      // Using eval to avoid TypeScript compilation issues in test environment
+      // This will be replaced by Vite during build with actual values
+      const globalThisWithImport = globalThis as {
+        import?: { meta?: { env?: Record<string, string> } };
+      };
+      const windowWithViteEnv =
+        typeof window !== 'undefined'
+          ? (window as { __VITE_ENV__?: Record<string, string> })
+          : null;
+
+      const env =
+        globalThisWithImport.import?.meta?.env ||
+        windowWithViteEnv?.__VITE_ENV__;
+      if (env) return env[key];
+
+      // Fallback for runtime access
       return eval('import.meta.env')?.[key];
     } catch {
       return undefined;

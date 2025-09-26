@@ -55,7 +55,7 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     initializeAuth();
 
     // Cleanup function
-    return () => {
+    return (): void => {
       if (subscription) {
         subscription.unsubscribe();
       }
