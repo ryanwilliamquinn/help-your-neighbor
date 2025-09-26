@@ -36,10 +36,25 @@ const AuthCallbackPage = (): React.JSX.Element => {
         }
       } catch (error) {
         console.error('Auth callback error:', error);
-        toast.error(
-          error instanceof Error ? error.message : 'Authentication failed'
-        );
-        navigate('/login');
+
+        // Handle specific error cases
+        if (error instanceof Error) {
+          if (
+            error.message.includes('invalid') ||
+            error.message.includes('expired')
+          ) {
+            toast.error(
+              'Email verification link has expired. Please sign up again or request a new confirmation email.'
+            );
+            navigate('/signup');
+          } else {
+            toast.error(error.message);
+            navigate('/login');
+          }
+        } else {
+          toast.error('Authentication failed');
+          navigate('/login');
+        }
       }
     };
 
