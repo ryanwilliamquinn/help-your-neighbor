@@ -1,10 +1,12 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/useToast';
+import { useAuth } from '@/hooks';
 
 const AuthCallbackPage = (): React.JSX.Element => {
   const navigate = useNavigate();
   const toast = useToast();
+  const { refreshAuth } = useAuth();
 
   // Debug: Log that component is mounting
   console.log('AuthCallbackPage mounted with URL:', window.location.href);
@@ -32,6 +34,10 @@ const AuthCallbackPage = (): React.JSX.Element => {
         if (type === 'signup') {
           // Handle email confirmation
           await apiService.verifyEmailToken(tokenHash);
+
+          // Refresh auth state to pick up the new session
+          await refreshAuth();
+
           toast.success('Email confirmed successfully! You are now logged in.');
           navigate('/');
         } else if (type === 'recovery') {
@@ -65,7 +71,7 @@ const AuthCallbackPage = (): React.JSX.Element => {
     };
 
     handleAuthCallback();
-  }, [navigate, toast]);
+  }, [navigate, toast, refreshAuth]);
 
   return (
     <div className="login-page">

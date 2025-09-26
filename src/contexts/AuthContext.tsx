@@ -11,23 +11,28 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = React.useState<User | null>(null);
   const [loading, setLoading] = React.useState(true);
 
+  // Check for existing session - reusable function
+  const checkSession = React.useCallback(async (): Promise<void> => {
+    try {
+      const { apiService } = await import('../services');
+      const currentUser = await apiService.getCurrentUser();
+      setUser(currentUser);
+    } catch {
+      // No current user or error - that's fine
+      setUser(null);
+    }
+  }, []);
+
   // Check for existing session on mount
   React.useEffect(() => {
-    const checkSession = async (): Promise<void> => {
-      try {
-        const { apiService } = await import('../services');
-        const currentUser = await apiService.getCurrentUser();
-        setUser(currentUser);
-      } catch {
-        // No current user or error - that's fine
-        setUser(null);
-      } finally {
-        setLoading(false);
-      }
+    const initializeAuth = async (): Promise<void> => {
+      setLoading(true);
+      await checkSession();
+      setLoading(false);
     };
 
-    checkSession();
-  }, []);
+    initializeAuth();
+  }, [checkSession]);
 
   const signIn = async (email: string, password: string): Promise<void> => {
     setLoading(true);
@@ -89,6 +94,10 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
+  const refreshAuth = async (): Promise<void> => {
+    await checkSession();
+  };
+
   const value: AuthContextType = {
     user,
     loading,
@@ -98,6 +107,7 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     resetPassword,
     updatePassword,
     updateUserProfile,
+    refreshAuth,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
