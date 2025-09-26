@@ -10,7 +10,7 @@ function validateEnvironmentVariables(): {
   const isTestEnvironment =
     typeof process !== 'undefined' && process.env?.NODE_ENV === 'test';
 
-  // Safe access to import.meta.env with fallbacks for test environment
+  // Access environment variables with test environment fallback
   const getEnvVar = (key: string): string | undefined => {
     if (isTestEnvironment) {
       // Return mock values for test environment
@@ -18,24 +18,10 @@ function validateEnvironmentVariables(): {
       return undefined;
     }
 
-    // Use a safer approach that works in both dev and production
+    // Use eval to avoid Jest parsing issues with import.meta
     try {
-      // This will be replaced by Vite during build with actual values
-      const globalThisWithImport = globalThis as {
-        import?: { meta?: { env?: Record<string, string> } };
-      };
-      const windowWithViteEnv =
-        typeof window !== 'undefined'
-          ? (window as { __VITE_ENV__?: Record<string, string> })
-          : null;
-
-      const env =
-        globalThisWithImport.import?.meta?.env ||
-        windowWithViteEnv?.__VITE_ENV__;
-      if (env) return env[key];
-
-      // Fallback for runtime access
-      return eval('import.meta.env')?.[key];
+      const importMeta = eval('import.meta');
+      return importMeta?.env?.[key];
     } catch {
       return undefined;
     }
@@ -44,6 +30,17 @@ function validateEnvironmentVariables(): {
   const useMockApi = getEnvVar('VITE_USE_MOCK_API');
   const useStaging = getEnvVar('VITE_USE_STAGING') === 'true';
   const isPreview = getEnvVar('VITE_VERCEL_ENV') === 'preview';
+
+  // Debug logging for environment variables
+  if (typeof window !== 'undefined') {
+    console.log('Environment debug:', {
+      useMockApi,
+      useStaging,
+      isPreview,
+      supabaseUrl: getEnvVar('VITE_SUPABASE_URL'),
+      hasAnonKey: !!getEnvVar('VITE_SUPABASE_ANON_KEY'),
+    });
+  }
 
   // Use staging credentials for preview deployments or when explicitly requested
   const shouldUseStaging = isPreview || useStaging;
@@ -120,7 +117,7 @@ if (typeof window !== 'undefined') {
     if (isTest) {
       console.log('Use mock API:', 'true (test environment)');
     } else {
-      console.log('Use mock API:', eval('import.meta.env')?.VITE_USE_MOCK_API);
+      console.log('Use mock API:', eval('import.meta')?.env?.VITE_USE_MOCK_API);
     }
   } catch {
     console.log('Use mock API:', 'unavailable');
