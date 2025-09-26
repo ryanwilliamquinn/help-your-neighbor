@@ -8,6 +8,7 @@ const AuthCallbackPage = (): React.JSX.Element => {
   const toast = useToast();
   const { refreshAuth, user } = useAuth();
   const [isProcessing, setIsProcessing] = useState(true);
+  const [hasAttempted, setHasAttempted] = useState(false);
 
   // Debug: Log that component is mounting
   console.log('AuthCallbackPage mounted with URL:', window.location.href);
@@ -15,8 +16,6 @@ const AuthCallbackPage = (): React.JSX.Element => {
   useEffect(() => {
     const handleAuthCallback = async (): Promise<void> => {
       try {
-        const { apiService } = await import('../../services');
-
         // Get the URL params
         const urlParams = new URLSearchParams(window.location.search);
         const tokenHash = urlParams.get('token_hash');
@@ -33,7 +32,18 @@ const AuthCallbackPage = (): React.JSX.Element => {
         }
 
         if (type === 'signup') {
-          // Handle email confirmation
+          // Check if user is already authenticated (from auth state listener)
+          if (user) {
+            console.log('User already authenticated via auth state listener');
+            toast.success(
+              'Email confirmed successfully! You are now logged in.'
+            );
+            setIsProcessing(false);
+            return;
+          }
+
+          // Handle email confirmation manually if not already authenticated
+          const { apiService } = await import('../../services');
           await apiService.verifyEmailToken(tokenHash);
 
           // Refresh auth state to get the authenticated user
@@ -73,10 +83,11 @@ const AuthCallbackPage = (): React.JSX.Element => {
       }
     };
 
-    if (isProcessing) {
+    if (isProcessing && !hasAttempted) {
+      setHasAttempted(true);
       handleAuthCallback();
     }
-  }, [navigate, toast, refreshAuth, isProcessing]);
+  }, [navigate, toast, refreshAuth, isProcessing, hasAttempted, user]);
 
   // Redirect to dashboard once user is authenticated
   useEffect(() => {
