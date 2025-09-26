@@ -23,15 +23,43 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   }, []);
 
-  // Check for existing session on mount
+  // Set up Supabase auth listener and initial session check
   React.useEffect(() => {
+    let subscription: { unsubscribe: () => void } | null = null;
+
     const initializeAuth = async (): Promise<void> => {
       setLoading(true);
+
+      // Initial session check
       await checkSession();
+
+      // Set up auth state listener for automatic updates
+      const { supabase } = await import('../lib/supabase');
+      if (supabase) {
+        const { data } = supabase.auth.onAuthStateChange(
+          async (event, session) => {
+            console.log('Auth state changed:', event, session?.user?.id);
+            if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+              await checkSession();
+            } else if (event === 'SIGNED_OUT') {
+              setUser(null);
+            }
+          }
+        );
+        subscription = data.subscription;
+      }
+
       setLoading(false);
     };
 
     initializeAuth();
+
+    // Cleanup function
+    return () => {
+      if (subscription) {
+        subscription.unsubscribe();
+      }
+    };
   }, [checkSession]);
 
   const signIn = async (email: string, password: string): Promise<void> => {

@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/useToast';
 import { useAuth } from '@/hooks';
@@ -6,7 +6,8 @@ import { useAuth } from '@/hooks';
 const AuthCallbackPage = (): React.JSX.Element => {
   const navigate = useNavigate();
   const toast = useToast();
-  const { refreshAuth } = useAuth();
+  const { refreshAuth, user } = useAuth();
+  const [isProcessing, setIsProcessing] = useState(true);
 
   // Debug: Log that component is mounting
   console.log('AuthCallbackPage mounted with URL:', window.location.href);
@@ -32,17 +33,15 @@ const AuthCallbackPage = (): React.JSX.Element => {
         }
 
         if (type === 'signup') {
-          // Handle email confirmation
+          // Handle email confirmation - Supabase auth listener will handle state updates
           await apiService.verifyEmailToken(tokenHash);
 
-          // Refresh auth state to pick up the new session
-          await refreshAuth();
-
           toast.success('Email confirmed successfully! You are now logged in.');
-          navigate('/');
+          setIsProcessing(false);
         } else if (type === 'recovery') {
           // Handle password reset
           navigate(`/reset-password?token=${tokenHash}`);
+          setIsProcessing(false);
         } else {
           throw new Error('Unknown authentication type');
         }
@@ -67,11 +66,21 @@ const AuthCallbackPage = (): React.JSX.Element => {
           toast.error('Authentication failed');
           navigate('/login');
         }
+        setIsProcessing(false);
       }
     };
 
-    handleAuthCallback();
-  }, [navigate, toast, refreshAuth]);
+    if (isProcessing) {
+      handleAuthCallback();
+    }
+  }, [navigate, toast, refreshAuth, isProcessing]);
+
+  // Redirect to dashboard once user is authenticated
+  useEffect(() => {
+    if (!isProcessing && user) {
+      navigate('/');
+    }
+  }, [user, isProcessing, navigate]);
 
   return (
     <div className="login-page">
