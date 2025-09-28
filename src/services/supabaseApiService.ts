@@ -18,17 +18,24 @@ import type {
 
 // Helper function to safely access environment variables
 const getEnvVar = (key: string): string | undefined => {
+  // In test environment, return undefined (tests should not need env vars)
   if (typeof process !== 'undefined' && process.env.NODE_ENV === 'test') {
-    return undefined; // Return undefined for all env vars in test mode
+    return undefined;
   }
+
+  // In browser environment, use import.meta.env via dynamic access
   if (typeof window !== 'undefined') {
     try {
-      const importMeta = new Function('return import.meta')();
-      return importMeta?.env?.[key];
+      // Use dynamic property access to avoid Jest parse errors
+      const meta = (
+        globalThis as { import?: { meta?: { env?: Record<string, string> } } }
+      ).import?.meta;
+      return meta?.env?.[key];
     } catch {
       return undefined;
     }
   }
+
   return undefined;
 };
 

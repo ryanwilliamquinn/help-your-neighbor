@@ -71,18 +71,24 @@ import { SupabaseApiService } from './supabaseApiService';
 
 // Helper function to safely access Vite environment variables
 const getViteEnv = (key: string): string | undefined => {
+  // In test environment, use process.env or return mock values
   if (typeof process !== 'undefined' && process.env.NODE_ENV === 'test') {
-    return key === 'VITE_USE_MOCK_API' ? 'true' : undefined;
+    return key === 'VITE_USE_MOCK_API' ? 'true' : process.env[key];
   }
+
+  // In browser environment, use import.meta.env via dynamic access
   if (typeof window !== 'undefined') {
     try {
-      const importMeta = new Function('return import.meta')();
-      return importMeta?.env?.[key];
+      // Use dynamic property access to avoid Jest parse errors
+      const meta = (
+        globalThis as { import?: { meta?: { env?: Record<string, string> } } }
+      ).import?.meta;
+      return meta?.env?.[key];
     } catch {
-      // Don't force mock API in production - only in test environment
       return undefined;
     }
   }
+
   return undefined;
 };
 
