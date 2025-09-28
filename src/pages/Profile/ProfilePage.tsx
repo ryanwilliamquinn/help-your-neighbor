@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth, useToast } from '@/hooks';
 import type { UserProfileForm } from '@/types';
+import EmailPreferencesSection from '@/components/Profile/EmailPreferencesSection';
 import './ProfilePage.css';
 
 const ProfilePage = (): React.JSX.Element => {
@@ -195,6 +196,8 @@ const ProfilePage = (): React.JSX.Element => {
             </button>
           </div>
         </form>
+
+        <EmailPreferencesSection />
       </div>
     </div>
   );

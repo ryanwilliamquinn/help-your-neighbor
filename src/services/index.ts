@@ -13,6 +13,8 @@ import type {
   UserCounts,
   UserLimitsWithCounts,
   AdminMetrics,
+  EmailPreferences,
+  EmailPreferencesForm,
 } from '../types';
 
 export interface ApiService {
@@ -63,6 +65,13 @@ export interface ApiService {
 
   // Admin services
   getAdminMetrics: () => Promise<AdminMetrics>;
+
+  // Email preferences services
+  getEmailPreferences: () => Promise<EmailPreferences>;
+  updateEmailPreferences: (
+    preferences: EmailPreferencesForm
+  ) => Promise<EmailPreferences>;
+  sendImmediateNotification: (requestId: string) => Promise<void>;
 }
 
 import { MockApiService } from './mockApiService';

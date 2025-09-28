@@ -11,6 +11,8 @@ import type {
   UserCounts,
   UserLimitsWithCounts,
   AdminMetrics,
+  EmailPreferences,
+  EmailPreferencesForm,
 } from '../types';
 import type { ApiService } from './index';
 
@@ -301,5 +303,25 @@ export class HttpApiService implements ApiService {
 
   async getAdminMetrics(): Promise<AdminMetrics> {
     return this.request<AdminMetrics>('/admin/metrics');
+  }
+
+  // Email preferences services
+  async getEmailPreferences(): Promise<EmailPreferences> {
+    return this.request<EmailPreferences>('/user/email-preferences');
+  }
+
+  async updateEmailPreferences(
+    preferences: EmailPreferencesForm
+  ): Promise<EmailPreferences> {
+    return this.request<EmailPreferences>('/user/email-preferences', {
+      method: 'PUT',
+      body: JSON.stringify(preferences),
+    });
+  }
+
+  async sendImmediateNotification(requestId: string): Promise<void> {
+    await this.request<void>(`/requests/${requestId}/notify`, {
+      method: 'POST',
+    });
   }
 }

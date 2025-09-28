@@ -124,3 +124,31 @@ export interface AdminMetrics {
   averageTimeToClaimHours: number;
   averageGroupSize: number;
 }
+
+// Email preferences
+export interface EmailPreferences {
+  userId: string;
+  frequency: 'disabled' | 'daily' | 'immediate';
+  lastDailySent?: Date;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface EmailPreferencesForm {
+  frequency: 'disabled' | 'daily' | 'immediate';
+}
+
+export interface EmailDigest {
+  user: User;
+  openRequests: Request[];
+  dashboardUrl: string;
+}
+
+export interface EmailSendLog {
+  id: string;
+  userId: string;
+  emailType: string;
+  requestIds: string[];
+  sentAt: Date;
+  emailProviderId?: string;
+}

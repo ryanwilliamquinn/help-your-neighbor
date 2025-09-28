@@ -13,6 +13,8 @@ import type {
   UserCounts,
   UserLimitsWithCounts,
   AdminMetrics,
+  EmailPreferences,
+  EmailPreferencesForm,
 } from '../types';
 import type { ApiService } from './index';
 import { StorageFactory, type StorageAdapter } from '../lib/storage';
@@ -1067,5 +1069,92 @@ export class MockApiService implements ApiService {
       averageTimeToClaimHours: Math.round(avgTimeToClaimHours * 100) / 100,
       averageGroupSize: Math.round(avgGroupSize * 100) / 100,
     };
+  }
+
+  // Email preferences services
+  async getEmailPreferences(): Promise<EmailPreferences> {
+    await this.ensureInitialized();
+    await this.delay();
+
+    if (!this.currentUser) {
+      throw new Error('No authenticated user');
+    }
+
+    // Mock storage for email preferences
+    const preferences = localStorage.getItem(
+      `email_prefs_${this.currentUser.id}`
+    );
+    if (preferences) {
+      const parsed = JSON.parse(preferences);
+      return {
+        ...parsed,
+        createdAt: new Date(parsed.createdAt),
+        updatedAt: new Date(parsed.updatedAt),
+        lastDailySent: parsed.lastDailySent
+          ? new Date(parsed.lastDailySent)
+          : undefined,
+      };
+    }
+
+    // Return default preferences
+    const defaultPrefs: EmailPreferences = {
+      userId: this.currentUser.id,
+      frequency: 'disabled',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+
+    localStorage.setItem(
+      `email_prefs_${this.currentUser.id}`,
+      JSON.stringify(defaultPrefs)
+    );
+    return defaultPrefs;
+  }
+
+  async updateEmailPreferences(
+    preferences: EmailPreferencesForm
+  ): Promise<EmailPreferences> {
+    await this.ensureInitialized();
+    await this.delay();
+
+    if (!this.currentUser) {
+      throw new Error('No authenticated user');
+    }
+
+    const currentPrefs = await this.getEmailPreferences();
+    const updatedPrefs: EmailPreferences = {
+      ...currentPrefs,
+      frequency: preferences.frequency,
+      updatedAt: new Date(),
+    };
+
+    localStorage.setItem(
+      `email_prefs_${this.currentUser.id}`,
+      JSON.stringify(updatedPrefs)
+    );
+    return updatedPrefs;
+  }
+
+  async sendImmediateNotification(requestId: string): Promise<void> {
+    await this.ensureInitialized();
+    await this.delay();
+
+    if (!this.currentUser) {
+      throw new Error('No authenticated user');
+    }
+
+    // Mock implementation - just log that we would send notifications
+    console.log(
+      `[MockApiService] Would send immediate notification for request ${requestId}`
+    );
+
+    // In a real implementation, this would:
+    // 1. Get the request details
+    // 2. Find group members with immediate notification preferences
+    // 3. Send emails to those members
+    // 4. Log the email sends
+
+    // For now, just simulate a successful send
+    return Promise.resolve();
   }
 }
