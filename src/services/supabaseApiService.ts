@@ -16,6 +16,22 @@ import type {
   AdminMetrics,
 } from '@/types';
 
+// Helper function to safely access environment variables
+const getEnvVar = (key: string): string | undefined => {
+  if (typeof process !== 'undefined' && process.env.NODE_ENV === 'test') {
+    return undefined; // Return undefined for all env vars in test mode
+  }
+  if (typeof window !== 'undefined') {
+    try {
+      const importMeta = new Function('return import.meta')();
+      return importMeta?.env?.[key];
+    } catch {
+      return undefined;
+    }
+  }
+  return undefined;
+};
+
 export class SupabaseApiService implements ApiService {
   constructor() {
     // Set up auth state listener if in browser environment
@@ -35,8 +51,8 @@ export class SupabaseApiService implements ApiService {
     }
 
     // Use environment variable for redirect URL, fallback to current origin
-    const redirectUrl = import.meta.env.VITE_AUTH_REDIRECT_URL
-      ? `${import.meta.env.VITE_AUTH_REDIRECT_URL}/auth/callback`
+    const redirectUrl = getEnvVar('VITE_AUTH_REDIRECT_URL')
+      ? `${getEnvVar('VITE_AUTH_REDIRECT_URL')}/auth/callback`
       : `${window.location.origin}/auth/callback`;
 
     const { data, error } = await supabase.auth.signUp({
@@ -89,8 +105,8 @@ export class SupabaseApiService implements ApiService {
     }
 
     // Use environment variable for redirect URL, fallback to current origin
-    const redirectUrl = import.meta.env.VITE_AUTH_REDIRECT_URL
-      ? `${import.meta.env.VITE_AUTH_REDIRECT_URL}/auth/callback`
+    const redirectUrl = getEnvVar('VITE_AUTH_REDIRECT_URL')
+      ? `${getEnvVar('VITE_AUTH_REDIRECT_URL')}/auth/callback`
       : `${window.location.origin}/auth/callback`;
 
     const { error } = await supabase.auth.resend({
