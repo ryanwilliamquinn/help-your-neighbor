@@ -329,16 +329,20 @@ describe('SignUpPage', () => {
     const emailInput = screen.getByLabelText(/email/i);
     const passwordInput = screen.getByLabelText(/^password$/i);
     const confirmPasswordInput = screen.getByLabelText(/confirm password/i);
-    const submitButton = screen.getByRole('button', { name: /sign up/i });
 
     await user.type(emailInput, 'test@example.com');
     await user.type(passwordInput, 'password123');
     await user.type(confirmPasswordInput, 'differentpassword');
-    await user.click(submitButton);
 
+    // Check for inline validation indicators
     await waitFor(() => {
-      expect(mockToast.error).toHaveBeenCalledWith('Passwords do not match');
+      expect(screen.getByText('Passwords do not match')).toBeInTheDocument();
+      expect(confirmPasswordInput).toHaveClass('password-mismatch');
+      expect(screen.getByText('✗')).toBeInTheDocument();
     });
+
+    // Verify no toast is shown for password mismatch (handled inline now)
+    expect(mockToast.error).not.toHaveBeenCalledWith('Passwords do not match');
   });
 
   it('shows error when confirm password is missing', async () => {
@@ -360,5 +364,27 @@ describe('SignUpPage', () => {
     await waitFor(() => {
       expect(mockToast.error).toHaveBeenCalledWith('Please fill in all fields');
     });
+  });
+
+  it('shows success indicator when passwords match', async () => {
+    const user = userEvent.setup();
+    renderSignUpPage();
+
+    const passwordInput = screen.getByLabelText(/^password$/i);
+    const confirmPasswordInput = screen.getByLabelText(/confirm password/i);
+
+    await user.type(passwordInput, 'password123');
+    await user.type(confirmPasswordInput, 'password123');
+
+    // Check for positive validation indicators
+    await waitFor(() => {
+      expect(confirmPasswordInput).toHaveClass('password-match');
+      expect(screen.getByText('✓')).toBeInTheDocument();
+    });
+
+    // Should not show error message when passwords match
+    expect(
+      screen.queryByText('Passwords do not match')
+    ).not.toBeInTheDocument();
   });
 });
