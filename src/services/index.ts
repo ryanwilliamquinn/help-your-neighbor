@@ -68,7 +68,7 @@ export interface ApiService {
 import { MockApiService } from './mockApiService';
 import { HttpApiService } from './httpApiService';
 import { SupabaseApiService } from './supabaseApiService';
-import { getEnvVar } from '../config/env';
+import { getEnvVar } from '../config/env.js';
 
 // Service factory - chooses between mock, HTTP, and Supabase API based on environment
 function createApiService(): ApiService {

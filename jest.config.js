@@ -22,13 +22,13 @@ export default {
     '^@/(.*\\.svg)$': '<rootDir>/src/test/__mocks__/fileMock.ts',
     '^@/lib/supabase$': '<rootDir>/src/test/__mocks__/supabase.ts',
     '^@/services$': '<rootDir>/src/test/__mocks__/services.ts',
-    '^@/config/env$': '<rootDir>/src/test/__mocks__/env.ts',
+    '^@/config/env(\\.js)?$': '<rootDir>/src/test/__mocks__/env.ts',
     '^@/(.*)$': '<rootDir>/src/$1',
     '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
     '\\.(svg|png|jpg|jpeg|gif)$': '<rootDir>/src/test/__mocks__/fileMock.ts',
     '^\\.\\./lib/supabase$': '<rootDir>/src/test/__mocks__/supabase.ts',
     '^\\.\\./services$': '<rootDir>/src/test/__mocks__/services.ts',
-    '^\\.\\./config/env$': '<rootDir>/src/test/__mocks__/env.ts',
+    '^\\.\\./config/env(\\.js)?$': '<rootDir>/src/test/__mocks__/env.ts',
   },
   transform: {
     '^.+\\.(ts|tsx)$': [

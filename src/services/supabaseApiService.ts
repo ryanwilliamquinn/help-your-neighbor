@@ -15,7 +15,7 @@ import type {
   UserLimitsWithCounts,
   AdminMetrics,
 } from '@/types';
-import { getEnvVar } from '@/config/env';
+import { getEnvVar } from '@/config/env.js';
 
 export class SupabaseApiService implements ApiService {
   constructor() {
