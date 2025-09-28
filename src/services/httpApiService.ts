@@ -10,6 +10,7 @@ import type {
   UserLimits,
   UserCounts,
   UserLimitsWithCounts,
+  AdminMetrics,
 } from '../types';
 import type { ApiService } from './index';
 
@@ -296,5 +297,9 @@ export class HttpApiService implements ApiService {
       '/user/can-join-group'
     );
     return response.canJoin;
+  }
+
+  async getAdminMetrics(): Promise<AdminMetrics> {
+    return this.request<AdminMetrics>('/admin/metrics');
   }
 }

@@ -10,6 +10,7 @@ describe('RequestList', () => {
     email: 'alice@example.com',
     phone: '555-0101',
     generalArea: 'Downtown',
+    isAdmin: false,
     createdAt: new Date(),
   };
 
@@ -19,6 +20,7 @@ describe('RequestList', () => {
     email: 'bob@example.com',
     phone: '555-0102',
     generalArea: 'Midtown',
+    isAdmin: false,
     createdAt: new Date(),
   };
 

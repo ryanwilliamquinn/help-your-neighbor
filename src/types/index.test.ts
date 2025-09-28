@@ -9,6 +9,7 @@ describe('Request Interface with Enhanced User Data', () => {
     name: 'Request Creator',
     phone: '+1234567890',
     generalArea: 'Downtown',
+    isAdmin: false,
     createdAt: new Date('2024-01-01T00:00:00Z'),
   };
 
@@ -18,6 +19,7 @@ describe('Request Interface with Enhanced User Data', () => {
     name: 'Request Helper',
     phone: '+0987654321',
     generalArea: 'Uptown',
+    isAdmin: false,
     createdAt: new Date('2024-01-02T00:00:00Z'),
   };
 

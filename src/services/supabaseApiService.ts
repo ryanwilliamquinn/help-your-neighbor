@@ -13,6 +13,7 @@ import type {
   UserLimits,
   UserCounts,
   UserLimitsWithCounts,
+  AdminMetrics,
 } from '@/types';
 
 export class SupabaseApiService implements ApiService {
@@ -68,6 +69,7 @@ export class SupabaseApiService implements ApiService {
       name: '',
       phone: '',
       generalArea: '',
+      isAdmin: false,
       createdAt: new Date(),
     };
 
@@ -213,6 +215,7 @@ export class SupabaseApiService implements ApiService {
           name: user.user_metadata?.name || '',
           phone: user.user_metadata?.phone || '',
           generalArea: user.user_metadata?.general_area || '',
+          isAdmin: false,
           createdAt: new Date(),
         };
 
@@ -805,6 +808,7 @@ export class SupabaseApiService implements ApiService {
     name: string;
     phone: string;
     general_area: string;
+    is_admin?: boolean;
     created_at: string;
   }): User {
     return {
@@ -813,6 +817,7 @@ export class SupabaseApiService implements ApiService {
       name: dbUser.name,
       phone: dbUser.phone,
       generalArea: dbUser.general_area,
+      isAdmin: dbUser.is_admin || false,
       createdAt: new Date(dbUser.created_at),
     };
   }
@@ -1065,5 +1070,126 @@ export class SupabaseApiService implements ApiService {
     }
 
     return data as boolean;
+  }
+
+  async getAdminMetrics(): Promise<AdminMetrics> {
+    if (!supabase) {
+      throw new Error('Supabase client not initialized');
+    }
+
+    const { data: user } = await supabase.auth.getUser();
+    if (!user.user) {
+      throw new Error('No authenticated user');
+    }
+
+    // Check if user is admin
+    const { data: userData, error: userError } = await supabase
+      .from('users')
+      .select('is_admin')
+      .eq('id', user.user.id)
+      .single();
+
+    if (userError || !userData?.is_admin) {
+      throw new Error('Access denied: Admin privileges required');
+    }
+
+    // Get metrics in parallel
+    const [
+      totalUsersResult,
+      activeUsersResult,
+      totalGroupsResult,
+      requestsThisMonthResult,
+      fulfillmentStatsResult,
+      claimStatsResult,
+      groupSizeStatsResult,
+    ] = await Promise.all([
+      // Total users
+      supabase.from('users').select('id', { count: 'exact' }),
+
+      // Active users (logged in last 30 days - we'll approximate using created users in last 30 days for now)
+      supabase
+        .from('users')
+        .select('id', { count: 'exact' })
+        .gte(
+          'created_at',
+          new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
+        ),
+
+      // Total groups
+      supabase.from('groups').select('id', { count: 'exact' }),
+
+      // Requests this month
+      supabase
+        .from('requests')
+        .select('id', { count: 'exact' })
+        .gte(
+          'created_at',
+          new Date(
+            new Date().getFullYear(),
+            new Date().getMonth(),
+            1
+          ).toISOString()
+        ),
+
+      // Fulfillment stats
+      supabase.from('requests').select('status'),
+
+      // Claim time stats
+      supabase
+        .from('requests')
+        .select('created_at, claimed_at')
+        .not('claimed_at', 'is', null),
+
+      // Group size stats
+      supabase.from('group_members').select('group_id'),
+    ]);
+
+    // Calculate fulfillment rate
+    const allRequests = fulfillmentStatsResult.data || [];
+    const fulfilledOrClaimed = allRequests.filter(
+      (r) => r.status === 'claimed' || r.status === 'fulfilled'
+    ).length;
+    const fulfillmentRate =
+      allRequests.length > 0
+        ? (fulfilledOrClaimed / allRequests.length) * 100
+        : 0;
+
+    // Calculate average time to claim
+    const claimedRequests = claimStatsResult.data || [];
+    const avgTimeToClaimMs =
+      claimedRequests.length > 0
+        ? claimedRequests.reduce((sum, req) => {
+            const claimTime =
+              new Date(req.claimed_at).getTime() -
+              new Date(req.created_at).getTime();
+            return sum + claimTime;
+          }, 0) / claimedRequests.length
+        : 0;
+    const avgTimeToClaimHours = avgTimeToClaimMs / (1000 * 60 * 60);
+
+    // Calculate average group size
+    const groupMembers = groupSizeStatsResult.data || [];
+    const groupSizes = groupMembers.reduce(
+      (acc, member) => {
+        acc[member.group_id] = (acc[member.group_id] || 0) + 1;
+        return acc;
+      },
+      {} as Record<string, number>
+    );
+    const avgGroupSize =
+      Object.keys(groupSizes).length > 0
+        ? Object.values(groupSizes).reduce((sum, size) => sum + size, 0) /
+          Object.keys(groupSizes).length
+        : 0;
+
+    return {
+      totalUsers: totalUsersResult.count || 0,
+      activeUsers: activeUsersResult.count || 0,
+      totalGroups: totalGroupsResult.count || 0,
+      totalRequestsThisMonth: requestsThisMonthResult.count || 0,
+      fulfillmentRate: Math.round(fulfillmentRate * 100) / 100,
+      averageTimeToClaimHours: Math.round(avgTimeToClaimHours * 100) / 100,
+      averageGroupSize: Math.round(avgGroupSize * 100) / 100,
+    };
   }
 }

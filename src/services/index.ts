@@ -12,6 +12,7 @@ import type {
   UserLimits,
   UserCounts,
   UserLimitsWithCounts,
+  AdminMetrics,
 } from '../types';
 
 export interface ApiService {
@@ -59,6 +60,9 @@ export interface ApiService {
   // Invite services
   createInvite: (groupId: string, email: string) => Promise<Invite>;
   validateInvite: (token: string) => Promise<{ group: Group; invite: Invite }>;
+
+  // Admin services
+  getAdminMetrics: () => Promise<AdminMetrics>;
 }
 
 import { MockApiService } from './mockApiService';

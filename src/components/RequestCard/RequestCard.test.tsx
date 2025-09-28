@@ -168,6 +168,7 @@ describe('RequestCard', () => {
         email: 'alice@example.com',
         phone: '555-0101',
         generalArea: 'Downtown',
+        isAdmin: false,
         createdAt: new Date(),
       },
     };
@@ -185,6 +186,7 @@ describe('RequestCard', () => {
         email: 'alice@example.com',
         phone: '555-0101',
         generalArea: 'Downtown',
+        isAdmin: false,
         createdAt: new Date(),
       },
     };
@@ -207,6 +209,7 @@ describe('RequestCard', () => {
         email: 'bob@example.com',
         phone: '555-0102',
         generalArea: 'Midtown',
+        isAdmin: false,
         createdAt: new Date(),
       },
     };
@@ -230,6 +233,7 @@ describe('RequestCard', () => {
         email: 'bob@example.com',
         phone: '555-0102',
         generalArea: 'Midtown',
+        isAdmin: false,
         createdAt: new Date(),
       },
     };

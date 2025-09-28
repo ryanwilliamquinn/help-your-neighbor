@@ -131,6 +131,7 @@ export class TestStorageDB implements StorageAdapter {
       name: 'Alice Johnson',
       phone: '555-0101',
       generalArea: 'Downtown',
+      isAdmin: false,
       createdAt: new Date('2024-01-01T00:00:00.000Z'),
     };
 

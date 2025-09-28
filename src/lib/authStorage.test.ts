@@ -36,6 +36,7 @@ describe('AuthStorage', () => {
     name: 'Test User',
     phone: '555-0123',
     generalArea: 'Test Area',
+    isAdmin: false,
     createdAt: new Date('2024-01-01T00:00:00.000Z'),
   };
 
