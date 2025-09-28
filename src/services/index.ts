@@ -79,7 +79,8 @@ const getViteEnv = (key: string): string | undefined => {
       const importMeta = new Function('return import.meta')();
       return importMeta?.env?.[key];
     } catch {
-      return key === 'VITE_USE_MOCK_API' ? 'true' : undefined;
+      // Don't force mock API in production - only in test environment
+      return undefined;
     }
   }
   return undefined;
