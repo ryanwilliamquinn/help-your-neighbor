@@ -12,6 +12,7 @@ import type {
   UserLimits,
   UserCounts,
   UserLimitsWithCounts,
+  AdminMetrics,
 } from '../types';
 import type { ApiService } from './index';
 import { StorageFactory, type StorageAdapter } from '../lib/storage';
@@ -87,6 +88,7 @@ export class MockApiService implements ApiService {
           name: 'Alice Johnson',
           phone: '555-0101',
           generalArea: 'Downtown',
+          isAdmin: true,
           createdAt: new Date(),
         },
         {
@@ -95,6 +97,7 @@ export class MockApiService implements ApiService {
           name: 'Bob Smith',
           phone: '555-0102',
           generalArea: 'Midtown',
+          isAdmin: false,
           createdAt: new Date(),
         },
       ];
@@ -134,6 +137,7 @@ export class MockApiService implements ApiService {
       name: '', // Will be filled in profile setup
       phone: '',
       generalArea: '',
+      isAdmin: false,
       createdAt: new Date(),
     };
 
@@ -987,5 +991,81 @@ export class MockApiService implements ApiService {
   async canJoinGroup(): Promise<boolean> {
     const { limits, counts } = await this.getUserLimitsWithCounts();
     return counts.groupsJoinedCount < limits.maxGroupsJoined;
+  }
+
+  async getAdminMetrics(): Promise<AdminMetrics> {
+    await this.delay();
+
+    if (!this.currentUser) {
+      throw new Error('No authenticated user');
+    }
+
+    if (!this.currentUser.isAdmin) {
+      throw new Error('Access denied: Admin privileges required');
+    }
+
+    const users = this.db.getUsers();
+    const groups = this.db.getGroups();
+    const requests = this.db.getRequests();
+    const groupMembers = this.db.getGroupMembers();
+
+    // Calculate metrics
+    const now = new Date();
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+    const thisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+    // Active users (users created in last 30 days as approximation)
+    const activeUsers = users.filter(
+      (u) => new Date(u.createdAt) > thirtyDaysAgo
+    ).length;
+
+    // Requests this month
+    const requestsThisMonth = requests.filter(
+      (r) => new Date(r.createdAt) > thisMonth
+    ).length;
+
+    // Fulfillment rate
+    const fulfilledOrClaimed = requests.filter(
+      (r) => r.status === 'claimed' || r.status === 'fulfilled'
+    ).length;
+    const fulfillmentRate =
+      requests.length > 0 ? (fulfilledOrClaimed / requests.length) * 100 : 0;
+
+    // Average time to claim
+    const claimedRequests = requests.filter((r) => r.claimedAt);
+    const avgTimeToClaimMs =
+      claimedRequests.length > 0
+        ? claimedRequests.reduce((sum, req) => {
+            const claimTime =
+              new Date(req.claimedAt!).getTime() -
+              new Date(req.createdAt).getTime();
+            return sum + claimTime;
+          }, 0) / claimedRequests.length
+        : 0;
+    const avgTimeToClaimHours = avgTimeToClaimMs / (1000 * 60 * 60);
+
+    // Average group size
+    const groupSizes = groupMembers.reduce(
+      (acc, member) => {
+        acc[member.groupId] = (acc[member.groupId] || 0) + 1;
+        return acc;
+      },
+      {} as Record<string, number>
+    );
+    const avgGroupSize =
+      Object.keys(groupSizes).length > 0
+        ? Object.values(groupSizes).reduce((sum, size) => sum + size, 0) /
+          Object.keys(groupSizes).length
+        : 0;
+
+    return {
+      totalUsers: users.length,
+      activeUsers,
+      totalGroups: groups.length,
+      totalRequestsThisMonth: requestsThisMonth,
+      fulfillmentRate: Math.round(fulfillmentRate * 100) / 100,
+      averageTimeToClaimHours: Math.round(avgTimeToClaimHours * 100) / 100,
+      averageGroupSize: Math.round(avgGroupSize * 100) / 100,
+    };
   }
 }

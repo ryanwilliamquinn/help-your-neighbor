@@ -370,6 +370,7 @@ describe('DashboardPage', () => {
         email: 'test@example.com',
         phone: '555-0001',
         generalArea: 'Downtown',
+        isAdmin: false,
         createdAt: new Date(),
       },
       {
@@ -378,6 +379,7 @@ describe('DashboardPage', () => {
         email: 'other1@example.com',
         phone: '555-0002',
         generalArea: 'Midtown',
+        isAdmin: false,
         createdAt: new Date(),
       },
       {
@@ -386,6 +388,7 @@ describe('DashboardPage', () => {
         email: 'other2@example.com',
         phone: '555-0003',
         generalArea: 'Uptown',
+        isAdmin: false,
         createdAt: new Date(),
       },
       {
@@ -394,6 +397,7 @@ describe('DashboardPage', () => {
         email: 'helper1@example.com',
         phone: '555-0004',
         generalArea: 'Downtown',
+        isAdmin: false,
         createdAt: new Date(),
       },
       {
@@ -402,6 +406,7 @@ describe('DashboardPage', () => {
         email: 'helper2@example.com',
         phone: '555-0005',
         generalArea: 'Midtown',
+        isAdmin: false,
         createdAt: new Date(),
       },
     ];
@@ -496,6 +501,7 @@ describe('DashboardPage', () => {
         email: 'test@example.com',
         phone: '555-0001',
         generalArea: 'Downtown',
+        isAdmin: false,
         createdAt: new Date(),
       },
       {
@@ -504,6 +510,7 @@ describe('DashboardPage', () => {
         email: 'other1@example.com',
         phone: '555-0002',
         generalArea: 'Midtown',
+        isAdmin: false,
         createdAt: new Date(),
       },
       {
@@ -512,6 +519,7 @@ describe('DashboardPage', () => {
         email: 'helper1@example.com',
         phone: '555-0004',
         generalArea: 'Downtown',
+        isAdmin: false,
         createdAt: new Date(),
       },
     ];
@@ -620,6 +628,7 @@ describe('DashboardPage', () => {
         email: 'test@example.com',
         phone: '555-0001',
         generalArea: 'Downtown',
+        isAdmin: false,
         createdAt: new Date(),
       },
       {
@@ -628,6 +637,7 @@ describe('DashboardPage', () => {
         email: 'other1@example.com',
         phone: '555-0002',
         generalArea: 'Midtown',
+        isAdmin: false,
         createdAt: new Date(),
       },
     ];

@@ -16,7 +16,9 @@ import GroupsPage from '@/pages/Groups/GroupsPage';
 import InvitePage from '@/pages/Invite/InvitePage';
 import FeedbackPage from '@/pages/Feedback/FeedbackPage';
 import AboutPage from '@/pages/About/AboutPage';
+import { AdminPage } from '@/pages/Admin/AdminPage';
 import ProtectedRoute from './ProtectedRoute';
+import AdminRoute from './AdminRoute';
 
 function App(): React.JSX.Element {
   const { user, signOut } = useAuth();
@@ -64,6 +66,11 @@ function App(): React.JSX.Element {
                     <Link to="/feedback">Feedback</Link>
                   </li>
                 )}
+                {user && user.isAdmin && (
+                  <li>
+                    <Link to="/admin">Admin</Link>
+                  </li>
+                )}
                 {user && (
                   <li>
                     <button onClick={signOut}>Logout</button>
@@ -104,6 +111,16 @@ function App(): React.JSX.Element {
                 element={
                   <ProtectedRoute>
                     <ProfilePage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin"
+                element={
+                  <ProtectedRoute>
+                    <AdminRoute>
+                      <AdminPage />
+                    </AdminRoute>
                   </ProtectedRoute>
                 }
               />

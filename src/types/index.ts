@@ -6,6 +6,7 @@ export interface User {
   name: string;
   phone: string;
   generalArea: string;
+  isAdmin: boolean;
   createdAt: Date;
 }
 
@@ -111,4 +112,15 @@ export interface UserCounts {
 export interface UserLimitsWithCounts {
   limits: UserLimits;
   counts: UserCounts;
+}
+
+// Admin metrics
+export interface AdminMetrics {
+  totalUsers: number;
+  activeUsers: number; // logged in last 30 days
+  totalGroups: number;
+  totalRequestsThisMonth: number;
+  fulfillmentRate: number; // percentage of requests claimed + fulfilled
+  averageTimeToClaimHours: number;
+  averageGroupSize: number;
 }

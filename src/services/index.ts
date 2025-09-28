@@ -12,6 +12,7 @@ import type {
   UserLimits,
   UserCounts,
   UserLimitsWithCounts,
+  AdminMetrics,
 } from '../types';
 
 export interface ApiService {
@@ -59,11 +60,15 @@ export interface ApiService {
   // Invite services
   createInvite: (groupId: string, email: string) => Promise<Invite>;
   validateInvite: (token: string) => Promise<{ group: Group; invite: Invite }>;
+
+  // Admin services
+  getAdminMetrics: () => Promise<AdminMetrics>;
 }
 
 import { MockApiService } from './mockApiService';
 import { HttpApiService } from './httpApiService';
 import { SupabaseApiService } from './supabaseApiService';
+import { getEnvVar } from '../config/env.js';
 
 // Service factory - chooses between mock, HTTP, and Supabase API based on environment
 function createApiService(): ApiService {
@@ -78,14 +83,14 @@ function createApiService(): ApiService {
     // Access environment variables safely for browser environment
     try {
       // Check for mock API override first
-      if (import.meta.env.VITE_USE_MOCK_API === 'true') {
+      if (getEnvVar('VITE_USE_MOCK_API') === 'true') {
         return new MockApiService();
       }
 
       // Check if Supabase is configured - prioritize Supabase for production
       if (
-        import.meta.env.VITE_SUPABASE_URL &&
-        import.meta.env.VITE_SUPABASE_ANON_KEY
+        getEnvVar('VITE_SUPABASE_URL') &&
+        getEnvVar('VITE_SUPABASE_ANON_KEY')
       ) {
         return new SupabaseApiService();
       }
