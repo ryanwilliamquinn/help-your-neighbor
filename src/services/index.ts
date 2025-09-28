@@ -68,29 +68,7 @@ export interface ApiService {
 import { MockApiService } from './mockApiService';
 import { HttpApiService } from './httpApiService';
 import { SupabaseApiService } from './supabaseApiService';
-
-// Helper function to safely access Vite environment variables
-const getViteEnv = (key: string): string | undefined => {
-  // In test environment, use process.env or return mock values
-  if (typeof process !== 'undefined' && process.env.NODE_ENV === 'test') {
-    return key === 'VITE_USE_MOCK_API' ? 'true' : process.env[key];
-  }
-
-  // In browser environment, use import.meta.env via dynamic access
-  if (typeof window !== 'undefined') {
-    try {
-      // Use dynamic property access to avoid Jest parse errors
-      const meta = (
-        globalThis as { import?: { meta?: { env?: Record<string, string> } } }
-      ).import?.meta;
-      return meta?.env?.[key];
-    } catch {
-      return undefined;
-    }
-  }
-
-  return undefined;
-};
+import { getEnvVar } from '../config/env';
 
 // Service factory - chooses between mock, HTTP, and Supabase API based on environment
 function createApiService(): ApiService {
@@ -105,14 +83,14 @@ function createApiService(): ApiService {
     // Access environment variables safely for browser environment
     try {
       // Check for mock API override first
-      if (getViteEnv('VITE_USE_MOCK_API') === 'true') {
+      if (getEnvVar('VITE_USE_MOCK_API') === 'true') {
         return new MockApiService();
       }
 
       // Check if Supabase is configured - prioritize Supabase for production
       if (
-        getViteEnv('VITE_SUPABASE_URL') &&
-        getViteEnv('VITE_SUPABASE_ANON_KEY')
+        getEnvVar('VITE_SUPABASE_URL') &&
+        getEnvVar('VITE_SUPABASE_ANON_KEY')
       ) {
         return new SupabaseApiService();
       }

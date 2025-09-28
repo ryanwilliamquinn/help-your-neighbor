@@ -15,29 +15,7 @@ import type {
   UserLimitsWithCounts,
   AdminMetrics,
 } from '@/types';
-
-// Helper function to safely access environment variables
-const getEnvVar = (key: string): string | undefined => {
-  // In test environment, return undefined (tests should not need env vars)
-  if (typeof process !== 'undefined' && process.env.NODE_ENV === 'test') {
-    return undefined;
-  }
-
-  // In browser environment, use import.meta.env via dynamic access
-  if (typeof window !== 'undefined') {
-    try {
-      // Use dynamic property access to avoid Jest parse errors
-      const meta = (
-        globalThis as { import?: { meta?: { env?: Record<string, string> } } }
-      ).import?.meta;
-      return meta?.env?.[key];
-    } catch {
-      return undefined;
-    }
-  }
-
-  return undefined;
-};
+import { getEnvVar } from '@/config/env';
 
 export class SupabaseApiService implements ApiService {
   constructor() {
