@@ -58,7 +58,8 @@ describe('SignUpPage', () => {
       screen.getByRole('heading', { name: 'Sign Up' })
     ).toBeInTheDocument();
     expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/password/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/^password$/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/confirm password/i)).toBeInTheDocument();
     expect(
       screen.getByRole('button', { name: /sign up/i })
     ).toBeInTheDocument();
@@ -80,8 +81,11 @@ describe('SignUpPage', () => {
     const user = userEvent.setup();
     renderSignUpPage();
 
-    const passwordInput = screen.getByLabelText(/password/i);
+    const passwordInput = screen.getByLabelText(/^password$/i);
+    const confirmPasswordInput = screen.getByLabelText(/confirm password/i);
+
     await user.type(passwordInput, 'password123');
+    await user.type(confirmPasswordInput, 'password123');
 
     const form = passwordInput.closest('form')!;
     fireEvent.submit(form);
@@ -96,7 +100,7 @@ describe('SignUpPage', () => {
     renderSignUpPage();
 
     const emailInput = screen.getByLabelText(/email/i);
-    const passwordInput = screen.getByLabelText(/password/i);
+    const passwordInput = screen.getByLabelText(/^password$/i);
 
     await user.type(emailInput, 'test@example.com');
     // Ensure password field is empty by clearing any default value
@@ -134,11 +138,13 @@ describe('SignUpPage', () => {
     renderSignUpPage();
 
     const emailInput = screen.getByLabelText(/email/i);
-    const passwordInput = screen.getByLabelText(/password/i);
+    const passwordInput = screen.getByLabelText(/^password$/i);
+    const confirmPasswordInput = screen.getByLabelText(/confirm password/i);
     const submitButton = screen.getByRole('button', { name: /sign up/i });
 
     await user.type(emailInput, 'test@example.com');
     await user.type(passwordInput, 'password123');
+    await user.type(confirmPasswordInput, 'password123');
     await user.click(submitButton);
 
     await waitFor(() => {
@@ -177,11 +183,13 @@ describe('SignUpPage', () => {
     renderSignUpPage();
 
     const emailInput = screen.getByLabelText(/email/i);
-    const passwordInput = screen.getByLabelText(/password/i);
+    const passwordInput = screen.getByLabelText(/^password$/i);
+    const confirmPasswordInput = screen.getByLabelText(/confirm password/i);
     const submitButton = screen.getByRole('button', { name: /sign up/i });
 
     await user.type(emailInput, 'test@example.com');
     await user.type(passwordInput, 'password123');
+    await user.type(confirmPasswordInput, 'password123');
     await user.click(submitButton);
 
     await waitFor(() => {
@@ -219,11 +227,13 @@ describe('SignUpPage', () => {
     renderSignUpPage();
 
     const emailInput = screen.getByLabelText(/email/i);
-    const passwordInput = screen.getByLabelText(/password/i);
+    const passwordInput = screen.getByLabelText(/^password$/i);
+    const confirmPasswordInput = screen.getByLabelText(/confirm password/i);
     const submitButton = screen.getByRole('button', { name: /sign up/i });
 
     await user.type(emailInput, 'test@example.com');
     await user.type(passwordInput, 'password123');
+    await user.type(confirmPasswordInput, 'password123');
     await user.click(submitButton);
 
     await waitFor(() => {
@@ -243,11 +253,13 @@ describe('SignUpPage', () => {
     renderSignUpPage();
 
     const emailInput = screen.getByLabelText(/email/i);
-    const passwordInput = screen.getByLabelText(/password/i);
+    const passwordInput = screen.getByLabelText(/^password$/i);
+    const confirmPasswordInput = screen.getByLabelText(/confirm password/i);
     const submitButton = screen.getByRole('button', { name: /sign up/i });
 
     await user.type(emailInput, 'test@example.com');
     await user.type(passwordInput, 'password123');
+    await user.type(confirmPasswordInput, 'password123');
     await user.click(submitButton);
 
     await waitFor(() => {
@@ -271,17 +283,20 @@ describe('SignUpPage', () => {
     renderSignUpPage();
 
     const emailInput = screen.getByLabelText(/email/i);
-    const passwordInput = screen.getByLabelText(/password/i);
+    const passwordInput = screen.getByLabelText(/^password$/i);
+    const confirmPasswordInput = screen.getByLabelText(/confirm password/i);
     const submitButton = screen.getByRole('button', { name: /sign up/i });
 
     await user.type(emailInput, 'test@example.com');
     await user.type(passwordInput, 'password123');
+    await user.type(confirmPasswordInput, 'password123');
     await user.click(submitButton);
 
     // Check loading state
     expect(screen.getByText('Signing up...')).toBeInTheDocument();
     expect(emailInput).toBeDisabled();
     expect(passwordInput).toBeDisabled();
+    expect(confirmPasswordInput).toBeDisabled();
     expect(submitButton).toBeDisabled();
 
     // Resolve the promise
@@ -305,5 +320,71 @@ describe('SignUpPage', () => {
       expect(passwordInput).not.toBeDisabled();
       expect(submitButton).not.toBeDisabled();
     });
+  });
+
+  it('shows error when passwords do not match', async () => {
+    const user = userEvent.setup();
+    renderSignUpPage();
+
+    const emailInput = screen.getByLabelText(/email/i);
+    const passwordInput = screen.getByLabelText(/^password$/i);
+    const confirmPasswordInput = screen.getByLabelText(/confirm password/i);
+
+    await user.type(emailInput, 'test@example.com');
+    await user.type(passwordInput, 'password123');
+    await user.type(confirmPasswordInput, 'differentpassword');
+
+    // Check for inline validation indicators
+    await waitFor(() => {
+      expect(screen.getByText('Passwords do not match')).toBeInTheDocument();
+      expect(confirmPasswordInput).toHaveClass('password-mismatch');
+      expect(screen.getByText('✗')).toBeInTheDocument();
+    });
+
+    // Verify no toast is shown for password mismatch (handled inline now)
+    expect(mockToast.error).not.toHaveBeenCalledWith('Passwords do not match');
+  });
+
+  it('shows error when confirm password is missing', async () => {
+    const user = userEvent.setup();
+    renderSignUpPage();
+
+    const emailInput = screen.getByLabelText(/email/i);
+    const passwordInput = screen.getByLabelText(/^password$/i);
+    const confirmPasswordInput = screen.getByLabelText(/confirm password/i);
+
+    await user.type(emailInput, 'test@example.com');
+    await user.type(passwordInput, 'password123');
+    // Leave confirm password empty
+    await user.clear(confirmPasswordInput);
+
+    const form = emailInput.closest('form')!;
+    fireEvent.submit(form);
+
+    await waitFor(() => {
+      expect(mockToast.error).toHaveBeenCalledWith('Please fill in all fields');
+    });
+  });
+
+  it('shows success indicator when passwords match', async () => {
+    const user = userEvent.setup();
+    renderSignUpPage();
+
+    const passwordInput = screen.getByLabelText(/^password$/i);
+    const confirmPasswordInput = screen.getByLabelText(/confirm password/i);
+
+    await user.type(passwordInput, 'password123');
+    await user.type(confirmPasswordInput, 'password123');
+
+    // Check for positive validation indicators
+    await waitFor(() => {
+      expect(confirmPasswordInput).toHaveClass('password-match');
+      expect(screen.getByText('✓')).toBeInTheDocument();
+    });
+
+    // Should not show error message when passwords match
+    expect(
+      screen.queryByText('Passwords do not match')
+    ).not.toBeInTheDocument();
   });
 });

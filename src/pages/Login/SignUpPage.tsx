@@ -6,18 +6,29 @@ import { useToast } from '@/hooks/useToast';
 const SignUpPage = (): React.JSX.Element => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const toast = useToast();
+
+  // Password validation state
+  const passwordsMatch =
+    password && confirmPassword && password === confirmPassword;
+  const showPasswordMismatch =
+    confirmPassword && password && password !== confirmPassword;
 
   const handleSubmit = async (
     event: React.FormEvent<HTMLFormElement>
   ): Promise<void> => {
     event.preventDefault();
 
-    if (!email || !password) {
+    if (!email || !password || !confirmPassword) {
       toast.error('Please fill in all fields');
       return;
+    }
+
+    if (password !== confirmPassword) {
+      return; // Validation will be shown inline, no toast needed
     }
 
     setIsLoading(true);
@@ -66,6 +77,34 @@ const SignUpPage = (): React.JSX.Element => {
             required
             disabled={isLoading}
           />
+        </div>
+        <div>
+          <label htmlFor="confirmPassword">Confirm Password</label>
+          <div className="password-input-container">
+            <input
+              type="password"
+              id="confirmPassword"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              required
+              disabled={isLoading}
+              className={`password-input ${
+                showPasswordMismatch
+                  ? 'password-mismatch'
+                  : passwordsMatch
+                    ? 'password-match'
+                    : ''
+              }`}
+            />
+            {confirmPassword && (
+              <span className="password-indicator">
+                {passwordsMatch ? '✓' : showPasswordMismatch ? '✗' : ''}
+              </span>
+            )}
+          </div>
+          {showPasswordMismatch && (
+            <span className="password-error">Passwords do not match</span>
+          )}
         </div>
         <button type="submit" disabled={isLoading}>
           {isLoading ? 'Signing up...' : 'Sign Up'}
