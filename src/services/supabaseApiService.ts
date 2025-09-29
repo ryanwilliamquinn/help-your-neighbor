@@ -1454,14 +1454,18 @@ export class SupabaseApiService implements ApiService {
     }
 
     // Check if user is already a member
-    const { data: membershipData } = await supabase
+    const { data: membershipData, error: membershipError } = await supabase
       .from('group_members')
       .select('id')
       .eq('group_id', inviteData.group_id)
-      .eq('user_id', user.user.id)
-      .single();
+      .eq('user_id', user.user.id);
 
-    if (membershipData) {
+    // If there's an error other than "no rows", throw it
+    if (membershipError && membershipError.code !== 'PGRST116') {
+      throw new Error(`Failed to check membership: ${membershipError.message}`);
+    }
+
+    if (membershipData && membershipData.length > 0) {
       throw new Error('You are already a member of this group');
     }
 

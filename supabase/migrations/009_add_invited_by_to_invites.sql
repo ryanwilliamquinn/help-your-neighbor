@@ -33,3 +33,6 @@ CREATE POLICY "Users can create invitations for their groups" ON public.invites
 
 CREATE POLICY "Users can update their own sent invitations" ON public.invites
   FOR UPDATE USING (invited_by = auth.uid());
+
+CREATE POLICY "Users can update invitations sent to them" ON public.invites
+  FOR UPDATE USING (email = auth.email());
