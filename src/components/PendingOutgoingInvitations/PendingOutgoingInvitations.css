@@ -1,0 +1,130 @@
+/* Pending Outgoing Invitations Component */
+.pending-outgoing-invitations {
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  background: #f8f9fa;
+  border-radius: 12px;
+  border: 1px solid #e9ecef;
+}
+
+.pending-outgoing-invitations-header {
+  margin-bottom: 1rem;
+}
+
+.pending-outgoing-invitations-header h3 {
+  margin: 0 0 0.5rem 0;
+  color: #343a40;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.pending-outgoing-invitations-subtitle {
+  margin: 0;
+  color: #6c757d;
+  font-size: 0.9rem;
+}
+
+.pending-outgoing-invitations-loading {
+  color: #6c757d;
+  font-style: italic;
+  padding: 1rem;
+  text-align: center;
+}
+
+/* Outgoing Invitations List */
+.outgoing-invitations-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.outgoing-invitation-card {
+  background: white;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  padding: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: all 0.2s ease-in-out;
+}
+
+.outgoing-invitation-card:hover {
+  border-color: #007bff;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 123, 255, 0.1);
+}
+
+.outgoing-invitation-info {
+  flex: 1;
+}
+
+.outgoing-invitation-header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.invited-email {
+  font-weight: 600;
+  color: #343a40;
+  font-size: 1rem;
+}
+
+.group-name {
+  color: #007bff;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.outgoing-invitation-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.sent-time {
+  color: #6c757d;
+  font-size: 0.85rem;
+}
+
+.expires-time {
+  color: #fd7e14;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+/* Status */
+.outgoing-invitation-status {
+  display: flex;
+  align-items: center;
+}
+
+.status-pending {
+  background: #fff3cd;
+  color: #856404;
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  border: 1px solid #ffeaa7;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .outgoing-invitation-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .outgoing-invitation-header {
+    flex-direction: column;
+  }
+
+  .outgoing-invitation-details {
+    flex-direction: row;
+    gap: 1rem;
+  }
+}
