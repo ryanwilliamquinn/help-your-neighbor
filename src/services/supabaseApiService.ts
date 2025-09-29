@@ -1476,6 +1476,11 @@ export class SupabaseApiService implements ApiService {
     }
 
     // Mark invitation as used
+    console.log('Attempting to mark invitation as used:', {
+      inviteId: inviteData.id,
+      token: token,
+    });
+
     const { data: updateResult, error: updateError } = await supabase
       .from('invites')
       .update({ used_at: new Date().toISOString() })
@@ -1483,15 +1488,26 @@ export class SupabaseApiService implements ApiService {
       .select();
 
     if (updateError) {
+      console.error('Update error:', updateError);
       throw new Error(
         `Failed to mark invitation as used: ${updateError.message}`
       );
     }
 
+    console.log('Update result:', updateResult);
+
     if (!updateResult || updateResult.length === 0) {
       console.warn(
         'No invitation was updated - invitation may not exist or may already be used'
       );
+
+      // Let's also check if the invitation exists with a different query
+      const { data: checkInvite, error: checkError } = await supabase
+        .from('invites')
+        .select('*')
+        .eq('token', token);
+
+      console.log('Invitation check by token:', { checkInvite, checkError });
     }
 
     return this.mapDbGroupToGroup(inviteData.groups);
