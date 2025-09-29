@@ -51,6 +51,17 @@ export interface Invite {
   createdAt: Date;
 }
 
+export interface PendingInvitation {
+  id: string;
+  groupId: string;
+  groupName: string;
+  inviterName: string;
+  email: string;
+  token: string;
+  expiresAt: Date;
+  createdAt: Date;
+}
+
 export const RequestStatus = {
   OPEN: 'open',
   CLAIMED: 'claimed',
@@ -123,4 +134,32 @@ export interface AdminMetrics {
   fulfillmentRate: number; // percentage of requests claimed + fulfilled
   averageTimeToClaimHours: number;
   averageGroupSize: number;
+}
+
+// Email preferences
+export interface EmailPreferences {
+  userId: string;
+  frequency: 'disabled' | 'daily' | 'immediate';
+  lastDailySent?: Date;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface EmailPreferencesForm {
+  frequency: 'disabled' | 'daily' | 'immediate';
+}
+
+export interface EmailDigest {
+  user: User;
+  openRequests: Request[];
+  dashboardUrl: string;
+}
+
+export interface EmailSendLog {
+  id: string;
+  userId: string;
+  emailType: string;
+  requestIds: string[];
+  sentAt: Date;
+  emailProviderId?: string;
 }

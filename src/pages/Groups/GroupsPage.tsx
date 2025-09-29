@@ -4,6 +4,7 @@ import { useAuth, useToast, useUserLimits } from '@/hooks';
 import { apiService } from '@/services';
 import type { Group, User } from '@/types';
 import { UserLimitsDisplay } from '@/components/UserLimits';
+import PendingInvitations from '@/components/PendingInvitations';
 import './GroupsPage.css';
 
 const GroupsPage = (): React.JSX.Element => {
@@ -216,6 +217,19 @@ const GroupsPage = (): React.JSX.Element => {
     }
   };
 
+  const handleInvitationAccepted = (group: Group): void => {
+    // Add the new group to the local state
+    setGroups((prev) => [...prev, group]);
+
+    // Refresh limits since we joined a new group
+    refreshLimits();
+  };
+
+  const handleInvitationsChange = (): void => {
+    // This is called when invitations are accepted or declined
+    // Could be used to refresh some state if needed
+  };
+
   if (loading || loadingGroups) {
     return <div className="groups-loading">Loading groups...</div>;
   }
@@ -235,6 +249,12 @@ const GroupsPage = (): React.JSX.Element => {
 
       {/* User Limits Display */}
       {limitsData && <UserLimitsDisplay limitsData={limitsData} compact />}
+
+      {/* Pending Invitations */}
+      <PendingInvitations
+        onInvitationAccepted={handleInvitationAccepted}
+        onInvitationsChange={handleInvitationsChange}
+      />
 
       <div className="groups-content">
         <div className="groups-actions">

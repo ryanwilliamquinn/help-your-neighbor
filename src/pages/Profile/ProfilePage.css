@@ -151,6 +151,99 @@
   color: #666;
 }
 
+/* Email preferences section */
+.email-preferences-section {
+  margin-top: 2rem;
+}
+
+.form-section-header {
+  margin-bottom: 1.5rem;
+}
+
+.form-section-header h3 {
+  font-size: 1.5rem;
+  color: #2c3e50;
+  margin-bottom: 0.5rem;
+}
+
+.section-subtitle {
+  font-size: 1rem;
+  color: #7f8c8d;
+  margin: 0;
+}
+
+.email-preferences-form {
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  padding: 1.5rem;
+}
+
+.radio-group {
+  margin-bottom: 1rem;
+}
+
+.radio-option {
+  display: flex;
+  align-items: flex-start;
+  padding: 1rem;
+  margin-bottom: 0.75rem;
+  background: white;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.radio-option:hover {
+  border-color: #3498db;
+  background-color: #f8f9fb;
+}
+
+.radio-option:has(input:checked) {
+  border-color: #3498db;
+  background-color: #e3f2fd;
+}
+
+.radio-option input[type='radio'] {
+  margin-right: 0.75rem;
+  margin-top: 0.125rem;
+  width: auto;
+  flex-shrink: 0;
+}
+
+.radio-content {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.radio-label {
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 0.25rem;
+}
+
+.radio-description {
+  font-size: 0.9rem;
+  color: #6c757d;
+  line-height: 1.4;
+}
+
+.email-info {
+  margin-top: 1rem;
+  padding: 0.75rem;
+  background: #e8f4f8;
+  border: 1px solid #b8daff;
+  border-radius: 6px;
+}
+
+.last-sent-info {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #495057;
+}
+
 /* Responsive design */
 @media (max-width: 768px) {
   .profile-page {
@@ -171,5 +264,17 @@
 
   .form-actions button {
     width: 100%;
+  }
+
+  .radio-option {
+    padding: 0.75rem;
+  }
+
+  .radio-option input[type='radio'] {
+    margin-right: 0.5rem;
+  }
+
+  .email-preferences-form {
+    padding: 1rem;
   }
 }

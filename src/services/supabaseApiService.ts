@@ -6,6 +6,7 @@ import type {
   Group,
   Request,
   Invite,
+  PendingInvitation,
   AuthResponse,
   CreateRequestForm,
   UserProfileForm,
@@ -14,6 +15,8 @@ import type {
   UserCounts,
   UserLimitsWithCounts,
   AdminMetrics,
+  EmailPreferences,
+  EmailPreferencesForm,
 } from '@/types';
 import { getEnvVar } from '@/config/env.js';
 
@@ -1191,6 +1194,330 @@ export class SupabaseApiService implements ApiService {
       fulfillmentRate: Math.round(fulfillmentRate * 100) / 100,
       averageTimeToClaimHours: Math.round(avgTimeToClaimHours * 100) / 100,
       averageGroupSize: Math.round(avgGroupSize * 100) / 100,
+    };
+  }
+
+  // Email preferences services
+  async getEmailPreferences(): Promise<EmailPreferences> {
+    if (!supabase) {
+      throw new Error('Supabase client not initialized');
+    }
+
+    const { data: user } = await supabase.auth.getUser();
+    if (!user.user) {
+      throw new Error('No authenticated user');
+    }
+
+    const { data, error } = await supabase
+      .from('user_email_preferences')
+      .select('*')
+      .eq('user_id', user.user.id)
+      .single();
+
+    if (error) {
+      // If no preferences exist, create default preferences
+      if (error.code === 'PGRST116') {
+        const defaultPreferences = {
+          user_id: user.user.id,
+          frequency: 'disabled' as const,
+        };
+
+        const { data: newData, error: insertError } = await supabase
+          .from('user_email_preferences')
+          .insert(defaultPreferences)
+          .select()
+          .single();
+
+        if (insertError) {
+          throw new Error(
+            `Failed to create email preferences: ${insertError.message}`
+          );
+        }
+
+        return this.mapDbEmailPreferencesToEmailPreferences(newData);
+      }
+      throw new Error(`Failed to get email preferences: ${error.message}`);
+    }
+
+    return this.mapDbEmailPreferencesToEmailPreferences(data);
+  }
+
+  async updateEmailPreferences(
+    preferences: EmailPreferencesForm
+  ): Promise<EmailPreferences> {
+    if (!supabase) {
+      throw new Error('Supabase client not initialized');
+    }
+
+    const { data: user } = await supabase.auth.getUser();
+    if (!user.user) {
+      throw new Error('No authenticated user');
+    }
+
+    // First try to update existing preferences
+    const { data: updateData, error: updateError } = await supabase
+      .from('user_email_preferences')
+      .update({
+        frequency: preferences.frequency,
+      })
+      .eq('user_id', user.user.id)
+      .select()
+      .single();
+
+    if (!updateError && updateData) {
+      return this.mapDbEmailPreferencesToEmailPreferences(updateData);
+    }
+
+    // If update failed (no existing preferences), create new ones
+    if (updateError && updateError.code === 'PGRST116') {
+      const { data: insertData, error: insertError } = await supabase
+        .from('user_email_preferences')
+        .insert({
+          user_id: user.user.id,
+          frequency: preferences.frequency,
+        })
+        .select()
+        .single();
+
+      if (insertError) {
+        throw new Error(
+          `Failed to create email preferences: ${insertError.message}`
+        );
+      }
+
+      return this.mapDbEmailPreferencesToEmailPreferences(insertData);
+    }
+
+    throw new Error(
+      `Failed to update email preferences: ${updateError?.message}`
+    );
+  }
+
+  async sendImmediateNotification(requestId: string): Promise<void> {
+    if (!supabase) {
+      throw new Error('Supabase client not initialized');
+    }
+
+    // Get the request details
+    const { data: requestData, error: requestError } = await supabase
+      .from('requests')
+      .select('*')
+      .eq('id', requestId)
+      .single();
+
+    if (requestError) {
+      throw new Error(`Failed to get request: ${requestError.message}`);
+    }
+
+    // Get group members with immediate notification preferences
+    const { data: membersData, error: membersError } = await supabase
+      .from('group_members')
+      .select(
+        `
+        user_id,
+        users!inner(email, name),
+        user_email_preferences!inner(frequency)
+      `
+      )
+      .eq('group_id', requestData.group_id)
+      .neq('user_id', requestData.user_id) // Don't notify the request creator
+      .eq('user_email_preferences.frequency', 'immediate');
+
+    if (membersError) {
+      throw new Error(`Failed to get group members: ${membersError.message}`);
+    }
+
+    if (!membersData || membersData.length === 0) {
+      // No members with immediate notifications enabled
+      return;
+    }
+
+    // TODO: Integrate with actual email service here
+
+    // Log the email send attempt
+    const { error: logError } = await supabase.from('email_send_log').insert({
+      user_id: requestData.user_id,
+      email_type: 'immediate_notification',
+      request_ids: [requestId],
+      email_provider_id: 'mock-' + Date.now(),
+    });
+
+    if (logError) {
+      throw new Error(`Failed to log email send: ${logError.message}`);
+    }
+  }
+
+  async getPendingInvitations(): Promise<PendingInvitation[]> {
+    if (!supabase) {
+      throw new Error('Supabase client not initialized');
+    }
+
+    const { data: user } = await supabase.auth.getUser();
+    if (!user.user) {
+      throw new Error('No authenticated user');
+    }
+
+    const { data, error } = await supabase
+      .from('invites')
+      .select(
+        `
+        id,
+        group_id,
+        email,
+        token,
+        expires_at,
+        created_at,
+        groups!inner(name),
+        users!inner(name)
+      `
+      )
+      .eq('email', user.user.email)
+      .is('used_at', null)
+      .gt('expires_at', new Date().toISOString());
+
+    if (error) {
+      throw new Error(`Failed to get pending invitations: ${error.message}`);
+    }
+
+    return data.map(
+      (invite: {
+        id: string;
+        group_id: string;
+        groups: { name: string }[];
+        users: { name: string }[];
+        email: string;
+        token: string;
+        expires_at: string;
+        created_at: string;
+      }) => ({
+        id: invite.id,
+        groupId: invite.group_id,
+        groupName: invite.groups[0]?.name || 'Unknown Group',
+        inviterName: invite.users[0]?.name || 'Unknown User',
+        email: invite.email,
+        token: invite.token,
+        expiresAt: new Date(invite.expires_at),
+        createdAt: new Date(invite.created_at),
+      })
+    );
+  }
+
+  async acceptInvitation(token: string): Promise<Group> {
+    if (!supabase) {
+      throw new Error('Supabase client not initialized');
+    }
+
+    const { data: user } = await supabase.auth.getUser();
+    if (!user.user) {
+      throw new Error('No authenticated user');
+    }
+
+    // Validate the invitation
+    const { data: inviteData, error: inviteError } = await supabase
+      .from('invites')
+      .select('*, groups(*)')
+      .eq('token', token)
+      .eq('email', user.user.email)
+      .is('used_at', null)
+      .gt('expires_at', new Date().toISOString())
+      .single();
+
+    if (inviteError) {
+      if (inviteError.code === 'PGRST116') {
+        throw new Error('Invalid invitation token');
+      }
+      throw new Error(`Failed to validate invitation: ${inviteError.message}`);
+    }
+
+    // Check if user is already a member
+    const { data: membershipData } = await supabase
+      .from('group_members')
+      .select('id')
+      .eq('group_id', inviteData.group_id)
+      .eq('user_id', user.user.id)
+      .single();
+
+    if (membershipData) {
+      throw new Error('You are already a member of this group');
+    }
+
+    // Add user to group and mark invitation as used
+    const { error: joinError } = await supabase.from('group_members').insert({
+      group_id: inviteData.group_id,
+      user_id: user.user.id,
+    });
+
+    if (joinError) {
+      throw new Error(`Failed to join group: ${joinError.message}`);
+    }
+
+    // Mark invitation as used
+    const { error: updateError } = await supabase
+      .from('invites')
+      .update({ used_at: new Date().toISOString() })
+      .eq('id', inviteData.id);
+
+    if (updateError) {
+      throw new Error(
+        `Failed to mark invitation as used: ${updateError.message}`
+      );
+    }
+
+    return this.mapDbGroupToGroup(inviteData.groups);
+  }
+
+  async declineInvitation(token: string): Promise<void> {
+    if (!supabase) {
+      throw new Error('Supabase client not initialized');
+    }
+
+    const { data: user } = await supabase.auth.getUser();
+    if (!user.user) {
+      throw new Error('No authenticated user');
+    }
+
+    // Validate the invitation
+    const { data: inviteData, error: inviteError } = await supabase
+      .from('invites')
+      .select('id')
+      .eq('token', token)
+      .eq('email', user.user.email)
+      .is('used_at', null)
+      .single();
+
+    if (inviteError) {
+      if (inviteError.code === 'PGRST116') {
+        throw new Error('Invalid invitation token');
+      }
+      throw new Error(`Failed to validate invitation: ${inviteError.message}`);
+    }
+
+    // Mark invitation as used (declined)
+    const { error: updateError } = await supabase
+      .from('invites')
+      .update({ used_at: new Date().toISOString() })
+      .eq('id', inviteData.id);
+
+    if (updateError) {
+      throw new Error(`Failed to decline invitation: ${updateError.message}`);
+    }
+  }
+
+  private mapDbEmailPreferencesToEmailPreferences(dbPrefs: {
+    user_id: string;
+    frequency: string;
+    last_daily_sent?: string;
+    created_at: string;
+    updated_at: string;
+  }): EmailPreferences {
+    return {
+      userId: dbPrefs.user_id,
+      frequency: dbPrefs.frequency as 'disabled' | 'daily' | 'immediate',
+      lastDailySent: dbPrefs.last_daily_sent
+        ? new Date(dbPrefs.last_daily_sent)
+        : undefined,
+      createdAt: new Date(dbPrefs.created_at),
+      updatedAt: new Date(dbPrefs.updated_at),
     };
   }
 }

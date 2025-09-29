@@ -5,6 +5,7 @@ import type {
   Group,
   Request,
   Invite,
+  PendingInvitation,
   AuthResponse,
   CreateRequestForm,
   UserProfileForm,
@@ -13,6 +14,8 @@ import type {
   UserCounts,
   UserLimitsWithCounts,
   AdminMetrics,
+  EmailPreferences,
+  EmailPreferencesForm,
 } from '../types';
 import type { ApiService } from './index';
 import { StorageFactory, type StorageAdapter } from '../lib/storage';
@@ -1067,5 +1070,222 @@ export class MockApiService implements ApiService {
       averageTimeToClaimHours: Math.round(avgTimeToClaimHours * 100) / 100,
       averageGroupSize: Math.round(avgGroupSize * 100) / 100,
     };
+  }
+
+  // Email preferences services
+  async getEmailPreferences(): Promise<EmailPreferences> {
+    await this.ensureInitialized();
+    await this.delay();
+
+    if (!this.currentUser) {
+      throw new Error('No authenticated user');
+    }
+
+    // Mock storage for email preferences
+    const preferences = localStorage.getItem(
+      `email_prefs_${this.currentUser.id}`
+    );
+    if (preferences) {
+      const parsed = JSON.parse(preferences);
+      return {
+        ...parsed,
+        createdAt: new Date(parsed.createdAt),
+        updatedAt: new Date(parsed.updatedAt),
+        lastDailySent: parsed.lastDailySent
+          ? new Date(parsed.lastDailySent)
+          : undefined,
+      };
+    }
+
+    // Return default preferences
+    const defaultPrefs: EmailPreferences = {
+      userId: this.currentUser.id,
+      frequency: 'disabled',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+
+    localStorage.setItem(
+      `email_prefs_${this.currentUser.id}`,
+      JSON.stringify(defaultPrefs)
+    );
+    return defaultPrefs;
+  }
+
+  async updateEmailPreferences(
+    preferences: EmailPreferencesForm
+  ): Promise<EmailPreferences> {
+    await this.ensureInitialized();
+    await this.delay();
+
+    if (!this.currentUser) {
+      throw new Error('No authenticated user');
+    }
+
+    const currentPrefs = await this.getEmailPreferences();
+    const updatedPrefs: EmailPreferences = {
+      ...currentPrefs,
+      frequency: preferences.frequency,
+      updatedAt: new Date(),
+    };
+
+    localStorage.setItem(
+      `email_prefs_${this.currentUser.id}`,
+      JSON.stringify(updatedPrefs)
+    );
+    return updatedPrefs;
+  }
+
+  async sendImmediateNotification(requestId: string): Promise<void> {
+    await this.ensureInitialized();
+    await this.delay();
+
+    if (!this.currentUser) {
+      throw new Error('No authenticated user, requiest id: ' + requestId);
+    }
+
+    // Mock implementation - in a real app this would send actual notifications
+    // requestId would be used to fetch request details
+
+    // In a real implementation, this would:
+    // 1. Get the request details using requestId
+    // 2. Find group members with immediate notification preferences
+    // 3. Send emails to those members
+    // 4. Log the email sends
+
+    // For now, just simulate a successful send
+    return Promise.resolve();
+  }
+
+  async getPendingInvitations(): Promise<PendingInvitation[]> {
+    await this.ensureInitialized();
+    await this.delay();
+
+    if (!this.currentUser) {
+      throw new Error('No authenticated user');
+    }
+
+    const invites = this.db.getInvites();
+    const groups = this.db.getGroups();
+    const users = this.db.getUsers();
+
+    // Find invites for current user's email that haven't been used and haven't expired
+    const pendingInvites = invites.filter((invite) => {
+      if (invite.email !== this.currentUser!.email) return false;
+      if (invite.usedAt) return false;
+      if (new Date(invite.expiresAt) < new Date()) return false;
+      return true;
+    });
+
+    // Transform to PendingInvitation with group and inviter info
+    const pendingInvitations: PendingInvitation[] = [];
+    for (const invite of pendingInvites) {
+      const group = groups.find((g) => g.id === invite.groupId);
+      if (!group) continue;
+
+      const inviter = users.find((u) => u.id === group.createdBy);
+      if (!inviter) continue;
+
+      pendingInvitations.push({
+        id: invite.id,
+        groupId: invite.groupId,
+        groupName: group.name,
+        inviterName: inviter.name,
+        email: invite.email,
+        token: invite.token,
+        expiresAt: invite.expiresAt,
+        createdAt: invite.createdAt,
+      });
+    }
+
+    return pendingInvitations;
+  }
+
+  async acceptInvitation(token: string): Promise<Group> {
+    await this.ensureInitialized();
+    await this.delay();
+
+    if (!this.currentUser) {
+      throw new Error('No authenticated user');
+    }
+
+    const invites = this.db.getInvites();
+    const invite = invites.find((inv) => inv.token === token);
+
+    if (!invite) {
+      throw new Error('Invalid invitation token');
+    }
+
+    if (invite.usedAt) {
+      throw new Error('Invitation has already been used');
+    }
+
+    if (new Date(invite.expiresAt) < new Date()) {
+      throw new Error('Invitation has expired');
+    }
+
+    if (invite.email !== this.currentUser.email) {
+      throw new Error('Invitation is not for your email address');
+    }
+
+    const groups = this.db.getGroups();
+    const group = groups.find((g) => g.id === invite.groupId);
+
+    if (!group) {
+      throw new Error('Group not found');
+    }
+
+    // Check if user is already a member
+    const groupMembers = this.db.getGroupMembers();
+    const existingMembership = groupMembers.find(
+      (gm) =>
+        gm.groupId === invite.groupId && gm.userId === this.currentUser!.id
+    );
+
+    if (existingMembership) {
+      throw new Error('You are already a member of this group');
+    }
+
+    // Add user to group
+    groupMembers.push({
+      groupId: invite.groupId,
+      userId: this.currentUser.id,
+      joinedAt: new Date(),
+    });
+    this.db.setGroupMembers(groupMembers);
+
+    // Mark invitation as used
+    invite.usedAt = new Date();
+    this.db.setInvites(invites);
+
+    return group;
+  }
+
+  async declineInvitation(token: string): Promise<void> {
+    await this.ensureInitialized();
+    await this.delay();
+
+    if (!this.currentUser) {
+      throw new Error('No authenticated user');
+    }
+
+    const invites = this.db.getInvites();
+    const invite = invites.find((inv) => inv.token === token);
+
+    if (!invite) {
+      throw new Error('Invalid invitation token');
+    }
+
+    if (invite.usedAt) {
+      throw new Error('Invitation has already been used');
+    }
+
+    if (invite.email !== this.currentUser.email) {
+      throw new Error('Invitation is not for your email address');
+    }
+
+    // Mark invitation as used (declined)
+    invite.usedAt = new Date();
+    this.db.setInvites(invites);
   }
 }

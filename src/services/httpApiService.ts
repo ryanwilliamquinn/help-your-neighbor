@@ -4,6 +4,7 @@ import type {
   Group,
   Request,
   Invite,
+  PendingInvitation,
   AuthResponse,
   CreateRequestForm,
   UserProfileForm,
@@ -11,6 +12,8 @@ import type {
   UserCounts,
   UserLimitsWithCounts,
   AdminMetrics,
+  EmailPreferences,
+  EmailPreferencesForm,
 } from '../types';
 import type { ApiService } from './index';
 
@@ -301,5 +304,41 @@ export class HttpApiService implements ApiService {
 
   async getAdminMetrics(): Promise<AdminMetrics> {
     return this.request<AdminMetrics>('/admin/metrics');
+  }
+
+  // Email preferences services
+  async getEmailPreferences(): Promise<EmailPreferences> {
+    return this.request<EmailPreferences>('/user/email-preferences');
+  }
+
+  async updateEmailPreferences(
+    preferences: EmailPreferencesForm
+  ): Promise<EmailPreferences> {
+    return this.request<EmailPreferences>('/user/email-preferences', {
+      method: 'PUT',
+      body: JSON.stringify(preferences),
+    });
+  }
+
+  async sendImmediateNotification(requestId: string): Promise<void> {
+    await this.request<void>(`/requests/${requestId}/notify`, {
+      method: 'POST',
+    });
+  }
+
+  async getPendingInvitations(): Promise<PendingInvitation[]> {
+    return this.request<PendingInvitation[]>('/invitations/pending');
+  }
+
+  async acceptInvitation(token: string): Promise<Group> {
+    return this.request<Group>(`/invitations/${token}/accept`, {
+      method: 'POST',
+    });
+  }
+
+  async declineInvitation(token: string): Promise<void> {
+    await this.request<void>(`/invitations/${token}/decline`, {
+      method: 'POST',
+    });
   }
 }

@@ -6,6 +6,7 @@ import type {
   Group,
   Request,
   Invite,
+  PendingInvitation,
   AuthResponse,
   CreateRequestForm,
   UserProfileForm,
@@ -13,6 +14,8 @@ import type {
   UserCounts,
   UserLimitsWithCounts,
   AdminMetrics,
+  EmailPreferences,
+  EmailPreferencesForm,
 } from '../types';
 
 export interface ApiService {
@@ -60,9 +63,19 @@ export interface ApiService {
   // Invite services
   createInvite: (groupId: string, email: string) => Promise<Invite>;
   validateInvite: (token: string) => Promise<{ group: Group; invite: Invite }>;
+  getPendingInvitations: () => Promise<PendingInvitation[]>;
+  acceptInvitation: (token: string) => Promise<Group>;
+  declineInvitation: (token: string) => Promise<void>;
 
   // Admin services
   getAdminMetrics: () => Promise<AdminMetrics>;
+
+  // Email preferences services
+  getEmailPreferences: () => Promise<EmailPreferences>;
+  updateEmailPreferences: (
+    preferences: EmailPreferencesForm
+  ) => Promise<EmailPreferences>;
+  sendImmediateNotification: (requestId: string) => Promise<void>;
 }
 
 import { MockApiService } from './mockApiService';
