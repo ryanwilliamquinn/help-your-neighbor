@@ -1368,7 +1368,7 @@ export class SupabaseApiService implements ApiService {
         expires_at,
         created_at,
         groups!inner(name),
-        users!inner(name)
+        users!invited_by(name)
       `
       )
       .eq('email', user.user.email)
