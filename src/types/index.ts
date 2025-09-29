@@ -51,6 +51,17 @@ export interface Invite {
   createdAt: Date;
 }
 
+export interface PendingInvitation {
+  id: string;
+  groupId: string;
+  groupName: string;
+  inviterName: string;
+  email: string;
+  token: string;
+  expiresAt: Date;
+  createdAt: Date;
+}
+
 export const RequestStatus = {
   OPEN: 'open',
   CLAIMED: 'claimed',

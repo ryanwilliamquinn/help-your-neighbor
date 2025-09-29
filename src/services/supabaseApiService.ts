@@ -6,6 +6,7 @@ import type {
   Group,
   Request,
   Invite,
+  PendingInvitation,
   AuthResponse,
   CreateRequestForm,
   UserProfileForm,
@@ -1332,10 +1333,6 @@ export class SupabaseApiService implements ApiService {
     }
 
     // TODO: Integrate with actual email service here
-    // For now, just log that we would send emails
-    console.log(
-      `Would send immediate notification emails to ${membersData.length} users for request ${requestId}`
-    );
 
     // Log the email send attempt
     const { error: logError } = await supabase.from('email_send_log').insert({
@@ -1346,7 +1343,163 @@ export class SupabaseApiService implements ApiService {
     });
 
     if (logError) {
-      console.error('Failed to log email send:', logError.message);
+      throw new Error(`Failed to log email send: ${logError.message}`);
+    }
+  }
+
+  async getPendingInvitations(): Promise<PendingInvitation[]> {
+    if (!supabase) {
+      throw new Error('Supabase client not initialized');
+    }
+
+    const { data: user } = await supabase.auth.getUser();
+    if (!user.user) {
+      throw new Error('No authenticated user');
+    }
+
+    const { data, error } = await supabase
+      .from('invites')
+      .select(
+        `
+        id,
+        group_id,
+        email,
+        token,
+        expires_at,
+        created_at,
+        groups!inner(name),
+        users!inner(name)
+      `
+      )
+      .eq('email', user.user.email)
+      .is('used_at', null)
+      .gt('expires_at', new Date().toISOString());
+
+    if (error) {
+      throw new Error(`Failed to get pending invitations: ${error.message}`);
+    }
+
+    return data.map(
+      (invite: {
+        id: string;
+        group_id: string;
+        groups: { name: string }[];
+        users: { name: string }[];
+        email: string;
+        token: string;
+        expires_at: string;
+        created_at: string;
+      }) => ({
+        id: invite.id,
+        groupId: invite.group_id,
+        groupName: invite.groups[0]?.name || 'Unknown Group',
+        inviterName: invite.users[0]?.name || 'Unknown User',
+        email: invite.email,
+        token: invite.token,
+        expiresAt: new Date(invite.expires_at),
+        createdAt: new Date(invite.created_at),
+      })
+    );
+  }
+
+  async acceptInvitation(token: string): Promise<Group> {
+    if (!supabase) {
+      throw new Error('Supabase client not initialized');
+    }
+
+    const { data: user } = await supabase.auth.getUser();
+    if (!user.user) {
+      throw new Error('No authenticated user');
+    }
+
+    // Validate the invitation
+    const { data: inviteData, error: inviteError } = await supabase
+      .from('invites')
+      .select('*, groups(*)')
+      .eq('token', token)
+      .eq('email', user.user.email)
+      .is('used_at', null)
+      .gt('expires_at', new Date().toISOString())
+      .single();
+
+    if (inviteError) {
+      if (inviteError.code === 'PGRST116') {
+        throw new Error('Invalid invitation token');
+      }
+      throw new Error(`Failed to validate invitation: ${inviteError.message}`);
+    }
+
+    // Check if user is already a member
+    const { data: membershipData } = await supabase
+      .from('group_members')
+      .select('id')
+      .eq('group_id', inviteData.group_id)
+      .eq('user_id', user.user.id)
+      .single();
+
+    if (membershipData) {
+      throw new Error('You are already a member of this group');
+    }
+
+    // Add user to group and mark invitation as used
+    const { error: joinError } = await supabase.from('group_members').insert({
+      group_id: inviteData.group_id,
+      user_id: user.user.id,
+    });
+
+    if (joinError) {
+      throw new Error(`Failed to join group: ${joinError.message}`);
+    }
+
+    // Mark invitation as used
+    const { error: updateError } = await supabase
+      .from('invites')
+      .update({ used_at: new Date().toISOString() })
+      .eq('id', inviteData.id);
+
+    if (updateError) {
+      throw new Error(
+        `Failed to mark invitation as used: ${updateError.message}`
+      );
+    }
+
+    return this.mapDbGroupToGroup(inviteData.groups);
+  }
+
+  async declineInvitation(token: string): Promise<void> {
+    if (!supabase) {
+      throw new Error('Supabase client not initialized');
+    }
+
+    const { data: user } = await supabase.auth.getUser();
+    if (!user.user) {
+      throw new Error('No authenticated user');
+    }
+
+    // Validate the invitation
+    const { data: inviteData, error: inviteError } = await supabase
+      .from('invites')
+      .select('id')
+      .eq('token', token)
+      .eq('email', user.user.email)
+      .is('used_at', null)
+      .single();
+
+    if (inviteError) {
+      if (inviteError.code === 'PGRST116') {
+        throw new Error('Invalid invitation token');
+      }
+      throw new Error(`Failed to validate invitation: ${inviteError.message}`);
+    }
+
+    // Mark invitation as used (declined)
+    const { error: updateError } = await supabase
+      .from('invites')
+      .update({ used_at: new Date().toISOString() })
+      .eq('id', inviteData.id);
+
+    if (updateError) {
+      throw new Error(`Failed to decline invitation: ${updateError.message}`);
     }
   }
 
