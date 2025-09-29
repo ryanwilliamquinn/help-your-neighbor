@@ -1,17 +1,12 @@
 -- Add invited_by column to invites table
 -- This migration adds proper tracking of who sent each invitation
 
--- Add the invited_by column
-ALTER TABLE public.invites
-ADD COLUMN invited_by UUID REFERENCES public.users(id) ON DELETE CASCADE NOT NULL DEFAULT gen_random_uuid();
-
--- Since there are no real invitations yet, we can clear existing test data
--- and remove the default after adding the column
+-- Since there are no real invitations yet, we can clear existing test data first
 DELETE FROM public.invites;
 
--- Remove the default constraint since we want this to be explicit going forward
+-- Add the invited_by column as NOT NULL directly
 ALTER TABLE public.invites
-ALTER COLUMN invited_by DROP DEFAULT;
+ADD COLUMN invited_by UUID REFERENCES public.users(id) ON DELETE CASCADE NOT NULL;
 
 -- Add index for better query performance
 CREATE INDEX IF NOT EXISTS idx_invites_invited_by ON public.invites(invited_by);
