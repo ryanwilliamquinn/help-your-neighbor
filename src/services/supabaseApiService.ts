@@ -1389,22 +1389,40 @@ export class SupabaseApiService implements ApiService {
       (invite: {
         id: string;
         group_id: string;
-        groups: { name: string }[];
-        users: { name: string }[];
+        groups: { name: string }[] | { name: string } | null;
+        users: { name: string }[] | { name: string } | null;
         email: string;
         token: string;
         expires_at: string;
         created_at: string;
-      }) => ({
-        id: invite.id,
-        groupId: invite.group_id,
-        groupName: invite.groups[0]?.name || 'Unknown Group',
-        inviterName: invite.users[0]?.name || 'Unknown User',
-        email: invite.email,
-        token: invite.token,
-        expiresAt: new Date(invite.expires_at),
-        createdAt: new Date(invite.created_at),
-      })
+      }) => {
+        // Handle different possible structures from Supabase joins
+        let groupName = 'Unknown Group';
+        let inviterName = 'Unknown User';
+
+        if (Array.isArray(invite.groups) && invite.groups.length > 0) {
+          groupName = invite.groups[0].name;
+        } else if (invite.groups && !Array.isArray(invite.groups)) {
+          groupName = invite.groups.name;
+        }
+
+        if (Array.isArray(invite.users) && invite.users.length > 0) {
+          inviterName = invite.users[0].name;
+        } else if (invite.users && !Array.isArray(invite.users)) {
+          inviterName = invite.users.name;
+        }
+
+        return {
+          id: invite.id,
+          groupId: invite.group_id,
+          groupName,
+          inviterName,
+          email: invite.email,
+          token: invite.token,
+          expiresAt: new Date(invite.expires_at),
+          createdAt: new Date(invite.created_at),
+        };
+      }
     );
   }
 
