@@ -847,16 +847,34 @@ export class SupabaseApiService implements ApiService {
     }
 
     // Send invitation email (don't fail if email sending fails)
+    console.log('DEBUG: About to send invitation email...');
     try {
       if (groupData && inviterData) {
+        console.log('DEBUG: Group and inviter data found, creating email...');
         const group = this.mapDbGroupToGroup(groupData);
         const inviter = this.mapDbUserToUser(inviterData);
+
+        console.log('DEBUG: Calling emailService.sendInvitationEmail...', {
+          email,
+          inviterName: inviter.name,
+          groupName: group.name,
+          token,
+        });
 
         await emailService.sendInvitationEmail(
           email,
           inviter.name,
           group,
           token
+        );
+
+        console.log('DEBUG: Email service call completed successfully');
+      } else {
+        console.log(
+          'DEBUG: Missing data - groupData:',
+          !!groupData,
+          'inviterData:',
+          !!inviterData
         );
       }
     } catch (emailError) {
