@@ -7,6 +7,7 @@ import type {
   Request,
   Invite,
   PendingInvitation,
+  PendingOutgoingInvitation,
   AuthResponse,
   CreateRequestForm,
   UserProfileForm,
@@ -64,6 +65,7 @@ export interface ApiService {
   createInvite: (groupId: string, email: string) => Promise<Invite>;
   validateInvite: (token: string) => Promise<{ group: Group; invite: Invite }>;
   getPendingInvitations: () => Promise<PendingInvitation[]>;
+  getPendingOutgoingInvitations: () => Promise<PendingOutgoingInvitation[]>;
   acceptInvitation: (token: string) => Promise<Group>;
   declineInvitation: (token: string) => Promise<void>;
 

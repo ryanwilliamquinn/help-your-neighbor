@@ -5,6 +5,7 @@ import type {
   Request,
   Invite,
   PendingInvitation,
+  PendingOutgoingInvitation,
   AuthResponse,
   CreateRequestForm,
   UserProfileForm,
@@ -328,6 +329,10 @@ export class HttpApiService implements ApiService {
 
   async getPendingInvitations(): Promise<PendingInvitation[]> {
     return this.request<PendingInvitation[]>('/invitations/pending');
+  }
+
+  async getPendingOutgoingInvitations(): Promise<PendingOutgoingInvitation[]> {
+    return this.request<PendingOutgoingInvitation[]>('/invitations/outgoing');
   }
 
   async acceptInvitation(token: string): Promise<Group> {

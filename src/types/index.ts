@@ -62,6 +62,16 @@ export interface PendingInvitation {
   createdAt: Date;
 }
 
+export interface PendingOutgoingInvitation {
+  id: string;
+  groupId: string;
+  groupName: string;
+  email: string;
+  expiresAt: Date;
+  createdAt: Date;
+  usedAt: Date | null;
+}
+
 export const RequestStatus = {
   OPEN: 'open',
   CLAIMED: 'claimed',

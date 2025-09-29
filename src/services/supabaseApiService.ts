@@ -7,6 +7,7 @@ import type {
   Request,
   Invite,
   PendingInvitation,
+  PendingOutgoingInvitation,
   AuthResponse,
   CreateRequestForm,
   UserProfileForm,
@@ -1421,6 +1422,69 @@ export class SupabaseApiService implements ApiService {
           token: invite.token,
           expiresAt: new Date(invite.expires_at),
           createdAt: new Date(invite.created_at),
+        };
+      }
+    );
+  }
+
+  async getPendingOutgoingInvitations(): Promise<PendingOutgoingInvitation[]> {
+    if (!supabase) {
+      throw new Error('Supabase client not initialized');
+    }
+
+    const { data: user } = await supabase.auth.getUser();
+    if (!user.user) {
+      throw new Error('No authenticated user');
+    }
+
+    const { data, error } = await supabase
+      .from('invites')
+      .select(
+        `
+        id,
+        group_id,
+        email,
+        expires_at,
+        created_at,
+        used_at,
+        groups!inner(name)
+      `
+      )
+      .eq('invited_by', user.user.id)
+      .is('used_at', null)
+      .gt('expires_at', new Date().toISOString());
+
+    if (error) {
+      throw new Error(`Failed to get outgoing invitations: ${error.message}`);
+    }
+
+    return data.map(
+      (invite: {
+        id: string;
+        group_id: string;
+        groups: { name: string }[] | { name: string } | null;
+        email: string;
+        expires_at: string;
+        created_at: string;
+        used_at: string | null;
+      }) => {
+        // Handle different possible structures from Supabase joins
+        let groupName = 'Unknown Group';
+
+        if (Array.isArray(invite.groups) && invite.groups.length > 0) {
+          groupName = invite.groups[0].name;
+        } else if (invite.groups && !Array.isArray(invite.groups)) {
+          groupName = invite.groups.name;
+        }
+
+        return {
+          id: invite.id,
+          groupId: invite.group_id,
+          groupName,
+          email: invite.email,
+          expiresAt: new Date(invite.expires_at),
+          createdAt: new Date(invite.created_at),
+          usedAt: invite.used_at ? new Date(invite.used_at) : null,
         };
       }
     );

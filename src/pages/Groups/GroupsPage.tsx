@@ -5,6 +5,7 @@ import { apiService } from '@/services';
 import type { Group, User } from '@/types';
 import { UserLimitsDisplay } from '@/components/UserLimits';
 import PendingInvitations from '@/components/PendingInvitations';
+import PendingOutgoingInvitations from '@/components/PendingOutgoingInvitations';
 import './GroupsPage.css';
 
 const GroupsPage = (): React.JSX.Element => {
@@ -253,6 +254,11 @@ const GroupsPage = (): React.JSX.Element => {
       {/* Pending Invitations */}
       <PendingInvitations
         onInvitationAccepted={handleInvitationAccepted}
+        onInvitationsChange={handleInvitationsChange}
+      />
+
+      {/* Pending Outgoing Invitations */}
+      <PendingOutgoingInvitations
         onInvitationsChange={handleInvitationsChange}
       />
 

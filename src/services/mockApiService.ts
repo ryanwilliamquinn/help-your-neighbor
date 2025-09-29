@@ -6,6 +6,7 @@ import type {
   Request,
   Invite,
   PendingInvitation,
+  PendingOutgoingInvitation,
   AuthResponse,
   CreateRequestForm,
   UserProfileForm,
@@ -1199,6 +1200,47 @@ export class MockApiService implements ApiService {
     }
 
     return pendingInvitations;
+  }
+
+  async getPendingOutgoingInvitations(): Promise<PendingOutgoingInvitation[]> {
+    await this.ensureInitialized();
+    await this.delay();
+
+    if (!this.currentUser) {
+      throw new Error('No authenticated user');
+    }
+
+    const invites = this.db.getInvites();
+    const groups = this.db.getGroups();
+
+    // Find invites sent by current user that haven't been used and haven't expired
+    const outgoingInvites = invites.filter((invite) => {
+      // For mock service, we'll check if the user is the group owner
+      const group = groups.find((g) => g.id === invite.groupId);
+      if (!group || group.createdBy !== this.currentUser!.id) return false;
+      if (invite.usedAt) return false;
+      if (new Date(invite.expiresAt) < new Date()) return false;
+      return true;
+    });
+
+    // Transform to PendingOutgoingInvitation with group info
+    const pendingOutgoingInvitations: PendingOutgoingInvitation[] = [];
+    for (const invite of outgoingInvites) {
+      const group = groups.find((g) => g.id === invite.groupId);
+      if (!group) continue;
+
+      pendingOutgoingInvitations.push({
+        id: invite.id,
+        groupId: invite.groupId,
+        groupName: group.name,
+        email: invite.email,
+        expiresAt: invite.expiresAt,
+        createdAt: invite.createdAt,
+        usedAt: invite.usedAt || null,
+      });
+    }
+
+    return pendingOutgoingInvitations;
   }
 
   async acceptInvitation(token: string): Promise<Group> {
