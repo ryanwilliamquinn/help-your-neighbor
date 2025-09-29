@@ -570,3 +570,11 @@
   color: #c62828;
   border-color: #ffcdd2;
 }
+
+/* Form help text */
+.form-help-text {
+  color: #6c757d;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+  line-height: 1.4;
+}

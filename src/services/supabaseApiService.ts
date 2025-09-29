@@ -20,6 +20,7 @@ import type {
   EmailPreferencesForm,
 } from '@/types';
 import { getEnvVar } from '@/config/env.js';
+import { emailService } from './emailService';
 
 export class SupabaseApiService implements ApiService {
   constructor() {
@@ -819,6 +820,48 @@ export class SupabaseApiService implements ApiService {
 
     if (error) {
       throw new Error(error.message);
+    }
+
+    // Get group information for the email
+    const { data: groupData, error: groupError } = await supabase
+      .from('groups')
+      .select('*')
+      .eq('id', groupId)
+      .single();
+
+    if (groupError) {
+      // Don't fail the invitation creation if we can't get group info, just log it
+      console.error('Failed to get group info for email:', groupError);
+    }
+
+    // Get inviter information for the email
+    const { data: inviterData, error: inviterError } = await supabase
+      .from('users')
+      .select('*')
+      .eq('id', user.user.id)
+      .single();
+
+    if (inviterError) {
+      // Don't fail the invitation creation if we can't get inviter info, just log it
+      console.error('Failed to get inviter info for email:', inviterError);
+    }
+
+    // Send invitation email (don't fail if email sending fails)
+    try {
+      if (groupData && inviterData) {
+        const group = this.mapDbGroupToGroup(groupData);
+        const inviter = this.mapDbUserToUser(inviterData);
+
+        await emailService.sendInvitationEmail(
+          email,
+          inviter.name,
+          group,
+          token
+        );
+      }
+    } catch (emailError) {
+      // Log email error but don't fail the invitation creation
+      console.error('Failed to send invitation email:', emailError);
     }
 
     return this.mapDbInviteToInvite(data);

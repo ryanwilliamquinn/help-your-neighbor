@@ -1,5 +1,5 @@
 import type { EmailService, EmailTemplate } from './emailService';
-import type { EmailDigest, Request, User } from '../types';
+import type { EmailDigest, Request, User, Group } from '../types';
 
 export class MockEmailService implements EmailService {
   private emails: Array<{
@@ -55,6 +55,36 @@ export class MockEmailService implements EmailService {
     return emailId;
   }
 
+  async sendInvitationEmail(
+    recipientEmail: string,
+    inviterName: string,
+    group: Group,
+    inviteToken: string
+  ): Promise<string> {
+    const template = this.generateInvitationTemplate(
+      recipientEmail,
+      inviterName,
+      group,
+      inviteToken
+    );
+    const emailId = `mock-invitation-${Date.now()}`;
+
+    this.emails.push({
+      to: recipientEmail,
+      subject: template.subject,
+      html: template.html,
+      text: template.text,
+      sentAt: new Date(),
+      id: emailId,
+    });
+
+    console.log(
+      `[MockEmailService] Invitation sent to ${recipientEmail}:`,
+      template.subject
+    );
+    return emailId;
+  }
+
   async sendTestEmail(
     to: string,
     subject: string,
@@ -86,6 +116,81 @@ export class MockEmailService implements EmailService {
 
   clearSentEmails() {
     this.emails = [];
+  }
+
+  private generateInvitationTemplate(
+    _recipientEmail: string,
+    inviterName: string,
+    group: Group,
+    inviteToken: string
+  ): EmailTemplate {
+    const inviteUrl = `${process.env.VITE_APP_URL || 'http://localhost:5173'}/invite/${inviteToken}`;
+    const subject = `${inviterName} invited you to join "${group.name}" on Help Your Neighbor`;
+
+    const html = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <div style="background-color: #2563eb; color: white; padding: 32px; text-align: center; border-radius: 8px 8px 0 0;">
+          <h1 style="margin: 0; font-size: 28px;">You're Invited!</h1>
+        </div>
+
+        <div style="padding: 32px; background-color: #f9fafb; border-radius: 0 0 8px 8px;">
+          <p style="font-size: 18px; color: #374151; margin: 0 0 16px 0;">
+            <strong>${inviterName}</strong> has invited you to join the group <strong>"${group.name}"</strong> on Help Your Neighbor.
+          </p>
+
+          <p style="color: #6b7280; margin: 16px 0;">
+            Help Your Neighbor is a community platform where neighbors help each other with errands and tasks.
+            Join "${group.name}" to connect with your local community and start helping (or getting help from) your neighbors!
+          </p>
+
+          <div style="background-color: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 24px; margin: 24px 0;">
+            <h3 style="margin: 0 0 12px 0; color: #374151;">What you can do:</h3>
+            <ul style="color: #6b7280; margin: 0; padding-left: 20px;">
+              <li>Post requests when you need help with errands</li>
+              <li>Help neighbors by fulfilling their requests</li>
+              <li>Build stronger community connections</li>
+              <li>Save time by coordinating with nearby neighbors</li>
+            </ul>
+          </div>
+
+          <div style="text-align: center; margin: 32px 0;">
+            <a href="${inviteUrl}"
+               style="background-color: #059669; color: white; padding: 16px 32px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: bold; font-size: 16px;">
+              Accept Invitation
+            </a>
+          </div>
+
+          <p style="color: #9ca3af; font-size: 14px; text-align: center; margin-top: 32px;">
+            This invitation will expire in 7 days. If you're not interested, you can safely ignore this email.
+          </p>
+
+          <p style="color: #9ca3af; font-size: 12px; text-align: center; margin-top: 16px;">
+            If the button doesn't work, copy and paste this link into your browser:<br>
+            <span style="word-break: break-all;">${inviteUrl}</span>
+          </p>
+        </div>
+      </div>
+    `;
+
+    const text = `
+You're Invited to Join "${group.name}" on Help Your Neighbor!
+
+${inviterName} has invited you to join the group "${group.name}" on Help Your Neighbor.
+
+Help Your Neighbor is a community platform where neighbors help each other with errands and tasks. Join "${group.name}" to connect with your local community and start helping (or getting help from) your neighbors!
+
+What you can do:
+• Post requests when you need help with errands
+• Help neighbors by fulfilling their requests
+• Build stronger community connections
+• Save time by coordinating with nearby neighbors
+
+To accept this invitation, visit: ${inviteUrl}
+
+This invitation will expire in 7 days. If you're not interested, you can safely ignore this email.
+    `;
+
+    return { subject, html, text };
   }
 
   private generateDailyDigestTemplate(digest: EmailDigest): EmailTemplate {

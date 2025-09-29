@@ -530,6 +530,10 @@ const GroupsPage = (): React.JSX.Element => {
                           placeholder="friend@example.com"
                           autoFocus
                         />
+                        <div className="form-help-text">
+                          An email invitation will be sent. Invitations expire
+                          after 7 days.
+                        </div>
                       </div>
 
                       {inviteError && (
