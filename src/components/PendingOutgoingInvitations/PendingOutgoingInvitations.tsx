@@ -5,11 +5,12 @@ import type { PendingOutgoingInvitation } from '@/types';
 import './PendingOutgoingInvitations.css';
 
 interface PendingOutgoingInvitationsProps {
-  onInvitationsChange?: () => void;
+  refreshTrigger?: number;
   className?: string;
 }
 
 const PendingOutgoingInvitations: React.FC<PendingOutgoingInvitationsProps> = ({
+  refreshTrigger,
   className,
 }) => {
   const toast = useToast();
@@ -17,10 +18,6 @@ const PendingOutgoingInvitations: React.FC<PendingOutgoingInvitationsProps> = ({
     []
   );
   const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    loadOutgoingInvitations();
-  }, []);
 
   const loadOutgoingInvitations = async (): Promise<void> => {
     try {
@@ -34,6 +31,10 @@ const PendingOutgoingInvitations: React.FC<PendingOutgoingInvitationsProps> = ({
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    loadOutgoingInvitations();
+  }, [refreshTrigger]);
 
   const formatTimeAgo = (date: Date): string => {
     const now = new Date();

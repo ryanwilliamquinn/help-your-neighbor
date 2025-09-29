@@ -41,6 +41,7 @@ const GroupsPage = (): React.JSX.Element => {
     userId: string;
     memberName: string;
   } | null>(null);
+  const [outgoingInvitesRefresh, setOutgoingInvitesRefresh] = useState(0);
 
   useEffect(() => {
     if (user) {
@@ -110,6 +111,8 @@ const GroupsPage = (): React.JSX.Element => {
       await apiService.createInvite(groupId, inviteEmail.trim());
       setInviteEmail('');
       setInvitingGroupId(null);
+      // Trigger refresh of outgoing invitations
+      setOutgoingInvitesRefresh((prev) => prev + 1);
     } catch (error) {
       // Failed to create invitation
       toast.error(
@@ -258,9 +261,7 @@ const GroupsPage = (): React.JSX.Element => {
       />
 
       {/* Pending Outgoing Invitations */}
-      <PendingOutgoingInvitations
-        onInvitationsChange={handleInvitationsChange}
-      />
+      <PendingOutgoingInvitations refreshTrigger={outgoingInvitesRefresh} />
 
       <div className="groups-content">
         <div className="groups-actions">
