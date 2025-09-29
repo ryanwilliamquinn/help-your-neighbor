@@ -21,6 +21,7 @@ import type {
 } from '@/types';
 import { getEnvVar } from '@/config/env.js';
 import { emailService } from './emailService';
+import { MockEmailService } from './mockEmailService';
 
 export class SupabaseApiService implements ApiService {
   constructor() {
@@ -869,6 +870,17 @@ export class SupabaseApiService implements ApiService {
         );
 
         console.log('DEBUG: Email service call completed successfully');
+
+        // Debug: Show the email content
+        const mockService = emailService as MockEmailService;
+        if ('getLastEmail' in mockService) {
+          const lastEmail = mockService.getLastEmail();
+          console.log('DEBUG: Email content:', {
+            to: lastEmail.to,
+            subject: lastEmail.subject,
+            html: lastEmail.html,
+          });
+        }
       } else {
         console.log(
           'DEBUG: Missing data - groupData:',

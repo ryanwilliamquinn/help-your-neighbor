@@ -39,3 +39,12 @@ function createEmailService(): EmailService {
 
 // Export singleton instance
 export const emailService: EmailService = createEmailService();
+
+// Debug helper for development
+export function getLastSentEmail() {
+  const mockService = emailService as MockEmailService;
+  if (mockService.getLastEmail) {
+    return mockService.getLastEmail();
+  }
+  return null;
+}
