@@ -1476,14 +1476,21 @@ export class SupabaseApiService implements ApiService {
     }
 
     // Mark invitation as used
-    const { error: updateError } = await supabase
+    const { data: updateResult, error: updateError } = await supabase
       .from('invites')
       .update({ used_at: new Date().toISOString() })
-      .eq('id', inviteData.id);
+      .eq('id', inviteData.id)
+      .select();
 
     if (updateError) {
       throw new Error(
         `Failed to mark invitation as used: ${updateError.message}`
+      );
+    }
+
+    if (!updateResult || updateResult.length === 0) {
+      console.warn(
+        'No invitation was updated - invitation may not exist or may already be used'
       );
     }
 
@@ -1517,13 +1524,20 @@ export class SupabaseApiService implements ApiService {
     }
 
     // Mark invitation as used (declined)
-    const { error: updateError } = await supabase
+    const { data: updateResult, error: updateError } = await supabase
       .from('invites')
       .update({ used_at: new Date().toISOString() })
-      .eq('id', inviteData.id);
+      .eq('id', inviteData.id)
+      .select();
 
     if (updateError) {
       throw new Error(`Failed to decline invitation: ${updateError.message}`);
+    }
+
+    if (!updateResult || updateResult.length === 0) {
+      console.warn(
+        'No invitation was updated during decline - invitation may not exist or may already be used'
+      );
     }
   }
 

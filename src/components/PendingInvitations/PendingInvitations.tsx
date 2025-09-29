@@ -44,7 +44,7 @@ const PendingInvitations: React.FC<PendingInvitationsProps> = ({
       setProcessingInvite(invitation.id);
       const group = await apiService.acceptInvitation(invitation.token);
 
-      // Remove from local state
+      // Remove from local state immediately for better UX
       setInvitations((prev) => prev.filter((inv) => inv.id !== invitation.id));
 
       toast.success(`Successfully joined ${group.name}!`);
@@ -52,6 +52,9 @@ const PendingInvitations: React.FC<PendingInvitationsProps> = ({
       // Notify parent components
       onInvitationAccepted?.(group);
       onInvitationsChange?.();
+
+      // Reload invitations from server to ensure consistency
+      await loadPendingInvitations();
     } catch (error) {
       console.error('Failed to accept invitation:', error);
       toast.error(
@@ -69,13 +72,16 @@ const PendingInvitations: React.FC<PendingInvitationsProps> = ({
       setProcessingInvite(invitation.id);
       await apiService.declineInvitation(invitation.token);
 
-      // Remove from local state
+      // Remove from local state immediately for better UX
       setInvitations((prev) => prev.filter((inv) => inv.id !== invitation.id));
 
       toast.success('Invitation declined');
 
       // Notify parent components
       onInvitationsChange?.();
+
+      // Reload invitations from server to ensure consistency
+      await loadPendingInvitations();
     } catch (error) {
       console.error('Failed to decline invitation:', error);
       toast.error(

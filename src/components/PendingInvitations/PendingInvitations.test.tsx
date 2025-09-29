@@ -107,6 +107,11 @@ describe('PendingInvitations', () => {
     const onInvitationsChange = jest.fn();
     (apiService.acceptInvitation as jest.Mock).mockResolvedValue(mockGroup);
 
+    // Mock getPendingInvitations to return updated data after acceptance
+    (apiService.getPendingInvitations as jest.Mock)
+      .mockResolvedValueOnce(mockInvitations) // Initial load
+      .mockResolvedValueOnce([mockInvitations[1]]); // After accepting first invitation
+
     render(
       <PendingInvitations
         onInvitationAccepted={onInvitationAccepted}
@@ -147,6 +152,11 @@ describe('PendingInvitations', () => {
   it('handles declining an invitation successfully', async () => {
     const onInvitationsChange = jest.fn();
     (apiService.declineInvitation as jest.Mock).mockResolvedValue(undefined);
+
+    // Mock getPendingInvitations to return updated data after decline
+    (apiService.getPendingInvitations as jest.Mock)
+      .mockResolvedValueOnce(mockInvitations) // Initial load
+      .mockResolvedValueOnce([mockInvitations[0]]); // After declining second invitation
 
     render(<PendingInvitations onInvitationsChange={onInvitationsChange} />);
 
