@@ -751,6 +751,57 @@ export class SupabaseApiService implements ApiService {
       throw new Error('No authenticated user');
     }
 
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      throw new Error('Please enter a valid email address');
+    }
+
+    // Check for existing pending invitation to the same email for this group
+    const { data: existingInvite, error: existingError } = await supabase
+      .from('invites')
+      .select('id, expires_at')
+      .eq('group_id', groupId)
+      .eq('email', email)
+      .is('used_at', null)
+      .gt('expires_at', new Date().toISOString())
+      .maybeSingle();
+
+    if (existingError && existingError.code !== 'PGRST116') {
+      throw new Error('Failed to check for existing invitations');
+    }
+
+    if (existingInvite) {
+      const expiresDate = new Date(existingInvite.expires_at);
+      const daysLeft = Math.ceil(
+        (expiresDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24)
+      );
+      throw new Error(
+        `An invitation to ${email} for this group is already pending (expires in ${daysLeft} day${daysLeft === 1 ? '' : 's'})`
+      );
+    }
+
+    // Check user's total pending invitations across all groups (limit: 10)
+    const { data: userInvites, error: countError } = await supabase
+      .from('invites')
+      .select('id')
+      .eq('invited_by', user.user.id)
+      .is('used_at', null)
+      .gt('expires_at', new Date().toISOString());
+
+    if (countError) {
+      throw new Error('Failed to check invitation limits');
+    }
+
+    const pendingCount = userInvites?.length || 0;
+    const maxInvitations = 10;
+
+    if (pendingCount >= maxInvitations) {
+      throw new Error(
+        `You have reached the maximum limit of ${maxInvitations} pending invitations. Please wait for some to be accepted or expire before sending more.`
+      );
+    }
+
     const token = crypto.randomUUID();
     const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
 
@@ -1488,6 +1539,33 @@ export class SupabaseApiService implements ApiService {
         };
       }
     );
+  }
+
+  async getInvitationCount(): Promise<{ current: number; max: number }> {
+    if (!supabase) {
+      throw new Error('Supabase client not initialized');
+    }
+
+    const { data: user } = await supabase.auth.getUser();
+    if (!user.user) {
+      throw new Error('No authenticated user');
+    }
+
+    const { data: userInvites, error } = await supabase
+      .from('invites')
+      .select('id')
+      .eq('invited_by', user.user.id)
+      .is('used_at', null)
+      .gt('expires_at', new Date().toISOString());
+
+    if (error) {
+      throw new Error('Failed to get invitation count');
+    }
+
+    return {
+      current: userInvites?.length || 0,
+      max: 10,
+    };
   }
 
   async acceptInvitation(token: string): Promise<Group> {

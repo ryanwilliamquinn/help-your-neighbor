@@ -42,10 +42,15 @@ const GroupsPage = (): React.JSX.Element => {
     memberName: string;
   } | null>(null);
   const [outgoingInvitesRefresh, setOutgoingInvitesRefresh] = useState(0);
+  const [invitationCount, setInvitationCount] = useState<{
+    current: number;
+    max: number;
+  } | null>(null);
 
   useEffect(() => {
     if (user) {
       loadGroups();
+      loadInvitationCount();
     }
   }, [user]);
 
@@ -64,6 +69,16 @@ const GroupsPage = (): React.JSX.Element => {
       setGroupMembers(memberData);
     } finally {
       setLoadingGroups(false);
+    }
+  };
+
+  const loadInvitationCount = async (): Promise<void> => {
+    try {
+      const count = await apiService.getInvitationCount();
+      setInvitationCount(count);
+    } catch (error) {
+      console.error('Failed to load invitation count:', error);
+      // Don't show error to user, just silently fail
     }
   };
 
@@ -111,8 +126,9 @@ const GroupsPage = (): React.JSX.Element => {
       await apiService.createInvite(groupId, inviteEmail.trim());
       setInviteEmail('');
       setInvitingGroupId(null);
-      // Trigger refresh of outgoing invitations
+      // Trigger refresh of outgoing invitations and count
       setOutgoingInvitesRefresh((prev) => prev + 1);
+      loadInvitationCount();
     } catch (error) {
       // Failed to create invitation
       toast.error(
@@ -489,7 +505,19 @@ const GroupsPage = (): React.JSX.Element => {
                   {/* Invite section */}
                   {invitingGroupId === group.id ? (
                     <div className="invite-form">
-                      <h4>Invite Member</h4>
+                      <div className="invite-header">
+                        <h4>Invite Member</h4>
+                        {invitationCount && (
+                          <div className="invitation-count">
+                            <span
+                              className={`count-badge ${invitationCount.current >= invitationCount.max ? 'at-limit' : ''}`}
+                            >
+                              {invitationCount.current}/{invitationCount.max}{' '}
+                              invitations sent
+                            </span>
+                          </div>
+                        )}
+                      </div>
                       <div className="form-group">
                         <label htmlFor={`inviteEmail-${group.id}`}>
                           Email address *
@@ -531,8 +559,20 @@ const GroupsPage = (): React.JSX.Element => {
                         </button>
                         <button
                           type="button"
-                          className="btn-primary btn-small"
+                          className={`btn-primary btn-small ${invitationCount && invitationCount.current >= invitationCount.max ? 'btn-disabled' : ''}`}
                           onClick={() => handleInviteMember(group.id)}
+                          disabled={
+                            !!(
+                              invitationCount &&
+                              invitationCount.current >= invitationCount.max
+                            )
+                          }
+                          title={
+                            invitationCount &&
+                            invitationCount.current >= invitationCount.max
+                              ? 'You have reached your invitation limit'
+                              : 'Create invitation'
+                          }
                         >
                           Create Invite
                         </button>
@@ -552,8 +592,20 @@ const GroupsPage = (): React.JSX.Element => {
                             : 'View Members'}
                       </button>
                       <button
-                        className="btn-primary btn-small"
+                        className={`btn-primary btn-small ${invitationCount && invitationCount.current >= invitationCount.max ? 'btn-disabled' : ''}`}
                         onClick={() => handleStartInvite(group.id)}
+                        disabled={
+                          !!(
+                            invitationCount &&
+                            invitationCount.current >= invitationCount.max
+                          )
+                        }
+                        title={
+                          invitationCount &&
+                          invitationCount.current >= invitationCount.max
+                            ? `You have reached your invitation limit (${invitationCount.current}/${invitationCount.max})`
+                            : 'Invite new members'
+                        }
                       >
                         Invite Members
                       </button>

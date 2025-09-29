@@ -1243,6 +1243,33 @@ export class MockApiService implements ApiService {
     return pendingOutgoingInvitations;
   }
 
+  async getInvitationCount(): Promise<{ current: number; max: number }> {
+    await this.ensureInitialized();
+    await this.delay();
+
+    if (!this.currentUser) {
+      throw new Error('No authenticated user');
+    }
+
+    const invites = this.db.getInvites();
+    const groups = this.db.getGroups();
+
+    // Count invites sent by current user that haven't been used and haven't expired
+    const pendingCount = invites.filter((invite) => {
+      // For mock service, we'll check if the user is the group owner
+      const group = groups.find((g) => g.id === invite.groupId);
+      if (!group || group.createdBy !== this.currentUser!.id) return false;
+      if (invite.usedAt) return false;
+      if (new Date(invite.expiresAt) < new Date()) return false;
+      return true;
+    }).length;
+
+    return {
+      current: pendingCount,
+      max: 10,
+    };
+  }
+
   async acceptInvitation(token: string): Promise<Group> {
     await this.ensureInitialized();
     await this.delay();

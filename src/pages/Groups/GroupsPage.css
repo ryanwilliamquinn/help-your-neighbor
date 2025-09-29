@@ -537,3 +537,36 @@
   display: flex;
   justify-content: flex-end;
 }
+
+/* Invitation count styles */
+.invite-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.invite-header h4 {
+  margin: 0;
+}
+
+.invitation-count {
+  display: flex;
+  align-items: center;
+}
+
+.count-badge {
+  background: #e3f2fd;
+  color: #1976d2;
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  border: 1px solid #bbdefb;
+}
+
+.count-badge.at-limit {
+  background: #ffebee;
+  color: #c62828;
+  border-color: #ffcdd2;
+}

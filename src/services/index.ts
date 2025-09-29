@@ -66,6 +66,7 @@ export interface ApiService {
   validateInvite: (token: string) => Promise<{ group: Group; invite: Invite }>;
   getPendingInvitations: () => Promise<PendingInvitation[]>;
   getPendingOutgoingInvitations: () => Promise<PendingOutgoingInvitation[]>;
+  getInvitationCount: () => Promise<{ current: number; max: number }>;
   acceptInvitation: (token: string) => Promise<Group>;
   declineInvitation: (token: string) => Promise<void>;
 

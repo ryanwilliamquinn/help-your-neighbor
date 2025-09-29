@@ -335,6 +335,10 @@ export class HttpApiService implements ApiService {
     return this.request<PendingOutgoingInvitation[]>('/invitations/outgoing');
   }
 
+  async getInvitationCount(): Promise<{ current: number; max: number }> {
+    return this.request<{ current: number; max: number }>('/invitations/count');
+  }
+
   async acceptInvitation(token: string): Promise<Group> {
     return this.request<Group>(`/invitations/${token}/accept`, {
       method: 'POST',
