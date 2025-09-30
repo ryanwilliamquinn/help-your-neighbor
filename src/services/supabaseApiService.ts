@@ -904,16 +904,21 @@ export class SupabaseApiService implements ApiService {
       throw new Error('Supabase client not initialized');
     }
 
-    const { data: inviteData, error: inviteError } = await supabase
+    const { data: inviteDataArray, error: inviteError } = await supabase
       .from('invites')
       .select('*')
       .eq('token', token)
-      .is('used_at', null)
-      .single();
+      .filter('used_at', 'is', null);
 
     if (inviteError) {
       throw new Error('Invalid or expired invite token');
     }
+
+    if (!inviteDataArray || inviteDataArray.length === 0) {
+      throw new Error('Invalid or expired invite token');
+    }
+
+    const inviteData = inviteDataArray[0];
 
     const invite = this.mapDbInviteToInvite(inviteData);
 
