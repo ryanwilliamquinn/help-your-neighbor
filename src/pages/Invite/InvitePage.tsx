@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useSearchParams, useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '@/hooks';
 import { apiService } from '@/services';
 import './InvitePage.css';
@@ -7,6 +7,7 @@ import './InvitePage.css';
 const InvitePage = (): React.JSX.Element => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const params = useParams();
   const { user, loading: authLoading } = useAuth();
   const [loading, setLoading] = useState(true);
   const [joining, setJoining] = useState(false);
@@ -14,7 +15,7 @@ const InvitePage = (): React.JSX.Element => {
   const [success, setSuccess] = useState(false);
   const [groupName, setGroupName] = useState('');
 
-  const token = searchParams.get('token');
+  const token = params.token || searchParams.get('token');
 
   const validateInvitation = useCallback(async (): Promise<void> => {
     try {
