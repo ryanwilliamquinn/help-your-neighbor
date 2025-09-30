@@ -30,10 +30,28 @@ export interface EmailOptions {
 
 // Email service factory
 import { MockEmailService } from './mockEmailService';
+import { ResendEmailService } from './resendEmailService';
+import { getEnvVar, isTest } from '../utils/env';
 
 function createEmailService(): EmailService {
-  // For now, always use MockEmailService
-  // In the future, this could check environment variables to use real email providers
+  // In test environment, always use MockEmailService
+  if (isTest()) {
+    return new MockEmailService();
+  }
+
+  // Check if Resend is configured
+  const resendApiKey = getEnvVar('RESEND_API_KEY');
+
+  if (resendApiKey) {
+    try {
+      return new ResendEmailService();
+    } catch (error) {
+      console.error('Failed to initialize Resend email service:', error);
+      console.log('Falling back to MockEmailService');
+    }
+  }
+
+  // Fallback to MockEmailService for development
   return new MockEmailService();
 }
 
@@ -42,9 +60,13 @@ export const emailService: EmailService = createEmailService();
 
 // Debug helper for development
 export function getLastSentEmail() {
-  const mockService = emailService as MockEmailService;
-  if (mockService.getLastEmail) {
-    return mockService.getLastEmail();
+  if (emailService instanceof MockEmailService) {
+    return emailService.getLastEmail();
   }
   return null;
+}
+
+// Helper to check which email service is being used
+export function getEmailServiceType(): 'resend' | 'mock' {
+  return emailService instanceof ResendEmailService ? 'resend' : 'mock';
 }
