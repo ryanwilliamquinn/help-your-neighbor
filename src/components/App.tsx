@@ -88,6 +88,7 @@ function App(): React.JSX.Element {
               <Route path="/forgot-password" element={<ForgotPasswordPage />} />
               <Route path="/reset-password" element={<ResetPasswordPage />} />
               <Route path="/invite" element={<InvitePage />} />
+              <Route path="/join/:token" element={<InvitePage />} />
               <Route path="/feedback" element={<FeedbackPage />} />
               <Route path="/about" element={<AboutPage />} />
               <Route
