@@ -1,24 +1,33 @@
 // Environment variable utility that works in both browser and test environments
 
 export function getEnvVar(name: string): string | undefined {
-  // In test/Node environment, use process.env
+  // In Node environment (including tests), use process.env
   if (typeof process !== 'undefined' && process.env) {
     return process.env[name];
   }
 
-  // In browser/Vite environment, the env utility won't be used
-  // since we're using serverless functions instead of frontend Resend
-  if (typeof window !== 'undefined') {
-    // Return undefined to force fallback to MockEmailService in browser
-    return undefined;
-  }
-
+  // In browser, return undefined - we'll detect environment differently
   return undefined;
 }
 
 // Helper to check if we're in a development environment
 export function isDevelopment(): boolean {
-  return getEnvVar('NODE_ENV') !== 'production';
+  // In Node environment, use NODE_ENV
+  const nodeEnv = getEnvVar('NODE_ENV');
+  if (nodeEnv) {
+    return nodeEnv !== 'production';
+  }
+
+  // In browser, assume development if localhost
+  if (typeof window !== 'undefined') {
+    return (
+      window.location.hostname === 'localhost' ||
+      window.location.hostname === '127.0.0.1' ||
+      window.location.hostname.includes('localhost')
+    );
+  }
+
+  return true; // Default to development
 }
 
 // Helper to check if we're in a test environment
