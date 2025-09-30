@@ -1552,6 +1552,8 @@ export class SupabaseApiService implements ApiService {
   }
 
   async getPendingOutgoingInvitations(): Promise<PendingOutgoingInvitation[]> {
+    console.log('getPendingOutgoingInvitations called');
+
     if (!supabase) {
       throw new Error('Supabase client not initialized');
     }
@@ -1560,6 +1562,8 @@ export class SupabaseApiService implements ApiService {
     if (!user.user) {
       throw new Error('No authenticated user');
     }
+
+    console.log('Fetching outgoing invitations for user:', user.user.id);
 
     const { data, error } = await supabase
       .from('invites')
@@ -1577,6 +1581,8 @@ export class SupabaseApiService implements ApiService {
       .eq('invited_by', user.user.id)
       .is('used_at', null)
       .gt('expires_at', new Date().toISOString());
+
+    console.log('Outgoing invitations query result:', { data, error });
 
     if (error) {
       throw new Error(`Failed to get outgoing invitations: ${error.message}`);
@@ -1693,16 +1699,45 @@ export class SupabaseApiService implements ApiService {
       );
     }
 
+    // First, let's check what records would be affected by the delete
+    console.log('Checking what records would be deleted...');
+    const { data: preDeleteCheck, error: preDeleteError } = await supabase
+      .from('invites')
+      .select('id, invited_by, used_at')
+      .eq('id', invitationId);
+
+    console.log('Pre-delete check result:', { preDeleteCheck, preDeleteError });
+
+    if (!preDeleteCheck || preDeleteCheck.length === 0) {
+      throw new Error('Invitation not found before delete operation');
+    }
+
     // Delete the invitation
     console.log('Attempting to delete invitation from database...');
-    const { error: deleteError } = await supabase
+    const deleteResponse = await supabase
       .from('invites')
       .delete()
       .eq('id', invitationId);
 
-    if (deleteError) {
-      console.error('Delete error:', deleteError);
-      throw new Error(`Failed to cancel invitation: ${deleteError.message}`);
+    console.log('Delete response:', deleteResponse);
+
+    if (deleteResponse.error) {
+      console.error('Delete error:', deleteResponse.error);
+      throw new Error(`Failed to cancel invitation: ${deleteResponse.error.message}`);
+    }
+
+    // Verify the deletion by checking if the invitation still exists
+    console.log('Verifying deletion...');
+    const { data: verifyData, error: verifyError } = await supabase
+      .from('invites')
+      .select('id')
+      .eq('id', invitationId);
+
+    console.log('Post-delete verification:', { verifyData, verifyError });
+
+    if (verifyData && verifyData.length > 0) {
+      console.error('WARNING: Invitation still exists after delete!', verifyData);
+      throw new Error('Failed to delete invitation - record still exists');
     }
 
     console.log('Invitation successfully deleted from database');
