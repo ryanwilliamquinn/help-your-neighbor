@@ -18,7 +18,7 @@
     "test:coverage": "jest --coverage --maxWorkers=50%",
     "test:changed": "jest --onlyChanged --maxWorkers=50%",
     "preview": "vite preview",
-    "prepare": "husky"
+    "prepare": "husky || true"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.57.4",

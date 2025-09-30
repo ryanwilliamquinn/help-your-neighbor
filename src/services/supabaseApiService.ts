@@ -1677,23 +1677,14 @@ export class SupabaseApiService implements ApiService {
       );
     }
 
-    // Mark the invitation as cancelled by setting used_at and prefixing email
-    // This approach works with RLS policies and maintains audit trail
-    const { data: updateData, error: updateError } = await supabase
+    // Delete the invitation
+    const { error: deleteError } = await supabase
       .from('invites')
-      .update({
-        used_at: new Date().toISOString(), // Mark as used to exclude from pending
-        email: `CANCELLED_${inviteData.email}`, // Mark email as cancelled
-      })
-      .eq('id', invitationId)
-      .select();
+      .delete()
+      .eq('id', invitationId);
 
-    if (updateError) {
-      throw new Error(`Failed to cancel invitation: ${updateError.message}`);
-    }
-
-    if (!updateData || updateData.length === 0) {
-      throw new Error('Failed to cancel invitation - no records were updated');
+    if (deleteError) {
+      throw new Error(`Failed to cancel invitation: ${deleteError.message}`);
     }
   }
 
