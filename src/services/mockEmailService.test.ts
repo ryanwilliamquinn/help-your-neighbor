@@ -48,7 +48,7 @@ describe('MockEmailService', () => {
       expect(emailId).toMatch(/^mock-daily-\d+$/);
       expect(mockConsoleLog).toHaveBeenCalledWith(
         '[MockEmailService] Daily digest sent to user@example.com:',
-        'Your Help Your Neighbor Daily Update - 1 Open Request'
+        'Your A Cup of Sugar Daily Update - 1 Open Request'
       );
 
       const sentEmails = emailService.getSentEmails();
@@ -57,7 +57,7 @@ describe('MockEmailService', () => {
       const sentEmail = sentEmails[0];
       expect(sentEmail.to).toBe('user@example.com');
       expect(sentEmail.subject).toBe(
-        'Your Help Your Neighbor Daily Update - 1 Open Request'
+        'Your A Cup of Sugar Daily Update - 1 Open Request'
       );
       expect(sentEmail.html).toContain('Test groceries');
       expect(sentEmail.html).toContain('Whole Foods');
@@ -87,7 +87,7 @@ describe('MockEmailService', () => {
       expect(emailId).toMatch(/^mock-daily-\d+$/);
       expect(mockConsoleLog).toHaveBeenCalledWith(
         '[MockEmailService] Daily digest sent to user@example.com:',
-        'Your Help Your Neighbor Daily Update - 2 Open Requests'
+        'Your A Cup of Sugar Daily Update - 2 Open Requests'
       );
 
       const sentEmails = emailService.getSentEmails();
@@ -103,7 +103,7 @@ describe('MockEmailService', () => {
       await emailService.sendDailyDigest(mockDigest);
       let sentEmails = emailService.getSentEmails();
       expect(sentEmails[0].subject).toBe(
-        'Your Help Your Neighbor Daily Update - 1 Open Request'
+        'Your A Cup of Sugar Daily Update - 1 Open Request'
       );
 
       emailService.clearSentEmails();
@@ -119,7 +119,7 @@ describe('MockEmailService', () => {
       expect(emailId).toMatch(/^mock-daily-\d+$/);
       sentEmails = emailService.getSentEmails();
       expect(sentEmails[0].subject).toBe(
-        'Your Help Your Neighbor Daily Update - 2 Open Requests'
+        'Your A Cup of Sugar Daily Update - 2 Open Requests'
       );
     });
   });
@@ -261,7 +261,7 @@ describe('MockEmailService', () => {
       const { html } = sentEmails[0];
 
       expect(html).toContain('font-family: Arial, sans-serif');
-      expect(html).toContain('Your Daily Help Your Neighbor Update');
+      expect(html).toContain('Your Daily A Cup of Sugar Update');
       expect(html).toContain('Hi Test User');
       expect(html).toContain('View Dashboard');
       expect(html).toContain('email preferences');

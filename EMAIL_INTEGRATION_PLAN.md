@@ -1,4 +1,4 @@
-# Email Integration Plan for Help Your Neighbor
+# Email Integration Plan for A Cup of Sugar
 
 ## Overview
 
@@ -94,7 +94,7 @@ sendImmediateNotification: (requestId: string) => Promise<void>;
 
 ### Daily Digest Email
 
-- **Subject**: "Your Help Your Neighbor Daily Update - [X] Open Requests"
+- **Subject**: "Your A Cup of Sugar Daily Update - [X] Open Requests"
 - **Content**: Grouped by group membership
 - **Request Details**: Item description, needed by date, store preference
 - **CTA**: "View Dashboard" button

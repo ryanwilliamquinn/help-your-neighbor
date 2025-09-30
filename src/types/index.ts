@@ -1,4 +1,4 @@
-// Core domain types for Help Your Neighbor application
+// Core domain types for A Cup of Sugar application
 
 export interface User {
   id: string;

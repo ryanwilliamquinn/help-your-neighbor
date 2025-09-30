@@ -1,4 +1,4 @@
-// Utility functions for Help Your Neighbor application
+// Utility functions for A Cup of Sugar application
 
 import DOMPurify from 'dompurify';
 

@@ -33,11 +33,11 @@ export default async function handler(
 
     // Prepare email content
     const emailSubject = subject
-      ? `Help Your Neighbor Feedback: ${subject}`
-      : 'Help Your Neighbor Feedback';
+      ? `A Cup of Sugar Feedback: ${subject}`
+      : 'A Cup of Sugar Feedback';
 
     const emailContent = `
-New feedback received from Help Your Neighbor:
+New feedback received from A Cup of Sugar:
 
 From: ${name || 'Anonymous'} (${email})
 Subject: ${subject || 'General Feedback'}
@@ -46,7 +46,7 @@ Message:
 ${message}
 
 ---
-Sent from Help Your Neighbor Feedback Form
+Sent from A Cup of Sugar Feedback Form
 Time: ${new Date().toISOString()}
     `.trim();
 
@@ -65,7 +65,7 @@ Time: ${new Date().toISOString()}
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: 'Help Your Neighbor <noreply@acupofsugar.org>',
+        from: 'A Cup of Sugar <noreply@acupofsugar.org>',
         to: ['admin@acupofsugar.org'],
         subject: emailSubject,
         text: emailContent,

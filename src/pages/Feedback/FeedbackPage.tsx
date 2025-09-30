@@ -93,7 +93,7 @@ const FeedbackPage = (): React.JSX.Element => {
         <header className="feedback-header">
           <h1>Send Feedback</h1>
           <p className="feedback-subtitle">
-            Help us improve Help Your Neighbor! We'd love to hear your thoughts,
+            Help us improve A Cup of Sugar! We'd love to hear your thoughts,
             suggestions, or report any issues.
           </p>
         </header>

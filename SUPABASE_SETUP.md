@@ -37,7 +37,7 @@ cp .env.example .env.local
 
 ```bash
 # Application Configuration
-VITE_APP_NAME="Help Your Neighbor"
+VITE_APP_NAME="A Cup of Sugar"
 VITE_APP_VERSION=0.1.0
 
 # API Configuration - Set to false for production

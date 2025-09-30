@@ -106,7 +106,7 @@ describe('DashboardPage', () => {
       screen.getByRole('heading', { name: /your requests/i })
     ).toBeInTheDocument();
     expect(
-      screen.getByRole('heading', { name: /help your neighbors/i })
+      screen.getByRole('heading', { name: /A Cup of Sugars/i })
     ).toBeInTheDocument();
     expect(
       screen.getByRole('heading', { name: /your groups/i })

@@ -1,4 +1,4 @@
--- Help Your Neighbor Database Schema
+-- A Cup of Sugar Database Schema
 -- Initial migration for Supabase
 
 -- Enable UUID extension (gen_random_uuid is built-in, no extension needed)

@@ -1,4 +1,4 @@
-// Custom React hooks for Help Your Neighbor application
+// Custom React hooks for A Cup of Sugar application
 
 export { useAuth } from './useAuth';
 export { useToast } from './useToast';

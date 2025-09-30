@@ -1,4 +1,4 @@
--- Help Your Neighbor Database Schema
+-- A Cup of Sugar Database Schema
 -- This file contains the complete database schema for Supabase
 
 -- Enable Row Level Security by default

@@ -1,4 +1,4 @@
-# Help Your Neighbor
+# A Cup of Sugar
 
 A community item pickup application that connects people within trusted groups to help each other with store runs and errands.
 
@@ -8,7 +8,7 @@ We've all been there - you're cooking dinner and realize you're missing one ingr
 
 ## The Solution
 
-Help Your Neighbor lets people in trusted groups (friends, family, coworkers, neighbors) coordinate item pickups. When someone is going to the store, they can see what others in their group need and offer to help. When you need something, you can post a request and see if anyone in your group is planning a store trip.
+A Cup of Sugar lets people in trusted groups (friends, family, coworkers, neighbors) coordinate item pickups. When someone is going to the store, they can see what others in their group need and offer to help. When you need something, you can post a request and see if anyone in your group is planning a store trip.
 
 ## How It Works
 

@@ -125,7 +125,7 @@ export class MockEmailService implements EmailService {
     inviteToken: string
   ): EmailTemplate {
     const inviteUrl = `${process.env.VITE_APP_URL || 'http://localhost:5173'}/invite/${inviteToken}`;
-    const subject = `${inviterName} invited you to join "${group.name}" on Help Your Neighbor`;
+    const subject = `${inviterName} invited you to join "${group.name}" on A Cup of Sugar`;
 
     const html = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -135,11 +135,11 @@ export class MockEmailService implements EmailService {
 
         <div style="padding: 32px; background-color: #f9fafb; border-radius: 0 0 8px 8px;">
           <p style="font-size: 18px; color: #374151; margin: 0 0 16px 0;">
-            <strong>${inviterName}</strong> has invited you to join the group <strong>"${group.name}"</strong> on Help Your Neighbor.
+            <strong>${inviterName}</strong> has invited you to join the group <strong>"${group.name}"</strong> on A Cup of Sugar.
           </p>
 
           <p style="color: #6b7280; margin: 16px 0;">
-            Help Your Neighbor is a community platform where neighbors help each other with errands and tasks.
+            A Cup of Sugar is a community platform where neighbors help each other with errands and tasks.
             Join "${group.name}" to connect with your local community and start helping (or getting help from) your neighbors!
           </p>
 
@@ -173,11 +173,11 @@ export class MockEmailService implements EmailService {
     `;
 
     const text = `
-You're Invited to Join "${group.name}" on Help Your Neighbor!
+You're Invited to Join "${group.name}" on A Cup of Sugar!
 
-${inviterName} has invited you to join the group "${group.name}" on Help Your Neighbor.
+${inviterName} has invited you to join the group "${group.name}" on A Cup of Sugar.
 
-Help Your Neighbor is a community platform where neighbors help each other with errands and tasks. Join "${group.name}" to connect with your local community and start helping (or getting help from) your neighbors!
+A Cup of Sugar is a community platform where neighbors help each other with errands and tasks. Join "${group.name}" to connect with your local community and start helping (or getting help from) your neighbors!
 
 What you can do:
 • Post requests when you need help with errands
@@ -195,11 +195,11 @@ This invitation will expire in 7 days. If you're not interested, you can safely 
 
   private generateDailyDigestTemplate(digest: EmailDigest): EmailTemplate {
     const requestCount = digest.openRequests.length;
-    const subject = `Your Help Your Neighbor Daily Update - ${requestCount} Open Request${requestCount !== 1 ? 's' : ''}`;
+    const subject = `Your A Cup of Sugar Daily Update - ${requestCount} Open Request${requestCount !== 1 ? 's' : ''}`;
 
     const html = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <h2 style="color: #2563eb;">Your Daily Help Your Neighbor Update</h2>
+        <h2 style="color: #2563eb;">Your Daily A Cup of Sugar Update</h2>
         <p>Hi ${digest.user.name},</p>
         <p>You have ${requestCount} open request${requestCount !== 1 ? 's' : ''} in your groups:</p>
 
@@ -231,7 +231,7 @@ This invitation will expire in 7 days. If you're not interested, you can safely 
     `;
 
     const text = `
-Your Daily Help Your Neighbor Update
+Your Daily A Cup of Sugar Update
 
 Hi ${digest.user.name},
 

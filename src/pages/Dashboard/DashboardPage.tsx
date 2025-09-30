@@ -346,7 +346,7 @@ const DashboardPage = (): React.JSX.Element => {
           {/* Available Requests from Group */}
           <section className="dashboard-section">
             <div className="section-header">
-              <h2>Help Your Neighbors</h2>
+              <h2>A Cup of Sugars</h2>
               <span className="section-subtitle">
                 Requests you can help with
               </span>

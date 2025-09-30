@@ -31,7 +31,7 @@ function App(): React.JSX.Element {
             <nav>
               <ul>
                 <li>
-                  <Link to="/">Help Your Neighbor</Link>
+                  <Link to="/">A Cup of Sugar</Link>
                 </li>
                 {!user && (
                   <li>

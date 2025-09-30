@@ -1,4 +1,4 @@
-# AI Development Context - Help Your Neighbor
+# AI Development Context - A Cup of Sugar
 
 ## Project Overview
 

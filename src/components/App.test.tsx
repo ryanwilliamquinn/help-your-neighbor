@@ -75,7 +75,7 @@ describe('App', () => {
 
     // The navigation should show brand link
     expect(
-      screen.getByRole('link', { name: /help your neighbor/i })
+      screen.getByRole('link', { name: /A Cup of Sugar/i })
     ).toBeInTheDocument();
   });
 });

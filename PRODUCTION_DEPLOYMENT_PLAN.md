@@ -128,7 +128,7 @@ VITE_SUPABASE_URL=https://your-project-id.supabase.co
 VITE_SUPABASE_ANON_KEY=your-anon-key
 
 # Application Configuration
-VITE_APP_NAME=Help Your Neighbor
+VITE_APP_NAME=A Cup of Sugar
 VITE_APP_VERSION=0.1.0
 ```
 
@@ -138,7 +138,7 @@ VITE_APP_VERSION=0.1.0
 VITE_USE_MOCK_API=false
 VITE_SUPABASE_URL=https://your-project-id.supabase.co
 VITE_SUPABASE_ANON_KEY=your-anon-key
-VITE_APP_NAME=Help Your Neighbor
+VITE_APP_NAME=A Cup of Sugar
 VITE_APP_VERSION=0.1.0
 ```
 
