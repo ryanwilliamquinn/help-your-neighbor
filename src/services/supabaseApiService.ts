@@ -1552,8 +1552,6 @@ export class SupabaseApiService implements ApiService {
   }
 
   async getPendingOutgoingInvitations(): Promise<PendingOutgoingInvitation[]> {
-    console.log('getPendingOutgoingInvitations called');
-
     if (!supabase) {
       throw new Error('Supabase client not initialized');
     }
@@ -1562,8 +1560,6 @@ export class SupabaseApiService implements ApiService {
     if (!user.user) {
       throw new Error('No authenticated user');
     }
-
-    console.log('Fetching outgoing invitations for user:', user.user.id);
 
     const { data, error } = await supabase
       .from('invites')
@@ -1581,8 +1577,6 @@ export class SupabaseApiService implements ApiService {
       .eq('invited_by', user.user.id)
       .is('used_at', null)
       .gt('expires_at', new Date().toISOString());
-
-    console.log('Outgoing invitations query result:', { data, error });
 
     if (error) {
       throw new Error(`Failed to get outgoing invitations: ${error.message}`);
@@ -1648,11 +1642,6 @@ export class SupabaseApiService implements ApiService {
   }
 
   async cancelInvitation(invitationId: string): Promise<void> {
-    console.log(
-      'SupabaseApiService.cancelInvitation called with ID:',
-      invitationId
-    );
-
     if (!supabase) {
       throw new Error('Supabase client not initialized');
     }
@@ -1662,10 +1651,7 @@ export class SupabaseApiService implements ApiService {
       throw new Error('No authenticated user');
     }
 
-    console.log('Current user ID:', user.user.id);
-
     // Verify the invitation exists and belongs to the current user
-    console.log('Checking if invitation exists and belongs to user...');
     const { data: inviteData, error: checkError } = await supabase
       .from('invites')
       .select('id, invited_by, used_at, email')
@@ -1673,48 +1659,26 @@ export class SupabaseApiService implements ApiService {
       .single();
 
     if (checkError) {
-      console.error('Check error:', checkError);
       if (checkError.code === 'PGRST116') {
         throw new Error('Invitation not found');
       }
       throw new Error(`Failed to find invitation: ${checkError.message}`);
     }
 
-    console.log('Found invitation data:', inviteData);
-
     // Check if the current user is the one who sent the invitation
     if (inviteData.invited_by !== user.user.id) {
-      console.error('Authorization check failed:', {
-        inviteData_invited_by: inviteData.invited_by,
-        current_user_id: user.user.id,
-      });
       throw new Error('You can only cancel invitations you sent');
     }
 
     // Check if the invitation has already been used
     if (inviteData.used_at) {
-      console.error('Invitation already used at:', inviteData.used_at);
       throw new Error(
         'Cannot cancel an invitation that has already been accepted'
       );
     }
 
-    // First, let's check what records would be affected by the delete
-    console.log('Checking what records would be deleted...');
-    const { data: preDeleteCheck, error: preDeleteError } = await supabase
-      .from('invites')
-      .select('id, invited_by, used_at')
-      .eq('id', invitationId);
-
-    console.log('Pre-delete check result:', { preDeleteCheck, preDeleteError });
-
-    if (!preDeleteCheck || preDeleteCheck.length === 0) {
-      throw new Error('Invitation not found before delete operation');
-    }
-
-    // Try to mark the invitation as cancelled instead of deleting
-    // This is often better for audit trails and may work with RLS policies
-    console.log('Attempting to mark invitation as cancelled...');
+    // Mark the invitation as cancelled by setting used_at and prefixing email
+    // This approach works with RLS policies and maintains audit trail
     const { data: updateData, error: updateError } = await supabase
       .from('invites')
       .update({
@@ -1724,41 +1688,13 @@ export class SupabaseApiService implements ApiService {
       .eq('id', invitationId)
       .select();
 
-    console.log('Update response:', { updateData, updateError });
-
     if (updateError) {
-      console.error('Update error:', updateError);
-      // If update fails, try delete as fallback
-      console.log('Update failed, trying delete as fallback...');
-      const deleteResponse = await supabase
-        .from('invites')
-        .delete()
-        .eq('id', invitationId);
-
-      console.log('Delete response:', deleteResponse);
-
-      if (deleteResponse.error) {
-        throw new Error(
-          `Failed to cancel invitation: ${deleteResponse.error.message}`
-        );
-      }
-
-      // Verify the deletion
-      const { data: verifyData } = await supabase
-        .from('invites')
-        .select('id')
-        .eq('id', invitationId);
-
-      if (verifyData && verifyData.length > 0) {
-        throw new Error(
-          'Failed to cancel invitation - record still exists and cannot be updated'
-        );
-      }
-    } else if (!updateData || updateData.length === 0) {
-      throw new Error('Failed to cancel invitation - no records were updated');
+      throw new Error(`Failed to cancel invitation: ${updateError.message}`);
     }
 
-    console.log('Invitation successfully deleted from database');
+    if (!updateData || updateData.length === 0) {
+      throw new Error('Failed to cancel invitation - no records were updated');
+    }
   }
 
   async acceptInvitation(token: string): Promise<Group> {
