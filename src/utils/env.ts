@@ -6,25 +6,11 @@ export function getEnvVar(name: string): string | undefined {
     return process.env[name];
   }
 
-  // In browser/Vite environment, try to access import.meta.env safely
+  // In browser/Vite environment, the env utility won't be used
+  // since we're using serverless functions instead of frontend Resend
   if (typeof window !== 'undefined') {
-    // This approach avoids the import.meta issue during Jest compilation
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const viteEnv = (globalThis as any).__VITE_ENV__;
-    if (viteEnv && viteEnv[name]) {
-      return viteEnv[name];
-    }
-
-    // Fallback: access import.meta.env at runtime (not during compilation)
-    try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const importMeta = (globalThis as any).import?.meta;
-      if (importMeta?.env) {
-        return importMeta.env[name];
-      }
-    } catch {
-      // Silent fallback
-    }
+    // Return undefined to force fallback to MockEmailService in browser
+    return undefined;
   }
 
   return undefined;

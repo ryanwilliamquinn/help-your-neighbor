@@ -30,8 +30,8 @@ export interface EmailOptions {
 
 // Email service factory
 import { MockEmailService } from './mockEmailService';
-import { ResendEmailService } from './resendEmailService';
-import { getEnvVar, isTest } from '../utils/env';
+import { ServerlessEmailService } from './serverlessEmailService';
+import { isTest, isDevelopment } from '../utils/env';
 
 function createEmailService(): EmailService {
   // In test environment, always use MockEmailService
@@ -39,20 +39,19 @@ function createEmailService(): EmailService {
     return new MockEmailService();
   }
 
-  // Check if Resend is configured
-  const resendApiKey = getEnvVar('RESEND_API_KEY');
-
-  if (resendApiKey) {
-    try {
-      return new ResendEmailService();
-    } catch (error) {
-      console.error('Failed to initialize Resend email service:', error);
-      console.log('Falling back to MockEmailService');
-    }
+  // In development, use MockEmailService for safety
+  if (isDevelopment()) {
+    return new MockEmailService();
   }
 
-  // Fallback to MockEmailService for development
-  return new MockEmailService();
+  // In production, use serverless email service
+  try {
+    return new ServerlessEmailService();
+  } catch (error) {
+    console.error('Failed to initialize serverless email service:', error);
+    console.log('Falling back to MockEmailService');
+    return new MockEmailService();
+  }
 }
 
 // Export singleton instance
@@ -67,6 +66,7 @@ export function getLastSentEmail() {
 }
 
 // Helper to check which email service is being used
-export function getEmailServiceType(): 'resend' | 'mock' {
-  return emailService instanceof ResendEmailService ? 'resend' : 'mock';
+export function getEmailServiceType(): 'serverless' | 'mock' {
+  // Need to import ServerlessEmailService for instanceof check
+  return emailService instanceof ServerlessEmailService ? 'serverless' : 'mock';
 }

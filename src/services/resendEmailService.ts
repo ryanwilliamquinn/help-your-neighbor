@@ -8,13 +8,19 @@ export class ResendEmailService implements EmailService {
   private fromEmail: string;
 
   constructor() {
-    const apiKey = getEnvVar('RESEND_API_KEY');
+    const apiKey =
+      getEnvVar('VITE_RESEND_API_KEY') || getEnvVar('RESEND_API_KEY');
     if (!apiKey) {
-      throw new Error('RESEND_API_KEY environment variable is required');
+      throw new Error(
+        'VITE_RESEND_API_KEY or RESEND_API_KEY environment variable is required'
+      );
     }
 
     this.resend = new Resend(apiKey);
-    this.fromEmail = getEnvVar('FROM_EMAIL') || 'noreply@your-domain.com';
+    this.fromEmail =
+      getEnvVar('VITE_FROM_EMAIL') ||
+      getEnvVar('FROM_EMAIL') ||
+      'noreply@your-domain.com';
   }
 
   async sendInvitationEmail(
@@ -131,7 +137,10 @@ export class ResendEmailService implements EmailService {
     group: Group,
     inviteToken: string
   ): EmailTemplate {
-    const appUrl = getEnvVar('APP_URL') || 'http://localhost:5173';
+    const appUrl =
+      getEnvVar('VITE_APP_URL') ||
+      getEnvVar('APP_URL') ||
+      'http://localhost:5173';
     const joinUrl = `${appUrl}/join/${inviteToken}`;
 
     const subject = `${inviterName} invited you to join "${group.name}"`;
