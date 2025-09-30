@@ -1668,7 +1668,7 @@ export class SupabaseApiService implements ApiService {
     console.log('Checking if invitation exists and belongs to user...');
     const { data: inviteData, error: checkError } = await supabase
       .from('invites')
-      .select('id, invited_by, used_at')
+      .select('id, invited_by, used_at, email')
       .eq('id', invitationId)
       .single();
 
@@ -1719,7 +1719,7 @@ export class SupabaseApiService implements ApiService {
       .from('invites')
       .update({
         used_at: new Date().toISOString(), // Mark as used to exclude from pending
-        email: null, // Clear email to indicate cancellation
+        email: `CANCELLED_${inviteData.email}`, // Mark email as cancelled
       })
       .eq('id', invitationId)
       .select();
