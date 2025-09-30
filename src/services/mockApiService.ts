@@ -1270,6 +1270,44 @@ export class MockApiService implements ApiService {
     };
   }
 
+  async cancelInvitation(invitationId: string): Promise<void> {
+    await this.ensureInitialized();
+    await this.delay();
+
+    if (!this.currentUser) {
+      throw new Error('No authenticated user');
+    }
+
+    const invites = this.db.getInvites();
+    const inviteIndex = invites.findIndex(
+      (invite) => invite.id === invitationId
+    );
+
+    if (inviteIndex === -1) {
+      throw new Error('Invitation not found');
+    }
+
+    const invite = invites[inviteIndex];
+    const groups = this.db.getGroups();
+    const group = groups.find((g) => g.id === invite.groupId);
+
+    // Check if the current user is the one who sent the invitation (group owner in mock)
+    if (!group || group.createdBy !== this.currentUser.id) {
+      throw new Error('You can only cancel invitations you sent');
+    }
+
+    // Check if the invitation has already been used
+    if (invite.usedAt) {
+      throw new Error(
+        'Cannot cancel an invitation that has already been accepted'
+      );
+    }
+
+    // Remove the invitation
+    invites.splice(inviteIndex, 1);
+    this.db.setInvites(invites);
+  }
+
   async acceptInvitation(token: string): Promise<Group> {
     await this.ensureInitialized();
     await this.delay();

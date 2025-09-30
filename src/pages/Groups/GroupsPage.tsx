@@ -277,7 +277,10 @@ const GroupsPage = (): React.JSX.Element => {
       />
 
       {/* Pending Outgoing Invitations */}
-      <PendingOutgoingInvitations refreshTrigger={outgoingInvitesRefresh} />
+      <PendingOutgoingInvitations
+        refreshTrigger={outgoingInvitesRefresh}
+        onInvitationsChange={loadInvitationCount}
+      />
 
       <div className="groups-content">
         <div className="groups-actions">
