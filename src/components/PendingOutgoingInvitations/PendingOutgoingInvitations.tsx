@@ -48,8 +48,15 @@ const PendingOutgoingInvitations: React.FC<PendingOutgoingInvitationsProps> = ({
     invitation: PendingOutgoingInvitation
   ): Promise<void> => {
     try {
+      console.log('Starting cancellation for invitation:', invitation.id);
       setCancelingInvite(invitation.id);
+
+      console.log(
+        'Calling apiService.cancelInvitation with ID:',
+        invitation.id
+      );
       await apiService.cancelInvitation(invitation.id);
+      console.log('API call successful, invitation should be deleted');
 
       // Remove from local state immediately for better UX
       setInvitations((prev) => prev.filter((inv) => inv.id !== invitation.id));
@@ -60,7 +67,9 @@ const PendingOutgoingInvitations: React.FC<PendingOutgoingInvitationsProps> = ({
       onInvitationsChange?.();
 
       // Reload invitations from server to ensure consistency
+      console.log('Reloading invitations from server...');
       await loadOutgoingInvitations();
+      console.log('Reload complete');
     } catch (error) {
       console.error('Failed to cancel invitation:', error);
       toast.error(

@@ -1642,6 +1642,11 @@ export class SupabaseApiService implements ApiService {
   }
 
   async cancelInvitation(invitationId: string): Promise<void> {
+    console.log(
+      'SupabaseApiService.cancelInvitation called with ID:',
+      invitationId
+    );
+
     if (!supabase) {
       throw new Error('Supabase client not initialized');
     }
@@ -1651,7 +1656,10 @@ export class SupabaseApiService implements ApiService {
       throw new Error('No authenticated user');
     }
 
+    console.log('Current user ID:', user.user.id);
+
     // Verify the invitation exists and belongs to the current user
+    console.log('Checking if invitation exists and belongs to user...');
     const { data: inviteData, error: checkError } = await supabase
       .from('invites')
       .select('id, invited_by, used_at')
@@ -1659,33 +1667,45 @@ export class SupabaseApiService implements ApiService {
       .single();
 
     if (checkError) {
+      console.error('Check error:', checkError);
       if (checkError.code === 'PGRST116') {
         throw new Error('Invitation not found');
       }
       throw new Error(`Failed to find invitation: ${checkError.message}`);
     }
 
+    console.log('Found invitation data:', inviteData);
+
     // Check if the current user is the one who sent the invitation
     if (inviteData.invited_by !== user.user.id) {
+      console.error('Authorization check failed:', {
+        inviteData_invited_by: inviteData.invited_by,
+        current_user_id: user.user.id,
+      });
       throw new Error('You can only cancel invitations you sent');
     }
 
     // Check if the invitation has already been used
     if (inviteData.used_at) {
+      console.error('Invitation already used at:', inviteData.used_at);
       throw new Error(
         'Cannot cancel an invitation that has already been accepted'
       );
     }
 
     // Delete the invitation
+    console.log('Attempting to delete invitation from database...');
     const { error: deleteError } = await supabase
       .from('invites')
       .delete()
       .eq('id', invitationId);
 
     if (deleteError) {
+      console.error('Delete error:', deleteError);
       throw new Error(`Failed to cancel invitation: ${deleteError.message}`);
     }
+
+    console.log('Invitation successfully deleted from database');
   }
 
   async acceptInvitation(token: string): Promise<Group> {
